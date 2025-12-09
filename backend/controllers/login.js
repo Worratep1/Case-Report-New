@@ -1,5 +1,6 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt"); // <- เพิ่มบรรทัดนี้
+const jwt = require("jsonwebtoken")
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;  // <- เปลี่ยนเป็น password
@@ -11,6 +12,7 @@ exports.login = async (req, res) => {
   }
 
   try {
+    //หา user จาก DB
     const result = await pool.query(
       "SELECT * FROM users WHERE username = $1",
       [username]
@@ -29,8 +31,22 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "รหัสผ่านไม่ถูกต้อง" });
     }
 
+
+    const payload = {
+      userId: user.user_id,
+      username : user.username,
+      email : user.email
+    }
+
+    const token = jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      {expiresIn: process.env.JWT_EXPIRES_IN || "1h"}
+    )
+
     return res.json({
       message: "เข้าสู่ระบบสำเร็จ",
+      token,
       user: {
         user_id: user.user_id, 
         username: user.username,

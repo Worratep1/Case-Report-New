@@ -3,7 +3,6 @@ import {
   Search,
   Filter,
   Clock,
-  CheckCircle,
   AlertCircle,
   Calendar as CalendarIcon,
   User,
@@ -36,7 +35,6 @@ import {
   Cell,
   PieChart,
   Pie,
-  LabelList,
 } from "recharts";
 
 import { getCases } from "../api/case";
@@ -45,6 +43,8 @@ import { getStatuses } from "../api/status";
 import { getproducts } from "../api/products";
 import { getRecipients } from "../api/recipients";
 import { sendDailyReport } from "../api/report";
+import { exportReport } from "../api/export";
+
 
 
 
@@ -312,7 +312,7 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
       <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-2 mb-6">
           <Gamepad2 className="text-blue-500" size={24} />
-          <h3 className="text-lg font-bold text-slate-800">
+          <h3 className="text-lg font-medium text-slate-800">
             Game Issues Breakdown ({selectedDate})
           </h3>
         </div>
@@ -713,6 +713,9 @@ const StatusBadge = ({ status }) => {
 export default function DailyReport() {
   const fileInputRef = useRef(null);
 
+
+
+
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [searchText, setSearchText] = useState("");
@@ -744,6 +747,10 @@ export default function DailyReport() {
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  //Export loading
+  const [isExporting, setIsExporting] = useState(false);
+
 
   // Filter Options
   const filterOtions = useMemo(() => {
@@ -883,12 +890,9 @@ export default function DailyReport() {
   };
 
   const handleOpenEmailModal = () => {
-    // setEmailSubject(`Daily Report : ${selectedDate}`);
-    // setEmailBody(
-    //   `เรียน ทีมงาน,\n\nขอส่งรายงานการทำงานประจำวันที่ ${selectedDate} ดังแนบ\n\nขอแสดงความนับถือ,\nคุณฟอร์ด`
-    // );
+   
     setSelectedRecipientIds([]);
-    setAttachedFiles(Array(5).fill(null)); // ✅ Reset attachedFiles เป็น 5 ช่องว่าง
+    setAttachedFiles(Array(5).fill(null)); // Reset attachedFiles เป็น 5 ช่องว่าง
     setIsRecipientDropdownOpen(false);
     setIsEmailModalOpen(true);
 
@@ -902,7 +906,40 @@ export default function DailyReport() {
     );
   };
 
-  // ✅ ฟังก์ชัน handleFileChange ที่ถูกต้อง
+ const handleExport = async () => {
+  try {
+    setIsExporting(true);
+
+    const token = localStorage.getItem("token");
+
+    //  เรียก API exportReport (ได้ blob กลับมา)
+    const blob = await exportReport(selectedDate, token);
+
+    //  สร้าง URL ชั่วคราวจาก blob
+    const url = window.URL.createObjectURL(blob); //  createObjectURL (c เล็ก, O ใหญ่)
+
+    //  สร้างแท็ก <a> ชั่วคราวสำหรับดาวน์โหลดไฟล์
+    const downloadLink = document.createElement("a"); //  document.createElement
+    downloadLink.href = url;
+    downloadLink.download = `daily-report-${selectedDate}.xlsx`;
+
+    //  สั่งให้ลิงก์คลิกเอง
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+    // ล้าง URL ทิ้ง
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Export error:", error);
+    alert("Export ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+  } finally {
+    setIsExporting(false);
+  }
+};
+
+
+  // ฟังก์ชัน handleFileChange ที่ถูกต้อง
   const handleFileChange = (e, index) => {
     // 1. ดึงไฟล์เดียวที่ถูกเลือก
     const file = e.target.files[0];
@@ -936,7 +973,7 @@ export default function DailyReport() {
   };
 
   const removeFile = (indexToRemove) => {
-    // ✅ ถูกต้อง: เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
+    // เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
     setAttachedFiles(prev => prev.map((file, index) => index === indexToRemove ? null : file));
   };
 const handleSendEmail = async () => {
@@ -1039,7 +1076,7 @@ const handleSendEmail = async () => {
                 <CalendarIcon className="w-5 h-5 text-white " />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-800 leading-tight">
+                <h1 className="text-xl font-medium text-slate-800 leading-tight">
                   Daily Report
                 </h1>
                 <p className="text-xs text-slate-500">ระบบรายงานประจำวัน</p>
@@ -1055,10 +1092,42 @@ const handleSendEmail = async () => {
                   placeholder="เลือกวันที่"
                 />
               </div>
+
+               {/* ปุ่ม Export Report */}
+
+               <button
+               onClick={handleExport}
+               disabled={isExporting || casesOfSelectedDate.length === 0}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-medium whitespace-nowrap
+                 ${
+               casesOfSelectedDate.length === 0
+               ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+               : "bg-blue-600 hover:bg-blue-700 text-white shadow-sky-200"
+                }
+             `}  
+               >
+                {isExporting ?(
+                  <>
+                  <Loader2 size={16} className="animate-spin"/>
+                  <span className="hidden sm:inline">กำลัง Export...</span>
+                  </>
+                ):(
+                  <>
+                    <FileText size = {16}/>
+                    <span className="hidden sm:inline">Export Report</span>
+                  </>
+                )}
+
+               </button>
+
+
+
+
+
               <button
                 onClick={handleOpenEmailModal}
                 disabled={casesOfSelectedDate.length === 0}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-bold ml-2 whitespace-nowrap
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-medium ml-2 whitespace-nowrap
                     ${
                       casesOfSelectedDate.length === 0
                         ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
@@ -1098,7 +1167,7 @@ const handleSendEmail = async () => {
         {/* Toolbar & Filters */}
         <div className="bg-white p-4 rounded-t-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <h2 className="text-lg font-bold text-slate-800">
+            <h2 className="text-lg font-semibold text-slate-800">
               รายการแจ้งปัญหา
             </h2>
             {/* <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-medium">
@@ -1190,11 +1259,11 @@ const handleSendEmail = async () => {
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1.5">
                             <Gamepad2 size={14} className="text-indigo-500" />
-                            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wide">
+                            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">
                               {item.game}
                             </span>
                           </div>
-                          <span className="text-sm font-bold text-slate-800 line-clamp-1">
+                          <span className="text-sm font-medium text-slate-800 line-clamp-1">
                             {item.problem}
                           </span>
                         </div>
@@ -1202,14 +1271,14 @@ const handleSendEmail = async () => {
                       <td className="px-6 py-4 align-top max-w-xs">
                         <div className="space-y-2">
                           <p className="text-sm text-slate-600 line-clamp-2">
-                            <span className="font-semibold text-slate-900">
+                            <span className="font-medium text-slate-900">
                               ปัญหา:
                             </span>{" "}
                             {item.details}
                           </p>
                           {item.solution && (
                             <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-lg line-clamp-2">
-                              <span className="font-bold text-emerald-700">
+                              <span className="font-medium text-emerald-700">
                                 แก้ไข:
                               </span>{" "}
                               {item.solution}
@@ -1220,7 +1289,7 @@ const handleSendEmail = async () => {
                       <td className="px-6 py-4 align-top">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-bold">
+                            <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-medium">
                               R
                             </div>
                             <span className="text-sm text-slate-700 font-medium">
@@ -1228,7 +1297,7 @@ const handleSendEmail = async () => {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
+                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-medium">
                               O
                             </div>
                             <span className="text-sm text-slate-700 font-medium">

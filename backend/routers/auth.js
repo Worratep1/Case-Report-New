@@ -20,6 +20,8 @@ const {getStatuses} = require("../controllers/statuses");
 const {getproblems} = require("../controllers/problems");
 const {sendDailyReport } = require("../controllers/email");
 const upload = multer({ storage: multer.memoryStorage() });
+const authMiddleware = require("../middleware/authMiddleware");
+const exportReport = require("..//controllers/exportreport");
 // const upload = multer({ storage: multer.memoryStorage() }); // 💡 ตั้งค่าให้เก็บไฟล์ไว้ในหน่วยความจำชั่วคราว
 
 
@@ -27,6 +29,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 
 router.post("/login", login); // เส้นทางสำหรับการสมัคร
+
+
+router.use(authMiddleware);
 
 router.post("/products",addproducts); // เส้นทางสำหรับการเพิ่มสินค้า
 router.get("/products",getproducts); // เส้นทางสำหรับการดึงสินค้าทั้งหมด
@@ -57,6 +62,8 @@ router.get("/problems", getproblems); // เส้นทางสำหรับ
 // router.post("/sendmail",sendDailyReport)
 // 💡 แก้ไข: เพิ่ม middleware ของ Multer (upload.array('files')) เข้าไป
 router.post("/sendmail",upload.array("attachments", 5),sendDailyReport);
+
+router.get("/exportreport",exportReport.exportReport)
 
 
 

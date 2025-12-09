@@ -1,21 +1,25 @@
-import { 
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 
-  LogOut   
-  // ... อื่นๆ
-} from 'lucide-react';
+export default function MenuLogout({ children }) {
+  const navigate = useNavigate();
 
-export default function MenuButton({ children, type = "button", onClick }) {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   return (
-    <button
-      type={type}
-      
-      onClick={onClick}
-      className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow shadow-blue-200 duration-300 
-  hover:-translate-y-1 
-  hover:shadow-md "
-      
-    >
-      {children}
-    </button>
+   <button
+  onClick={handleLogout}
+  className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow 
+             hover:bg-blue-700 duration-200 
+          hover:-translate-y-1 
+          hover:shadow-md"
+>
+  Logout
+</button>
   );
 }

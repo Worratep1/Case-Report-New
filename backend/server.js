@@ -4,9 +4,9 @@ require("dotenv").config(); // โหลดตัวแปรจาก .env
 const pool = require("./config/db"); // นำเข้า pool จากไฟล์ db.js
 const app = express();
 const PORT = process.env.PORT; // ใช้พอร์ตจาก .env หรือ 3000 เป็นค่าเริ่มต้น
-const auth = require("./routers/auth");
+
 const {readdirSync} = require("fs");
-const bycrypt = require("bcryptjs");
+
 
 
 // Middleware

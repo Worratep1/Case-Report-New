@@ -12,47 +12,47 @@ import RecipientSetting from "../pages/RecipientSetting";
 import DailyReportPage from "../pages/DailyreportPage";
 import CustomreportPage from "../pages/CustomreportPage";
 import DashPage from "../pages/DashPage";
+import RequierAuth from "../components/RequireAuth";
 
 export default function AppRoutes() {
   return (
     <Routes>
-
-         {/* หน้า เปล่าๆ */}
-      <Route path="/main" element={<MainPage />} />
-
+      
       {/* หน้า Login */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={ <LoginPage/> } />
+
+      {/* หน้า เปล่าๆ */}
+      <Route path="/main" element={<RequierAuth> <MainPage /> </RequierAuth>} />
 
       {/* หน้าเมนูหลังล็อกอิน */}
-      <Route path="/menu" element={<MenuPage />} />
-       
-        {/* หน้า สร้างเคสใหม่ */}
-        <Route path="/case" element={<CasePage />} />
+      <Route path="/menu" element={  <RequierAuth> <MenuPage /> </RequierAuth>} />
 
-      <Route path="/report" element={<ReportPage />} />
+      {/* หน้า สร้างเคสใหม่ */}
+      <Route path="/case" element={ <RequierAuth> <CasePage /> </RequierAuth>} />
 
-      <Route path="/setting" element={<SettingPage/>} />
+      <Route path="/report" element={<RequierAuth> <ReportPage /> </RequierAuth>} />
 
-      <Route path="/about" element={<AboutPage/>} />
+      <Route path="/setting" element={ <RequierAuth><SettingPage /></RequierAuth> } />
 
-      <Route path="/game" element={<GameSetting/>} />
+      <Route path="/about" element={ <RequierAuth> <AboutPage /> </RequierAuth>} />
 
-      <Route path ="/member" element ={<MemberSetting/>}/>
+      <Route path="/game" element={ <RequierAuth> <GameSetting /> </RequierAuth>} />
 
-    <Route path ="/recipient" element ={<RecipientSetting/>}/>
+      <Route path="/member" element={<RequierAuth> <MemberSetting /> </RequierAuth>} />
 
-    <Route path="/deilyreport" element={<DailyReportPage />} />
+      <Route path="/recipient" element={ <RequierAuth> <RecipientSetting /> </RequierAuth> } />
 
-    <Route path="/customreport" element={<CustomreportPage/>} />
+      <Route path="/deilyreport" element={ <RequierAuth> <DailyReportPage /> </RequierAuth> } />
 
-    <Route path="/dash" element={<DashPage />} />
-      
-   {/* { <Route path="/report/daily" element={<DailyReportPage />} /> }
+      <Route path="/customreport" element={ <RequierAuth> <CustomreportPage /> </RequierAuth>} />
+
+      <Route path="/dash" element={<DashPage />} />
+
+      {/* { <Route path="/report/daily" element={<DailyReportPage />} /> }
       {<Route path="/report/custom" element={<CustomReportPage />} />} */}
 
-
       {/* ถ้าพิมพ์ path มั่ว ให้เด้งไป /login */}
-      <Route path="*" element={<Navigate to="/main" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

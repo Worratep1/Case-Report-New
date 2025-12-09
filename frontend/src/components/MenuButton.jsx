@@ -3,7 +3,7 @@ export default function MenuButton({ onClick, icon, label }) {
     <button
       onClick={onClick}
       className="w-full flex items-center gap-4 bg-blue-50 hover:bg-blue-100
-                       text-slate-700 px-5 py-4 rounded-xl shadow-sm transition transition-all duration-300 
+                       text-slate-700 px-5 py-4 rounded-xl shadow-sm transition-all duration-300 
   hover:-translate-y-1 
   hover:shadow-md"
     >

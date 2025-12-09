@@ -398,7 +398,7 @@ const StatusBadge = ({ status }) => {
 
 // --- StatCard and StatusSummaryCard (unchanged from CustomreportPage.jsx) ---
 const StatCard = ({ title, value, icon, color }) => (
-  <div className={`bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between hover:shadow-md transition-shadow h-full`}>
+  <div className={`bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow h-full`}>
     <div>
       <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
       <h3 className="text-3xl font-bold text-slate-800">{value}</h3>

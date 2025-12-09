@@ -10,20 +10,31 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("");
-    // สมมติ res คือ response จาก API login
+     setLoading(true);
+
     
 
     try {
       const data = await login(username, password);
+      // 🎯 เก็บ token + user ไว้
+
+      localStorage.setItem("token", data.token);
+
+
       localStorage.setItem("user", JSON.stringify(data.user));
       setMessage("เข้าสู่ระบบสำเร็จ 🎉");
-      navigate("/menu");  // ไปหน้า MainPage
+       navigate("/menu");  // ไปหน้า MainPage
     } catch (err) {
+       console.error(err);
       setMessage(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,7 +65,8 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button type="submit">Login</Button>
+          <Button  
+          onClick={() => navigate("/menu")} type="submit">Login</Button>
         </form>
 
         {message && (

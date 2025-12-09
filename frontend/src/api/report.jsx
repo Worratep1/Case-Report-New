@@ -1,4 +1,4 @@
-// src/api/report.jsx
+// src/api/report.jsx ส่งอีเมล์ 
 import client from "./client";
 
 export async function sendDailyReport(formData) {

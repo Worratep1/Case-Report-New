@@ -4,7 +4,6 @@ import MenuButton from "../components/MenuButton";
 import MenuLogout from "../components/MenuLogout";
 import { 
   AlertTriangle, // สามเหลี่ยมตกใจ
-  BarChart3,     // กราฟแท่ง
   Settings,  
   BookOpen,
   FileChartColumn,
@@ -37,7 +36,7 @@ export default function MenuPage() {
           />
 
           <MenuButton
-            icon={<Settings cl/>}
+            icon={<Settings/>}
             label="Setting"
             onClick={() => navigate("/setting")}
           />
@@ -51,16 +50,14 @@ export default function MenuPage() {
         </div>
 
         <div className="flex justify-between mt-6">
-          <button className="px-5 py-2 bg-slate-100 text-slate-700 rounded-xl shadow-sm duration-300 
+          <button className="px-3 py-1 bg-slate-100 text-slate-700 rounded-xl shadow-sm duration-300 
           hover:-translate-y-1 
           hover:shadow-md" 
           onClick={()=>navigate("/about")}>
             About 
           </button>
 
-          <MenuLogout 
-          
-          onClick={()=> navigate("/login")}>Logout</MenuLogout>
+          <MenuLogout > <LogOut /> Logout</MenuLogout>
 
            {/* <button className="px-5 py-2 bg-blue-600 text-white rounded-xl shadow shadow-blue-200">
            
