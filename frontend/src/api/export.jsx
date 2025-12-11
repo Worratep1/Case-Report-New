@@ -1,15 +1,11 @@
+// src/api/export.js
 import client from "./client";
 
-export async function exportReport(selectedDate, token) {
-  const res = await client.get(
-    `/exportreport?date=${selectedDate}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      responseType: "blob", // สำคัญมาก!
-    }
-  );
+export async function exportReport(selectedDate) {
+  const res = await client.get("/exportreport", {
+    params: { date: selectedDate },  // ใส่ query ที่นี่แทน
+    responseType: "blob",            // ต้องมีเพื่อให้โหลดไฟล์ได้
+  });
 
-  return res.data; 
+  return res.data; // คืน blob ให้ handleExport
 }

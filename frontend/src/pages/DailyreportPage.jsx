@@ -22,7 +22,10 @@ import {
   ChevronRight,
   BarChart2,
   PieChart as PieChartIcon,
+  Home,
+  FileDown
 } from "lucide-react";
+
 
 import {
   BarChart,
@@ -44,9 +47,10 @@ import { getproducts } from "../api/products";
 import { getRecipients } from "../api/recipients";
 import { sendDailyReport } from "../api/report";
 import { exportReport } from "../api/export";
-
-
-
+import { useNavigate } from "react-router-dom";
+import ExportButton from "../components/ButtonExport";
+import ButtonSend from "../components/ButtonSend";
+import ButtonHome from "../components/ButtonHome"
 
 // --- CONSTANTS ---
 const CONFIG = {
@@ -54,7 +58,7 @@ const CONFIG = {
   MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
   ALLOWED_FILE_TYPES: [
     "application/pdf", // PDF
-    "image/jpeg",  // JPG/JPEG
+    "image/jpeg", // JPG/JPEG
     "image/png", // PNG
     "application/msword", // DOC
     "application/vnd.ms-excel", // ✅ XLS
@@ -74,7 +78,7 @@ const STATUS_CONFIG = {
     text: "text-blue-700",
   },
   onhold: {
-    label: "OnHold",
+    label: "Onhold",
     color: "#f59e0b", // สีเหลือง/ส้ม (Amber)
     bg: "bg-amber-50",
     text: "text-amber-700",
@@ -712,9 +716,7 @@ const StatusBadge = ({ status }) => {
 // --- MAIN COMPONENT ---
 export default function DailyReport() {
   const fileInputRef = useRef(null);
-
-
-
+  const navigate = useNavigate();
 
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -750,7 +752,6 @@ export default function DailyReport() {
 
   //Export loading
   const [isExporting, setIsExporting] = useState(false);
-
 
   // Filter Options
   const filterOtions = useMemo(() => {
@@ -890,13 +891,12 @@ export default function DailyReport() {
   };
 
   const handleOpenEmailModal = () => {
-   
     setSelectedRecipientIds([]);
     setAttachedFiles(Array(5).fill(null)); // Reset attachedFiles เป็น 5 ช่องว่าง
     setIsRecipientDropdownOpen(false);
     setIsEmailModalOpen(true);
 
-    setEmailSubject("");   // reset ข้อความค้างอยู่
+    setEmailSubject(""); // reset ข้อความค้างอยู่
     setEmailBody("");
   };
 
@@ -905,39 +905,39 @@ export default function DailyReport() {
       prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id]
     );
   };
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
 
- const handleExport = async () => {
-  try {
-    setIsExporting(true);
+      // เรียก API ไปดึงไฟล์ Excel (แบบ blob)
+      const blob = await exportReport(selectedDate);
 
-    const token = localStorage.getItem("token");
+      if (!blob) {
+        throw new Error("ไม่พบข้อมูลไฟล์จากเซิร์ฟเวอร์");
+      }
 
-    //  เรียก API exportReport (ได้ blob กลับมา)
-    const blob = await exportReport(selectedDate, token);
+      // สร้าง URL ชั่วคราวจาก blob
+      const url = window.URL.createObjectURL(blob);
 
-    //  สร้าง URL ชั่วคราวจาก blob
-    const url = window.URL.createObjectURL(blob); //  createObjectURL (c เล็ก, O ใหญ่)
+      // สร้าง <a> ชั่วคราวเพื่อดาวน์โหลดไฟล์
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = `daily-report-${selectedDate}.xlsx`;
+      downloadLink.style.display = "none";
 
-    //  สร้างแท็ก <a> ชั่วคราวสำหรับดาวน์โหลดไฟล์
-    const downloadLink = document.createElement("a"); //  document.createElement
-    downloadLink.href = url;
-    downloadLink.download = `daily-report-${selectedDate}.xlsx`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
 
-    //  สั่งให้ลิงก์คลิกเอง
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-
-    // ล้าง URL ทิ้ง
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Export error:", error);
-    alert("Export ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
-  } finally {
-    setIsExporting(false);
-  }
-};
-
+      // ล้าง URL ชั่วคราวทิ้ง
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export error:", error);
+      alert("Export ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // ฟังก์ชัน handleFileChange ที่ถูกต้อง
   const handleFileChange = (e, index) => {
@@ -949,86 +949,86 @@ export default function DailyReport() {
 
     // 2. ตรวจสอบขนาดไฟล์ (Size Validation)
     if (file.size > CONFIG.MAX_FILE_SIZE_BYTES) {
-        errors.push(`ขนาดไฟล์ "${file.name}" เกิน ${CONFIG.MAX_FILE_SIZE_MB}MB`);
+      errors.push(`ขนาดไฟล์ "${file.name}" เกิน ${CONFIG.MAX_FILE_SIZE_MB}MB`);
     }
 
     // 3. ตรวจสอบประเภทไฟล์ (Type Validation)
     if (file.type && !CONFIG.ALLOWED_FILE_TYPES.includes(file.type)) {
-        errors.push(`ประเภทไฟล์ "${file.name}" (Type: ${file.type}) ไม่รองรับ`);
+      errors.push(`ประเภทไฟล์ "${file.name}" (Type: ${file.type}) ไม่รองรับ`);
     }
-    
+
     // 4. จัดการ Error
     if (errors.length > 0) {
-        alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join('\n- ')}`);
-        e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
-        return;
+      alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join("\n- ")}`);
+      e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
+      return;
     }
 
     // 5. อัปเดต State array ณ ตำแหน่ง index ที่ส่งเข้ามา
-    setAttachedFiles(prev => {
-        const newFiles = [...prev];
-        newFiles[index] = file; // เก็บไฟล์จริง
-        return newFiles;
+    setAttachedFiles((prev) => {
+      const newFiles = [...prev];
+      newFiles[index] = file; // เก็บไฟล์จริง
+      return newFiles;
     });
   };
 
   const removeFile = (indexToRemove) => {
     // เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
-    setAttachedFiles(prev => prev.map((file, index) => index === indexToRemove ? null : file));
+    setAttachedFiles((prev) =>
+      prev.map((file, index) => (index === indexToRemove ? null : file))
+    );
   };
-const handleSendEmail = async () => {
-  if (selectedRecipientIds.length === 0) {
-    alert("กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน");
-    return;
-  }
+  const handleSendEmail = async () => {
+    if (selectedRecipientIds.length === 0) {
+      alert("กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน");
+      return;
+    }
 
-  // 1) ดึง email จาก recipients ที่เลือก
-  const toEmails = availableRecipients
-    .filter((r) => selectedRecipientIds.includes(r.recipient_id))
-    .map((r) => r.email);
+    // 1) ดึง email จาก recipients ที่เลือก
+    const toEmails = availableRecipients
+      .filter((r) => selectedRecipientIds.includes(r.recipient_id))
+      .map((r) => r.email);
 
-  if (toEmails.length === 0) {
-    alert("ไม่พบอีเมลของผู้รับที่เลือก");
-    return;
-  }
+    if (toEmails.length === 0) {
+      alert("ไม่พบอีเมลของผู้รับที่เลือก");
+      return;
+    }
 
-// 2) สร้าง FormData
-  const formData = new FormData()
-  formData.append("toEmails",JSON.stringify(toEmails))
-  formData.append("subject",emailSubject);
-  formData.append("body", emailBody);
+    // 2) สร้าง FormData
+    const formData = new FormData();
+    formData.append("toEmails", JSON.stringify(toEmails));
+    formData.append("subject", emailSubject);
+    formData.append("body", emailBody);
 
-   // 3) แนบไฟล์ (จาก state attachedFiles ที่ฟอร์ดทำไว้แล้ว)
-  attachedFiles
-    .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
-    .forEach((file) => {
-      formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
-    });
+    // 3) แนบไฟล์ (จาก state attachedFiles ที่ฟอร์ดทำไว้แล้ว)
+    attachedFiles
+      .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
+      .forEach((file) => {
+        formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
+      });
 
+    const payload = {
+      toEmails, // <- array ตามที่ backend ต้องการ
+      subject: emailSubject, // string
+      body: emailBody, // string (ข้อความธรรมดา)
+    };
 
-  const payload = {
-    toEmails,               // <- array ตามที่ backend ต้องการ
-    subject: emailSubject,  // string
-    body: emailBody,        // string (ข้อความธรรมดา)
+    setIsLoading(true);
+
+    try {
+      await sendDailyReport(formData); // ✅ เรียก API ที่เราแก้ในข้อ 1
+      setIsEmailModalOpen(false);
+      setIsSuccessModalOpen(true);
+
+      // reset ฟอร์ม
+      setSelectedRecipientIds([]);
+    } catch (error) {
+      console.error("Error sending email:", error);
+      alert("ส่งอีเมลไม่สำเร็จ: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  setIsLoading(true);
-
-  try {
-    await sendDailyReport(formData);   // ✅ เรียก API ที่เราแก้ในข้อ 1
-    setIsEmailModalOpen(false);
-    setIsSuccessModalOpen(true);
-
-    // reset ฟอร์ม
-    setSelectedRecipientIds([]);
-   
-  } catch (error) {
-    console.error("Error sending email:", error);
-    alert("ส่งอีเมลไม่สำเร็จ: " + error.message);
-  } finally {
-    setIsLoading(false);
-  }
-};
 
   // --- FILTER & PAGINATION LOGIC ---
   const filteredCases = cases.filter((c) => {
@@ -1064,26 +1064,36 @@ const handleSendEmail = async () => {
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             {/* Logo & Title */}
             <div className="flex items-center gap-3 w-full md:w-auto">
+             
+             <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
               <button
-                className="mr-1 p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+                className=" p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
                 onClick={() => window.history.back()}
                 aria-label="Go back"
               >
                 <ChevronLeft size={24} />
+                
               </button>
 
+                <ButtonHome onClick={() => navigate("/menu")} />
+
+                </div>
+                  <div className="flex items-center gap-3">
               <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
                 <CalendarIcon className="w-5 h-5 text-white " />
               </div>
               <div>
                 <h1 className="text-xl font-medium text-slate-800 leading-tight">
-                  Daily Report
+                  {" "}
+                  Daily Report{" "}
                 </h1>
                 <p className="text-xs text-slate-500">ระบบรายงานประจำวัน</p>
               </div>
+             </div>
             </div>
 
             {/* Controls */}
+
             <div className="flex items-center gap-3 w-full md:w-auto justify-end  ">
               <div className="w-48 ">
                 <CustomDatePicker
@@ -1093,41 +1103,25 @@ const handleSendEmail = async () => {
                 />
               </div>
 
-               {/* ปุ่ม Export Report */}
+              {/* ปุ่ม Export Report */}
 
-               <button
-               onClick={handleExport}
-               disabled={isExporting || casesOfSelectedDate.length === 0}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-medium whitespace-nowrap
-                 ${
-               casesOfSelectedDate.length === 0
-               ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
-               : "bg-blue-600 hover:bg-blue-700 text-white shadow-sky-200"
-                }
-             `}  
-               >
-                {isExporting ?(
-                  <>
-                  <Loader2 size={16} className="animate-spin"/>
-                  <span className="hidden sm:inline">กำลัง Export...</span>
-                  </>
-                ):(
-                  <>
-                    <FileText size = {16}/>
-                    <span className="hidden sm:inline">Export Report</span>
-                  </>
-                )}
-
-               </button>
+             <ExportButton onClick={handleExport}
+              isExporting={isExporting}
+              disabled={casesOfSelectedDate.length === 0} />
+        
 
 
+               {/* ปุ่ม send report mail */}
 
+              <ButtonSend 
+              onClick={handleOpenEmailModal}
+              disabled={casesOfSelectedDate.length === 0}/>
 
-
-              <button
+              {/* <button
                 onClick={handleOpenEmailModal}
                 disabled={casesOfSelectedDate.length === 0}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-medium ml-2 whitespace-nowrap
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-normal ml-2 whitespace-nowrap
+                    duration-300 hover:-translate-y-1  hover:shadow-md
                     ${
                       casesOfSelectedDate.length === 0
                         ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
@@ -1136,7 +1130,8 @@ const handleSendEmail = async () => {
               >
                 <Send size={16} />
                 <span className="hidden sm:inline">Send Report</span>
-              </button>
+              </button> */}
+
             </div>
           </div>
         </div>
@@ -1170,9 +1165,6 @@ const handleSendEmail = async () => {
             <h2 className="text-lg font-semibold text-slate-800">
               รายการแจ้งปัญหา
             </h2>
-            {/* <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-medium">
-              {filteredCases.length} รายการ
-            </span> */}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto z-20">
@@ -1272,7 +1264,7 @@ const handleSendEmail = async () => {
                         <div className="space-y-2">
                           <p className="text-sm text-slate-600 line-clamp-2">
                             <span className="font-medium text-slate-900">
-                              ปัญหา:
+                              รายละเอียด:
                             </span>{" "}
                             {item.details}
                           </p>
@@ -1376,10 +1368,10 @@ const handleSendEmail = async () => {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-xl text-slate-800">
+                <h3 className="font-semibold text-xl text-slate-800">
                   Case Details
                 </h3>
-                {/* <p className="text-xs text-slate-500 mt-0.5">ID: {selectedCaseDetail.id} | {selectedCaseDetail.date}</p> */}
+                
               </div>
               <button
                 onClick={() => setIsCaseDetailModalOpen(false)}
@@ -1425,7 +1417,7 @@ const handleSendEmail = async () => {
               {/* ROW 2: Game & Status */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-bold text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">
                     Game
                   </label>
                   <div className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white">
@@ -1436,7 +1428,7 @@ const handleSendEmail = async () => {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-bold text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-slate-700 mb-1 block">
                     Status
                   </label>
                   <div className="flex items-center px-3 py-2 border border-slate-200 rounded-lg bg-white">
@@ -1447,8 +1439,8 @@ const handleSendEmail = async () => {
 
               {/* ROW 3: Problem Type */}
               <div>
-                <label className="text-sm font-bold text-slate-700 mb-1 block">
-                  ประเภทปัญหา (Problem)
+                <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  ปัญหา (Problem)
                 </label>
                 <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 font-medium">
                   {selectedCaseDetail.problemType || selectedCaseDetail.problem}
@@ -1457,7 +1449,7 @@ const handleSendEmail = async () => {
 
               {/* ROW 4: Details */}
               <div>
-                <label className="text-sm font-bold text-slate-700 mb-1 block">
+                <label className="text-sm font-medium text-slate-700 mb-1 block">
                   รายละเอียด (Details)
                 </label>
                 <textarea
@@ -1470,7 +1462,7 @@ const handleSendEmail = async () => {
 
               {/* ROW 5: Solution */}
               <div>
-                <label className="text-sm font-bold text-slate-700 mb-1 block text-emerald-700">
+                <label className="text-sm font-medium text-slate-700 mb-1 block text-emerald-700">
                   วิธีการแก้ไข (Solution)
                 </label>
                 <textarea
@@ -1484,16 +1476,18 @@ const handleSendEmail = async () => {
               {/* ROW 6: People */}
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <label className="text-sm font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
-                    <User size={14} className="text-orange-500" /> ผู้ร้องขอ (Requester)
+                  <label className="text-sm font-medium text-slate-700  mb-1 flex items-center gap-1.5">
+                    <User size={14} className="text-orange-500" /> ผู้ร้องขอ
+                    (Requester)
                   </label>
                   <div className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white">
                     {selectedCaseDetail.reporter}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-bold text-slate-700 uppercase mb-1 flex items-center gap-1.5">
-                    <User size={14} className="text-blue-500" /> ผู้ดำเนินเเก้ไข (Operator)
+                  <label className="text-sm font-medium text-slate-700  mb-1 flex items-center gap-1.5">
+                    <User size={14} className="text-blue-500" /> ผู้ดำเนินเเก้ไข
+                    (Operator)
                   </label>
                   <div className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white">
                     {selectedCaseDetail.operator}
@@ -1519,7 +1513,7 @@ const handleSendEmail = async () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
+              <h3 className="font-medium text-xl text-slate-800 flex items-center gap-2">
                 <Send size={20} className="text-indigo-600" />
                 Send Daily Report
               </h3>
@@ -1532,7 +1526,7 @@ const handleSendEmail = async () => {
             </div>
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <label className=" text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
                   <User size={16} /> Select Recipients
                 </label>
                 <div className="relative">
@@ -1554,7 +1548,7 @@ const handleSendEmail = async () => {
                         </span>
                       ) : (
                         <>
-                          <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">
+                          <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap">
                             {selectedRecipientIds.length} Selected
                           </span>
                           <span className="text-sm text-slate-600 truncate flex-1">
@@ -1632,7 +1626,7 @@ const handleSendEmail = async () => {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1 text-left ml-1">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1 text-left ml-1">
                     Subject
                   </label>
                   <input
@@ -1642,7 +1636,7 @@ const handleSendEmail = async () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1 text-left ml-1">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1 text-left ml-1">
                     Message
                   </label>
                   <textarea
@@ -1653,63 +1647,74 @@ const handleSendEmail = async () => {
                   />
                 </div>
               </div>
-             {/* ✅ ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
+              {/* ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <label className=" text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
                   <Paperclip size={16} /> Attachments (ไม่บังคับ, สูงสุด 5 ไฟล์)
                 </label>
-                
+
                 <div className="space-y-3">
-                    {/* วนลูป 5 ช่อง */}
-                    {attachedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                            {file ? (
-                                // --- Display Area when File Exists ---
-                                <div className="flex-1 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                       <FileText size={16} className="text-indigo-500 shrink-0" />
-                                       <span className="truncate font-medium text-slate-700">{file.name}</span>
-                                       <span className="text-xs text-slate-400">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                                    </div>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => removeFile(index)} 
-                                        className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            ) : (
-                                // --- Upload Area when Slot is Empty ---
-                                <div className="flex-1">
-                                    <label htmlFor={`file-input-${index}`} 
-                                        className="block border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 hover:border-indigo-400 transition-colors group"
-                                    >
-                                        <span className="text-sm text-slate-600 font-medium flex items-center justify-center gap-2 ">
-                                            <Paperclip size={16} className="text-slate-400 group-hover:text-indigo-500"/>
-                                            Click to attach File {index + 1}
-                                        </span>
-                                    </label>
-                                    <input 
-                                        id={`file-input-${index}`} 
-                                        type="file" 
-                                        className="hidden" 
-                                        onChange={(e) => handleFileChange(e, index)} 
-                                        accept={CONFIG.ALLOWED_FILE_TYPES.join(',')} 
-                                    />
-                                </div>
-                            )}
+                  {/* วนลูป 5 ช่อง */}
+                  {attachedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      {file ? (
+                        // --- Display Area when File Exists ---
+                        <div className="flex-1 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <FileText
+                              size={16}
+                              className="text-indigo-500 shrink-0"
+                            />
+                            <span className="truncate font-medium text-slate-700">
+                              {file.name}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
+                          >
+                            <X size={16} />
+                          </button>
                         </div>
-                    ))}
-                    <p className="text-xs text-slate-400 mt-1 text-left">
-                        * ไฟล์แนบแต่ละไฟล์สูงสุด {CONFIG.MAX_FILE_SIZE_MB}MB (PDF, JPG, PNG, DOCX, XLSX, XLS)
-                    </p>
+                      ) : (
+                        // --- Upload Area when Slot is Empty ---
+                        <div className="flex-1">
+                          <label
+                            htmlFor={`file-input-${index}`}
+                            className="block border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 hover:border-indigo-400 transition-colors group"
+                          >
+                            <span className="text-sm text-slate-600 font-medium flex items-center justify-center gap-2 ">
+                              <Paperclip
+                                size={16}
+                                className="text-slate-400 group-hover:text-indigo-500"
+                              />
+                              Click to attach File {index + 1}
+                            </span>
+                          </label>
+                          <input
+                            id={`file-input-${index}`}
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => handleFileChange(e, index)}
+                            accept={CONFIG.ALLOWED_FILE_TYPES.join(",")}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <p className="text-xs text-slate-400 mt-1 text-left">
+                    * ไฟล์แนบแต่ละไฟล์สูงสุด {CONFIG.MAX_FILE_SIZE_MB}MB (PDF,
+                    JPG, PNG, DOCX, XLSX, XLS)
+                  </p>
                 </div>
               </div>
               {/* ❌ โค้ดซ้ำซ้อน 1: Input และ div แสดงไฟล์แบบเก่า */}
-              
+
               {/* ❌ โค้ดซ้ำซ้อน 2: List แสดงไฟล์แนบแบบเก่า */}
-              
             </div>
             <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
               <button

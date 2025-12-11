@@ -18,6 +18,7 @@ import {
 import ButtonCancel from "../components/ButtonCancel";
 import ButtonSubmit from "../components/ButtonSubmit";
 
+
 import { createCase } from "../api/case"; // ตรวจสอบ Path import ให้ถูกต้อง
 
 import { getproducts } from "../api/products";
@@ -473,7 +474,7 @@ export default function CasePage() {
           problems: problems.problems || [],
           users: users.users || users.data || [],
         });
-        console.log("product มายัง", products);
+        console.log("product is ready", products);
       } catch (err) {
         console.error("Error fetching lookup data:", err);
       } finally {
@@ -840,7 +841,7 @@ export default function CasePage() {
            <button
   onClick={() => {
     setShowSuccessModal(false);
-    navigate("/deilyreport");   // 👈 หรือ "/dailyreport" ถ้า path ฟอร์ดสะกดแบบนั้น
+    navigate("/dailyreport",{ replace: true });    
   }}
   className="mt-6 w-full py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
 >

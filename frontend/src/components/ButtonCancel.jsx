@@ -13,7 +13,6 @@ export default function ButtonCancel({ children, type = "button", onClick }) {
         font-medium 
         text-sm 
         transition-all
-        duration-200 
         hover:bg-red-100 
         hover:border-red-300 
         gap-2

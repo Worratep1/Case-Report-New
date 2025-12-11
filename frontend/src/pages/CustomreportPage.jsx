@@ -53,6 +53,10 @@ import {updateCase} from "../api/case"
 import { getMembers } from "../api/member";
 import { getRecipients } from '../api/recipients';
 import { sendDailyReport } from "../api/report";
+import { exportReport } from "../api/export"; 
+import { useNavigate } from "react-router-dom";
+import ExportButton from '../components/ButtonExport';
+import ButtonHome from '../components/ButtonHome';
 
 // --- CONSTANTS ---
 const CONFIG = {
@@ -75,7 +79,7 @@ const ITEMS_PER_PAGE = 5;
 // Config สีและชื่อสถานะ
 const STATUS_CONFIG = {
   open: { label: 'Open', color: '#3b82f6', bg: 'bg-blue-50', text: 'text-blue-700' },
-  onhold: { label: 'OnHold', color: '#f59e0b', bg: 'bg-amber-50', text: 'text-amber-700' },
+  onhold: { label: 'Onhold', color: '#f59e0b', bg: 'bg-amber-50', text: 'text-amber-700' },
   closed: { label: 'Closed', color: '#64748b', bg: 'bg-slate-50', text: 'text-slate-700' },
   // เพิ่มสถานะอื่นๆ ที่อาจทำให้เกิด Unknown
   solved: { 
@@ -199,7 +203,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
         `}
       >
         <div className="flex items-center gap-2">
-          <CalendarDays size={18} className="text-slate-400" />
+          <CalendarDays size={18} className=" text-indigo-500" />
           <span className={`${value ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>
             {value ? formatDateDisplay(value) : placeholder}
           </span>
@@ -275,7 +279,7 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
         `}
       >
         <div className="flex items-center gap-2">
-          <Clock size={18} className="text-slate-400" />
+          <Clock size={18} className="text-indigo-500" />
           <span className={`${value ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>
             {value || placeholder}
           </span>
@@ -495,6 +499,8 @@ const StatusSummaryCard = ({ data }) => {
  export default function CustomReport (){
   const fileInputRef = useRef(null);
 
+  const navigate = useNavigate()
+
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [searchText, setSearchText] = useState('');
@@ -524,6 +530,10 @@ const StatusSummaryCard = ({ data }) => {
   })
 
   const [loadingData,setLoadingData] = useState(false);
+
+  //export file
+  
+  const [isExporting, setIsExporting] = useState(false);
 
 
   // Email States
@@ -820,6 +830,41 @@ const openNewCaseModal = () => {
     setSelectedRecipientIds(prev => prev.includes(id) ? prev.filter(rId => rId !== id) : [...prev, id]);
   };
 
+
+    const handleExport = async () => {
+    try {
+      setIsExporting(true);
+
+      // เรียก API exportReport (ได้ blob กลับมา)
+      const blob = await exportReport(selectedDate);
+
+      // สร้าง URL ชั่วคราวจาก blob
+      const url = window.URL.createObjectURL(blob);
+
+      // สร้างแท็ก <a> ชั่วคราวสำหรับดาวน์โหลดไฟล์
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = `daily-report-${selectedDate}.xlsx`;
+
+      // สั่งให้ลิงก์คลิกเอง
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      // ล้าง URL ทิ้ง
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export error:", error);
+      alert("Export ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+
+
+
+
   // ✅ ฟังก์ชัน handleFileChange ที่ถูกต้อง (รับ Index และตรวจสอบไฟล์เดียว)
   const handleFileChange = (e, index) => {
     // 1. ดึงไฟล์เดียวที่ถูกเลือก
@@ -983,14 +1028,24 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
               <button className="mr-1 p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors" onClick={() => window.history.back()}>
                 <ChevronLeft size={24} />
+
+                
               </button>
+              
+              <ButtonHome onClick={() => navigate("/menu")} />
+
+              </div>
               <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
+                
+                
+                
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-800 leading-tight">Custom Report</h1>
+                <h1 className="text-xl  font-medium text-slate-800 leading-tight">Custom Report</h1>
                 <p className="text-xs text-slate-500">ระบบจัดการและแก้ไขเคส</p>
               </div>
             </div>
@@ -1004,13 +1059,21 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                     placeholder="เลือกวันที่"
                  />
               </div>
+
+                  {/* ปุ่ม Export Report */}
+                    <ExportButton 
+                    onClick={handleExport}
+                    isExporting={isExporting}
+                    disabled={casesOfSelectedDate.length === 0} // ส่งเงื่อนไขการ Disable เข้าไปตรงนี้
+                  />
+
               <button 
                 onClick={handleOpenEmailModal}
                 disabled={dashboardData.stats.total === 0}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-bold ml-2 whitespace-nowrap
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-medium ml-2 whitespace-nowrap
                     ${dashboardData.stats.total === 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
               >
-                <Send size={16} /> <span className="hidden sm:inline">Send Report</span>
+                <Send size={16} /> <span className="hidden sm:inline ">Send Report</span>
               </button>
             </div>
           </div>
@@ -1044,7 +1107,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
           <div className="md:col-span-1 h-full">
              <StatCard 
                 title="Total Cases" 
-                value={dashboardData.stats.total} 
+                value={dashboardData.stats.total } 
                 icon={<AlertCircle className="w-6 h-6 text-blue-600" />} 
                 color="bg-blue-50 border-blue-100"
              />
@@ -1060,7 +1123,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8">
             <div className="flex items-center gap-2 mb-6">
                 <Gamepad2 className="text-blue-400" size={24} />
-                <h3 className="text-lg font-bold text-slate-800">Game Issues Breakdown</h3>
+                <h3 className="text-lg font-bold text-slate-800">Game Issues Breakdown ({selectedDate})</h3>
             </div>
             <div className="h-64 w-full">
                 {dashboardData.chartData.length > 0 ? (
@@ -1187,7 +1250,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                 {item.game}
               </span>
             </div>
-            <span className="text-sm font-bold text-slate-800 line-clamp-2">
+            <span className="text-sm font-medium text-slate-800 line-clamp-2">
               {item.problem}
             </span>
           </div>
@@ -1197,7 +1260,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
         <td className="px-6 py-4 align-top">
           <div className="space-y-2">
             <p className="text-sm text-slate-600 line-clamp-2">
-              <span className="font-semibold text-slate-900">ปัญหา:</span> {item.details}
+              <span className="font-semibold text-slate-900">รายละเอียด:</span> {item.details}
             </p>
             {item.solution && (
               <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-lg">
@@ -1411,14 +1474,14 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
 
                     <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1 ml-1">
-                                <User size={14} className="text-orange-500"/> ผู้ร้องขอ 
+                            <label className=" text-sm font-medium text-slate-700 mb-1 flex items-center gap-1 ml-1">
+                                <User size={14} className="text-orange-500"/> ผู้ร้องขอ (Requester)
                             </label>
                             <input type="text" value={currentCase.reporter} onChange={(e) => setCurrentCase({...currentCase, reporter: e.target.value})} className="w-full border rounded-xl p-2.5 text-sm" placeholder="ระบุชื่อผู้แจ้ง" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1 ml-1">
-                                <User size={14} className="text-blue-500"/> ผู้ดำเนินการเเก้ไข 
+                            <label className="text-sm font-medium text-slate-700 mb-1 flex items-center gap-1 ml-1">
+                                <User size={14} className="text-blue-500"/> ผู้ดำเนินเเก้ไข (Operator)
                             </label>
                             <input type="text" value={currentCase.operator} onChange={(e) => setCurrentCase({...currentCase, operator: e.target.value})} className="w-full border rounded-xl p-2.5 text-sm" placeholder="ระบุชื่อผู้ดำเนินการ" />
                         </div>
@@ -1474,7 +1537,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
+              <h3 className="font-medium text-xl text-slate-800 flex items-center gap-2">
                 <Send size={20} className="text-indigo-600" /> Send Daily Report
               </h3>
               <button
@@ -1486,7 +1549,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
             </div>
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <label className=" text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
                   <User size={16} /> Select Recipients
                 </label>
                 <div className="relative">
@@ -1508,7 +1571,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                         </span>
                       ) : (
                         <>
-                          <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">
+                          <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap">
                             {selectedRecipientIds.length} Selected
                           </span>
                           <span className="text-sm text-slate-600 truncate flex-1">
@@ -1586,7 +1649,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1 text-left ml-1">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1 text-left ml-1">
                     Subject
                   </label>
                   <input
@@ -1596,7 +1659,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1 text-left ml-1">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1 text-left ml-1">
                     Message
                   </label>
                   <textarea
@@ -1609,7 +1672,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
               </div>
              {/* ✅ ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <label className=" text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
                   <Paperclip size={16} /> Attachments (ไม่บังคับ, สูงสุด 5 ไฟล์)
                 </label>
                 

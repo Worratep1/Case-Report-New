@@ -42,7 +42,7 @@ export default function AppRoutes() {
 
       <Route path="/recipient" element={ <RequierAuth> <RecipientSetting /> </RequierAuth> } />
 
-      <Route path="/deilyreport" element={ <RequierAuth> <DailyReportPage /> </RequierAuth> } />
+      <Route path="/dailyreport" element={ <RequierAuth> <DailyReportPage /> </RequierAuth> } />
 
       <Route path="/customreport" element={ <RequierAuth> <CustomreportPage /> </RequierAuth>} />
 

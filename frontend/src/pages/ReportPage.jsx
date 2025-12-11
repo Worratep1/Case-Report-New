@@ -32,7 +32,7 @@ export default function ReportPage() {
           <MenuButton
                     icon={<ClipboardList className=" text-blue-400" />}
                     label="Daily Report"
-                    onClick={() => navigate("/deilyreport")} // ไปหน้า CasePage
+                    onClick={() => navigate("/dailyreport")} // ไปหน้า CasePage
                   />
         
 
