@@ -299,13 +299,13 @@ export default function RecipientSetting() {
                     <div
                       className={`w-10 h-10 rounded-full ${getAvatarColor(
                         recipient.name
-                      )} flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0 uppercase`}
+                      )} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0 uppercase`}
                     >
                       {recipient.name?.charAt(0) || "U"}
                     </div>
 
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-slate-700 truncate text-left text-base flex items-center gap-2">
+                      <h3 className="font-normal text-slate-900 truncate text-left text-base flex items-center gap-2">
                         {recipient.name || "Unnamed"}
                         {recipient.is_active ? (
                           <span className="">

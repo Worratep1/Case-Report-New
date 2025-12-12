@@ -215,7 +215,7 @@ export default function ProductSetting() {
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
           <div>
-            <h1 className="text-2xl font-medium text-slate-700 text-left">
+            <h1 className="text-2xl font-medium text-slate-900 text-left">
               Game Setting
             </h1>
             <p className="text-sm text-slate-500 mt-1 text-left">

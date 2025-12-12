@@ -23,9 +23,8 @@ import {
   BarChart2,
   PieChart as PieChartIcon,
   Home,
-  FileDown
+  FileDown,
 } from "lucide-react";
-
 
 import {
   BarChart,
@@ -50,7 +49,9 @@ import { exportReport } from "../api/export";
 import { useNavigate } from "react-router-dom";
 import ExportButton from "../components/ButtonExport";
 import ButtonSend from "../components/ButtonSend";
-import ButtonHome from "../components/ButtonHome"
+import ButtonHome from "../components/ButtonHome";
+import { STATUS_CONFIG } from "../constants/status";
+import ActionFeedbackModal from "../components/ActionFeedbackModal";
 
 // --- CONSTANTS ---
 const CONFIG = {
@@ -61,42 +62,13 @@ const CONFIG = {
     "image/jpeg", // JPG/JPEG
     "image/png", // PNG
     "application/msword", // DOC
-    "application/vnd.ms-excel", // ✅ XLS
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // ✅ XLSX
+    "application/vnd.ms-excel", //  XLS
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", //  XLSX
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
   ],
 };
 
 const ITEMS_PER_PAGE = 5;
-
-// Config สีและชื่อสถานะ
-const STATUS_CONFIG = {
-  open: {
-    label: "Open",
-    color: "#3b82f6", // สีฟ้า
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-  },
-  onhold: {
-    label: "Onhold",
-    color: "#f59e0b", // สีเหลือง/ส้ม (Amber)
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-  },
-  closed: {
-    label: "Closed",
-    color: "#64748b", // สีเทา (Slate)
-    bg: "bg-slate-50",
-    text: "text-slate-700",
-  },
-  // เผื่อไว้กรณีข้อมูลมาไม่ตรง
-  others: {
-    label: "Unknown",
-    color: "#94a3b8",
-    bg: "bg-gray-100",
-    text: "text-gray-500",
-  },
-};
 
 // --- HELPER FUNCTIONS (TIMEZONE SAFE) ---
 
@@ -193,7 +165,7 @@ const StatusSummaryCard = ({ data }) => {
   return (
     <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full flex flex-col justify-center hover:shadow-md transition-shadow">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <h4 className="text-xs font-medium text-slate-800 uppercase tracking-wider flex items-center gap-2">
           <PieChartIcon size={14} /> Status Summary
         </h4>
       </div>
@@ -298,7 +270,8 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
   }, [cases]);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 
+    duration-500">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
           <StatCard
@@ -326,7 +299,7 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={dashboardData.chartData}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                margin={{ top: 7, right: 80, left: -8, bottom: 0 }}
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -337,8 +310,14 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  tick={{  //ทำให้ชื่อเกมเอียง 45 
+                    fill: "#64748b", 
+                    fontSize: 12 ,
+                    angle : -45,
+                    textAnchor:"end"
+                  }}
                   dy={10}
+                  height={60} //ไม่ให้ตัวชื่อเกมตกลงไป
                 />
                 <YAxis
                   axisLine={false}
@@ -346,29 +325,28 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
                   allowDecimals={false}
                 />
-                <Tooltip
+                {/* <Tooltip
                   cursor={{ fill: "#f8fafc" }}
                   contentStyle={{
                     borderRadius: "12px",
                     border: "none",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
-                />
+                /> */}
+
                 <Bar
                   dataKey="count"
-                  fill="#6366f1"
+                  fill="#4f46e5"
                   radius={[4, 4, 0, 0]}
                   barSize={40}
-                >
-                  {dashboardData.chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e"][index % 4]
-                      }
-                    />
-                  ))}
-                </Bar>
+                  //  ใส่ label เพื่อโชว์เลขบนหัวกราฟ
+                  label={{
+                    position: "top",
+                    fill: "#64748b",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                  }}
+                ></Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -539,7 +517,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
         `}
       >
         <div className="flex items-center gap-2">
-          <CalendarDays size={18} className="text-slate-400" />
+          <CalendarDays size={18} className="text-indigo-500" />
           <span
             className={`${
               value ? "text-slate-700 font-medium" : "text-slate-400"
@@ -717,6 +695,19 @@ const StatusBadge = ({ status }) => {
 export default function DailyReport() {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  
+   const [feedbackModal,setFeedbackModal] =useState({
+    isOpen: false,
+    type: "success",
+    title: "",
+    message : "",
+    onConfirm : ()=>{}
+   });
+  
+   const closeFeedbackModal = () => {
+    setFeedbackModal(prev => ({ ...prev, isOpen: false }));
+  };
+
 
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -736,7 +727,9 @@ export default function DailyReport() {
 
   // UI States
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
   const [isCaseDetailModalOpen, setIsCaseDetailModalOpen] = useState(false);
   const [selectedCaseDetail, setSelectedCaseDetail] = useState(null);
 
@@ -744,7 +737,7 @@ export default function DailyReport() {
   const [availableRecipients, setAvailableRecipients] = useState([]);
   const [isRecipientDropdownOpen, setIsRecipientDropdownOpen] = useState(false);
   const [selectedRecipientIds, setSelectedRecipientIds] = useState([]);
-  // ✅ ถูกต้อง: ประกาศ State 5 ช่อง
+  //  State 5 ช่อง
   const [attachedFiles, setAttachedFiles] = useState(Array(5).fill(null));
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
@@ -763,9 +756,9 @@ export default function DailyReport() {
 
     // 3. แปลงข้อมูล Status จาก DB ให้เป็นรูปแบบ { value, label }
     const dbOptions = lookupData.statuses.map((status) => ({
-      // value: ต้องเป็นตัวพิมพ์เล็กเพื่อให้ตรงกับ logic การ filter (เช่น "solved")
+      // value: ต้องเป็นตัวพิมพ์เล็กเพื่อให้ตรงกับ logic การ filter (เช่น "open")
       value: status.status_name.toLowerCase(),
-      // label: ข้อความที่จะแสดงในปุ่ม (เช่น "สถานะ: Solved")
+      // label: ข้อความที่จะแสดงในปุ่ม (เช่น "สถานะ: open")
       label: `สถานะ: ${status.status_name}`,
     }));
 
@@ -848,7 +841,7 @@ export default function DailyReport() {
               : `${durationMins} นาที`;
 
           // 3. แปลง Status ให้ตรงกับ key ใน STATUS_CONFIG (ต้องเป็นตัวพิมพ์เล็กภาษาอังกฤษ)
-          // สมมติใน DB เก็บชื่อ status_name เป็น "Solved", "Pending"
+          // สมมติใน DB เก็บชื่อ status_name เป็น "open"
           const statusKey = statusObj?.status_name?.toLowerCase() || "others";
 
           return {
@@ -933,7 +926,15 @@ export default function DailyReport() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export error:", error);
-      alert("Export ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+
+    setFeedbackModal({
+      isOpen: true,
+      type: 'error',
+      title: 'Export ไม่สำเร็จ',
+      message: 'เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์ กรุณาลองใหม่อีกครั้ง'
+    });
+
+
     } finally {
       setIsExporting(false);
     }
@@ -959,7 +960,13 @@ export default function DailyReport() {
 
     // 4. จัดการ Error
     if (errors.length > 0) {
-      alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join("\n- ")}`);
+      setFeedbackModal({
+        isOpen: true,
+        type: 'error',
+        title: 'ไม่สามารถอัปโหลดไฟล์นี้ได้',
+        message: errors.join('\n') 
+    });
+      // alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join("\n- ")}`);
       e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
       return;
     }
@@ -980,7 +987,12 @@ export default function DailyReport() {
   };
   const handleSendEmail = async () => {
     if (selectedRecipientIds.length === 0) {
-      alert("กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน");
+       setFeedbackModal({
+        isOpen: true, 
+        type: 'error', 
+        title: 'เลือกผู้รับ',
+        message: 'กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน'
+      });
       return;
     }
 
@@ -989,10 +1001,10 @@ export default function DailyReport() {
       .filter((r) => selectedRecipientIds.includes(r.recipient_id))
       .map((r) => r.email);
 
-    if (toEmails.length === 0) {
-      alert("ไม่พบอีเมลของผู้รับที่เลือก");
-      return;
-    }
+    // if (toEmails.length === 0) {
+    //   alert("ไม่พบอีเมลของผู้รับที่เลือก");
+    //   return;
+    // }
 
     // 2) สร้าง FormData
     const formData = new FormData();
@@ -1007,24 +1019,35 @@ export default function DailyReport() {
         formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
       });
 
-    const payload = {
-      toEmails, // <- array ตามที่ backend ต้องการ
-      subject: emailSubject, // string
-      body: emailBody, // string (ข้อความธรรมดา)
-    };
+    // const payload = {
+    //   toEmails, // <- array ตามที่ backend ต้องการ
+    //   subject: emailSubject, // string
+    //   body: emailBody, // string (ข้อความธรรมดา)
+    // };
 
     setIsLoading(true);
 
     try {
       await sendDailyReport(formData); // ✅ เรียก API ที่เราแก้ในข้อ 1
       setIsEmailModalOpen(false);
-      setIsSuccessModalOpen(true);
+      // setIsSuccessModalOpen(true);
+      setFeedbackModal({
+        isOpen: true,
+        type: 'success',
+        title: 'ส่งรายงานเรียบร้อย',
+        message: 'ระบบได้ทำการส่งอีเมลรายงานให้ผู้รับเรียบร้อยแล้ว'
+      });
 
       // reset ฟอร์ม
       setSelectedRecipientIds([]);
     } catch (error) {
       console.error("Error sending email:", error);
-      alert("ส่งอีเมลไม่สำเร็จ: " + error.message);
+       setFeedbackModal({
+        isOpen: true,
+         type: 'error',
+          title: 'ส่งเมลไม่สำเร็จ',
+           message: error.message
+      });
     } finally {
       setIsLoading(false);
     }
@@ -1064,32 +1087,29 @@ export default function DailyReport() {
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             {/* Logo & Title */}
             <div className="flex items-center gap-3 w-full md:w-auto">
-             
-             <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
-              <button
-                className=" p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
-                onClick={() => window.history.back()}
-                aria-label="Go back"
-              >
-                <ChevronLeft size={24} />
-                
-              </button>
+              <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
+                <button
+                  className=" p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+                  onClick={() => window.history.back()}
+                  aria-label="Go back"
+                >
+                  <ChevronLeft size={24} />
+                </button>
 
                 <ButtonHome onClick={() => navigate("/menu")} />
-
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
+                  <FileText className="w-5 h-5 text-white " />
                 </div>
-                  <div className="flex items-center gap-3">
-              <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
-                <CalendarIcon className="w-5 h-5 text-white " />
+                <div>
+                  <h1 className="text-xl font-medium text-slate-800 leading-tight">
+                    {" "}
+                    Daily Report{" "}
+                  </h1>
+                  <p className="text-xs text-slate-500">ระบบรายงานประจำวัน</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-medium text-slate-800 leading-tight">
-                  {" "}
-                  Daily Report{" "}
-                </h1>
-                <p className="text-xs text-slate-500">ระบบรายงานประจำวัน</p>
-              </div>
-             </div>
             </div>
 
             {/* Controls */}
@@ -1105,17 +1125,18 @@ export default function DailyReport() {
 
               {/* ปุ่ม Export Report */}
 
-             <ExportButton onClick={handleExport}
-              isExporting={isExporting}
-              disabled={casesOfSelectedDate.length === 0} />
-        
+              <ExportButton
+                onClick={handleExport}
+                isExporting={isExporting}
+                disabled={casesOfSelectedDate.length === 0}
+              />
 
+              {/* ปุ่ม send report mail */}
 
-               {/* ปุ่ม send report mail */}
-
-              <ButtonSend 
-              onClick={handleOpenEmailModal}
-              disabled={casesOfSelectedDate.length === 0}/>
+              <ButtonSend
+                onClick={handleOpenEmailModal}
+                disabled={casesOfSelectedDate.length === 0}
+              />
 
               {/* <button
                 onClick={handleOpenEmailModal}
@@ -1131,7 +1152,6 @@ export default function DailyReport() {
                 <Send size={16} />
                 <span className="hidden sm:inline">Send Report</span>
               </button> */}
-
             </div>
           </div>
         </div>
@@ -1284,7 +1304,7 @@ export default function DailyReport() {
                             <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-medium">
                               R
                             </div>
-                            <span className="text-sm text-slate-700 font-medium">
+                            <span className="text-sm text-slate-700 font-normal">
                               {item.reporter}
                             </span>
                           </div>
@@ -1292,7 +1312,7 @@ export default function DailyReport() {
                             <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-medium">
                               O
                             </div>
-                            <span className="text-sm text-slate-700 font-medium">
+                            <span className="text-sm text-slate-700 font-normal">
                               {item.operator}
                             </span>
                           </div>
@@ -1371,7 +1391,6 @@ export default function DailyReport() {
                 <h3 className="font-semibold text-xl text-slate-800">
                   Case Details
                 </h3>
-                
               </div>
               <button
                 onClick={() => setIsCaseDetailModalOpen(false)}
@@ -1437,12 +1456,12 @@ export default function DailyReport() {
                 </div>
               </div>
 
-              {/* ROW 3: Problem Type */}
+              {/* ROW 3: Problem  */}
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1 block">
                   ปัญหา (Problem)
                 </label>
-                <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 font-medium">
+                <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700">
                   {selectedCaseDetail.problemType || selectedCaseDetail.problem}
                 </div>
               </div>
@@ -1604,11 +1623,12 @@ export default function DailyReport() {
                                   <Square size={20} />
                                 )}
                               </div>
+
                               <div className="flex flex-col min-w-0">
-                                <span className="text-sm truncate text-slate-500 font-medium text-left">
+                                <span className="text-sm truncate text-slate-500 font-normal text-left">
                                   {user.name}
                                 </span>
-                                <span className="font-bold text-sm truncate text-slate-800 text-left ">
+                                <span className="font-normal text-sm truncate text-slate-800 text-left ">
                                   {user.email}
                                 </span>
                               </div>
@@ -1729,7 +1749,7 @@ export default function DailyReport() {
                 className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold text-sm shadow-md shadow-indigo-200 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin " />
                 ) : (
                   <Send size={16} />
                 )}{" "}
@@ -1741,7 +1761,7 @@ export default function DailyReport() {
       )}
 
       {/* Success Modal */}
-      {isSuccessModalOpen && (
+      {/* {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center max-w-sm w-full animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
@@ -1761,7 +1781,17 @@ export default function DailyReport() {
             </button>
           </div>
         </div>
-      )}
+      )} */}
+
+      <ActionFeedbackModal
+        isOpen={feedbackModal.isOpen}
+        type={feedbackModal.type}
+        title={feedbackModal.title}
+        message={feedbackModal.message}
+        onClose={closeFeedbackModal}
+        onConfirm={feedbackModal.onConfirm}
+      />
+      
     </div>
   );
 }

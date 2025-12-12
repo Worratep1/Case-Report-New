@@ -301,7 +301,7 @@ export default function MemberSetting() {
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
           <div>
-            <h1 className="text-2xl font-medium text-slate-700 text-left">
+            <h1 className="text-2xl font-medium text-slate-900 text-left">
               Member Setting
             </h1>
             <p className="text-sm text-slate-500 mt-1 text-left">
@@ -334,13 +334,13 @@ export default function MemberSetting() {
                   <div
                     className={`w-12 h-12 rounded-full ${getAvatarColor(
                       member.first_name
-                    )} flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0`}
+                    )} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0`}
                   >
                     {member.first_name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-slate-900 truncate">
+                      <h3 className="font-normal text-slate-900 truncate">
                         {member.first_name} {member.last_name}
                       </h3>
                     </div>

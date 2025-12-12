@@ -57,6 +57,10 @@ import { exportReport } from "../api/export";
 import { useNavigate } from "react-router-dom";
 import ExportButton from '../components/ButtonExport';
 import ButtonHome from '../components/ButtonHome';
+import ButtonSend from '../components/ButtonSend';
+import ButtonCancel from '../components/ButtonCancel';
+import ActionFeedbackModal from "../components/ActionFeedbackModal";
+import { STATUS_CONFIG } from "../constants/status";
 
 // --- CONSTANTS ---
 const CONFIG = {
@@ -74,29 +78,6 @@ const CONFIG = {
 };
 
 const ITEMS_PER_PAGE = 5;
-
-
-// Config สีและชื่อสถานะ
-const STATUS_CONFIG = {
-  open: { label: 'Open', color: '#3b82f6', bg: 'bg-blue-50', text: 'text-blue-700' },
-  onhold: { label: 'Onhold', color: '#f59e0b', bg: 'bg-amber-50', text: 'text-amber-700' },
-  closed: { label: 'Closed', color: '#64748b', bg: 'bg-slate-50', text: 'text-slate-700' },
-  // เพิ่มสถานะอื่นๆ ที่อาจทำให้เกิด Unknown
-  solved: { 
-    label: 'Solved', 
-    color: '#10b981', 
-    bg: 'bg-emerald-50', 
-    text: 'text-emerald-700' 
-  },
-  pending: { 
-    label: 'Pending', 
-    color: '#0ea5e9', 
-    bg: 'bg-sky-50', 
-    text: 'text-sky-700' 
-  },
-  others: { label: 'Unknown', color: '#94a3b8', bg: 'bg-gray-100', text: 'text-gray-500' }
-};
-
 
 // Helper: Get Today's Date String YYYY-MM-DD
 const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -437,7 +418,8 @@ const StatusSummaryCard = ({ data }) => {
   };
 
   return (
-    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full flex flex-col justify-center">
+    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full flex flex-col justify-center  duration-500 
+                  hover:shadow-md">
        <div className="flex justify-between items-center mb-2">
           <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <PieChartIcon size={14} /> Status Summary
@@ -518,6 +500,17 @@ const StatusSummaryCard = ({ data }) => {
   const [isSaveConfirmModalOpen, setIsSaveConfirmModalOpen] = useState(false);
   const [currentCase, setCurrentCase] = useState(null);   
   
+ const [feedbackModal,setFeedbackModal] =useState({
+  isOpen: false,
+  type: "success",
+  title: "",
+  message : "",
+  onConfirm : ()=>{}
+ });
+
+ const closeFeedbackModal = () => {
+    setFeedbackModal(prev => ({ ...prev, isOpen: false }));
+  };
 
   // Data State
   const [cases, setCases] = useState([]);
@@ -754,6 +747,24 @@ const openNewCaseModal = () => {
 
   const handleInitiateSave = (e) => {
     e.preventDefault();
+    if (
+        !currentCase.product_id || 
+        !currentCase.status_id || 
+        !currentCase.problem_id || 
+        !currentCase.reporter || 
+        !currentCase.operator
+    ) {
+        // 1. ถ้าข้อมูลไม่ครบ -> แสดง Error Modal ทันที และหยุดการทำงาน
+        setFeedbackModal({
+            isOpen: true,
+            type: 'error',
+            title: 'ข้อมูลไม่ครบถ้วน',
+            message: 'กรุณากรอกข้อมูลให้ครบถ้วน'
+        });
+        return; // สำคัญ: ต้องหยุดโค้ดตรงนี้
+    }
+
+  
     setIsSaveConfirmModalOpen(true); 
   };
 
@@ -777,10 +788,22 @@ const openNewCaseModal = () => {
 
         if (currentCase.id === null) {
             await createCase(payload);
-            alert("สร้างเคสสำเร็จ! 🎉");
+            setFeedbackModal({
+              isOpen : true,
+              type : "success",
+              title : "สร้างเคสสำเร็จ",
+              message : "ข้อมูลถูกบันทึกเรียบร้อยแล้ว"
+            })
+            
         } else {
             await updateCase(currentCase.id, payload); 
-            alert("แก้ไขข้อมูลสำเร็จ! ✅");
+            setFeedbackModal({
+              isOpen : true,
+              type : "success",
+              title : "แก้ไขข้อมูลสำเร็จ",
+              message : "ข้อมูลถูกบันทึกเรียบร้อยแล้ว"
+            })
+            
         }
 
         setIsSaveConfirmModalOpen(false);
@@ -789,7 +812,14 @@ const openNewCaseModal = () => {
 
     } catch (error) {
         console.error("Save Error:", error);
-        alert("เกิดข้อผิดพลาดในการบันทึก: " + (error.response?.data?.message || error.message));
+
+        setFeedbackModal({
+          isOpen : true ,
+          type : "error",
+          title : "บันทึกไม่สำเร็จ",
+          message : error.response?.data?.message || error.message
+        });
+        
     } finally {
         setIsLoading(false);
     }
@@ -801,16 +831,26 @@ const openNewCaseModal = () => {
     try {
         await deleteCase(currentCase.id);
         
-        alert("ลบข้อมูลเรียบร้อย 🗑️");
+        setFeedbackModal({
+          isOpen : true,
+          type : "success",
+          title : "ลบข้อมูลสำเร็จ",
+          message: 'รายการถูกลบออกจากระบบแล้ว'
+
+        });
         
         setIsDeleteModalOpen(false);
         setCurrentCase(null);
-
         fetchCases(); 
 
     } catch (error) {
         console.error("Delete Error:", error);
-        alert("ลบไม่สำเร็จ: " + (error.response?.data?.message || error.message));
+        setFeedbackModal({
+            isOpen: true,
+            type: 'error',
+            title: 'ลบไม่สำเร็จ',
+            message: error.response?.data?.message || error.message
+        });
     }
   };
   
@@ -845,6 +885,7 @@ const openNewCaseModal = () => {
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
       downloadLink.download = `daily-report-${selectedDate}.xlsx`;
+      // downloadLink.style.display = "none";
 
       // สั่งให้ลิงก์คลิกเอง
       document.body.appendChild(downloadLink);
@@ -855,7 +896,12 @@ const openNewCaseModal = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export error:", error);
-      alert("Export ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+      setFeedbackModal({
+      isOpen: true,
+      type: 'error',
+      title: 'Export ไม่สำเร็จ',
+      message: 'เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์ กรุณาลองใหม่อีกครั้ง'
+  });
     } finally {
       setIsExporting(false);
     }
@@ -865,7 +911,7 @@ const openNewCaseModal = () => {
 
 
 
-  // ✅ ฟังก์ชัน handleFileChange ที่ถูกต้อง (รับ Index และตรวจสอบไฟล์เดียว)
+  //  ฟังก์ชัน handleFileChange ที่ถูกต้อง (รับ Index และตรวจสอบไฟล์เดียว)
   const handleFileChange = (e, index) => {
     // 1. ดึงไฟล์เดียวที่ถูกเลือก
     const file = e.target.files[0];
@@ -885,7 +931,13 @@ const openNewCaseModal = () => {
     
     // 4. จัดการ Error
     if (errors.length > 0) {
-        alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join('\n- ')}`);
+      setFeedbackModal({
+        isOpen: true,
+        type: 'error',
+        title: 'ไม่สามารถอัปโหลดไฟล์นี้ได้',
+        message: errors.join('\n') // แสดงรายการ error
+    });
+        // alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join('\n- ')}`);
         e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
         return;
     }
@@ -899,13 +951,18 @@ const openNewCaseModal = () => {
   };
 
   const removeFile = (indexToRemove) => {
-    // ✅ ถูกต้อง: เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
+    // ถูกต้อง: เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
     setAttachedFiles(prev => prev.map((file, index) => index === indexToRemove ? null : file));
   };
   
   const handleSendEmail = async () => {
     if (selectedRecipientIds.length === 0) {
-      alert("กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน");
+     setFeedbackModal({
+        isOpen: true, 
+        type: 'error', 
+        title: 'เลือกผู้รับ',
+        message: 'กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน'
+      });
       return;
     }
   
@@ -914,10 +971,15 @@ const openNewCaseModal = () => {
       .filter((r) => selectedRecipientIds.includes(r.recipient_id))
       .map((r) => r.email);
   
-    if (toEmails.length === 0) {
-      alert("ไม่พบอีเมลของผู้รับที่เลือก");
-      return;
-    }
+    // if (toEmails.length === 0) {
+    //   setFeedbackModal({
+    //     isOpen : true ,
+    //     type : "error",
+    //     title : "",
+    //   })
+    //   alert("ไม่พบอีเมลของผู้รับที่เลือก");
+    //   return;
+    // }
   
   // 2) สร้าง FormData
     const formData = new FormData()
@@ -933,27 +995,35 @@ const openNewCaseModal = () => {
       });
   
   
-    const payload = {
-      toEmails,               // <- array ตามที่ backend ต้องการ
-      subject: emailSubject,  // string
-      body: emailBody,        // string (ข้อความธรรมดา)
-    };
+    // const payload = {
+    //   toEmails,               // <- array ตามที่ backend ต้องการ
+    //   subject: emailSubject,  // string
+    //   body: emailBody,        // string (ข้อความธรรมดา)
+    // };
   
     setIsLoading(true);
   
     try {
-      await sendDailyReport(formData);   // ✅ เรียก API ที่เราแก้ในข้อ 1
+      await sendDailyReport(formData);   //  เรียก API ที่เราแก้ในข้อ 1
       setIsEmailModalOpen(false);
-      setIsSuccessModalOpen(true);
-  
+
+      setFeedbackModal({
+        isOpen: true,
+        type: 'success',
+        title: 'ส่งรายงานเรียบร้อย',
+        message: 'ระบบได้ทำการส่งอีเมลรายงานให้ผู้รับเรียบร้อยแล้ว'
+      });
+
       // reset ฟอร์ม
-    
       setSelectedRecipientIds([]);
-      
-      
     } catch (error) {
       console.error("Error sending email:", error);
-      alert("ส่งอีเมลไม่สำเร็จ: " + error.message);
+      setFeedbackModal({
+        isOpen: true,
+         type: 'error',
+          title: 'ส่งเมลไม่เสำเร็จ',
+           message: error.message
+      });
     } finally {
       setIsLoading(false);
     }
@@ -1067,14 +1137,9 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                     disabled={casesOfSelectedDate.length === 0} // ส่งเงื่อนไขการ Disable เข้าไปตรงนี้
                   />
 
-              <button 
-                onClick={handleOpenEmailModal}
-                disabled={dashboardData.stats.total === 0}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-medium ml-2 whitespace-nowrap
-                    ${dashboardData.stats.total === 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
-              >
-                <Send size={16} /> <span className="hidden sm:inline ">Send Report</span>
-              </button>
+             <ButtonSend 
+              onClick={handleOpenEmailModal}
+              disabled={casesOfSelectedDate.length === 0}/>
             </div>
           </div>
         </div>
@@ -1094,7 +1159,10 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
             {/* --- NEW CASE BUTTON --- */}
             <button 
                 onClick={openNewCaseModal}
-                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-md hover:bg-emerald-700 transition-all active:scale-95"
+                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-normal shadow-md hover:bg-emerald-700 transition-all active:scale-95
+                 duration-500 
+                    hover:-translate-y-1 
+                  hover:shadow-md"
             >
                 <Plus size={18} /> New Case
             </button>
@@ -1120,37 +1188,50 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
         </div>
 
         {/* Bar Chart Section */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8">
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8 
+        duration-500 
+                  hover:shadow-md">
             <div className="flex items-center gap-2 mb-6">
-                <Gamepad2 className="text-blue-400" size={24} />
-                <h3 className="text-lg font-bold text-slate-800">Game Issues Breakdown ({selectedDate})</h3>
+                <Gamepad2 className="text-blue-500" size={24} />
+                <h3 className="text-lg font-medium text-slate-800">Game Issues Breakdown ({selectedDate})</h3>
             </div>
             <div className="h-64 w-full">
                 {dashboardData.chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={dashboardData.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <BarChart data={dashboardData.chartData}
+                         margin={{ top: 7, right: 80, left: -8, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis 
-                                dataKey="name" 
-                                axisLine={false} 
-                                tickLine={false} 
-                                tick={{ fill: '#64748b', fontSize: 12 }} 
-                                dy={10}
-                            />
+                             <XAxis
+                                              dataKey="name"
+                                              axisLine={false}
+                                              tickLine={false}
+                                              tick={{  //ทำให้ชื่อเกมเอียง 45 
+                                                fill: "#64748b", 
+                                                fontSize: 12 ,
+                                                angle : -45,
+                                                textAnchor:"end"
+                                              }}
+                                              dy={10}
+                                              height={60} //ไม่ให้ตัวชื่อเกมตกลงไป
+                                            />
                             <YAxis 
                                 axisLine={false} 
                                 tickLine={false} 
                                 tick={{ fill: '#94a3b8', fontSize: 12 }} 
                                 allowDecimals={false}
                             />
-                            <Tooltip 
+                            {/* <Tooltip 
                                 cursor={{ fill: '#f8fafc' }}
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                            />
-                            <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={40}>
-                                {dashboardData.chartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e'][index % 4]} />
-                                ))}
+                            /> */}
+
+                            <Bar
+                            dataKey="count"
+                            fill="#4f46e5"  
+                            radius={[4, 4, 0, 0]}
+                            barSize={40}
+                            //  ใส่ label เพื่อโชว์เลขบนหัวกราฟ
+                            label={{ position: 'top', fill: '#64748b', fontSize: 12, fontWeight: 'bold' }}>
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
@@ -1277,7 +1358,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
               <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-bold">
                 R
               </div>
-              <span className="text-sm text-slate-700 font-medium">
+              <span className="text-sm text-slate-700 font-normal">
                 {item.reporter}
               </span>
             </div>
@@ -1285,7 +1366,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
               <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
                 O
               </div>
-              <span className="text-sm text-slate-700 font-medium">
+              <span className="text-sm text-slate-700 font-normal">
                 {item.operator}
               </span>
             </div>
@@ -1297,7 +1378,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={() => openEditModal(item)}
-              className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+              className="p-2 text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors     "
               title="Edit"
             >
               <Pencil size={16} />
@@ -1489,8 +1570,10 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
 
                 </form>
                 <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                    <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 bg-white border rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
-                    <button onClick={handleInitiateSave} className={`px-4 py-2 text-white rounded-xl text-sm font-bold shadow flex items-center gap-2 ${currentCase.id === null ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}>
+
+                    <ButtonCancel   
+                    onClick={()=>setIsEditModalOpen(false)}> Cancel </ButtonCancel>
+                    <button onClick={handleInitiateSave} className={`px-4 py-2 text-white rounded-xl text-sm font-normal shadow flex items-center gap-2 ${currentCase.id === null ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}>
                         <Save size={16}/> {currentCase.id === null ? 'Create Case' : 'Save Changes'}
                     </button>
                 </div>
@@ -1628,10 +1711,10 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                                 )}
                               </div>
                               <div className="flex flex-col min-w-0">
-                                <span className="text-sm truncate text-slate-500 font-medium text-left">
+                                <span className="text-sm truncate text-slate-500 font-normal text-left">
                                   {user.name}
                                 </span>
-                                <span className="font-bold text-sm truncate text-slate-800 text-left ">
+                                <span className="font-normal text-sm truncate text-slate-800 text-left ">
                                   {user.email}
                                 </span>
                               </div>
@@ -1750,7 +1833,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
       )}
 
       {/* Success Modal */}
-      {isSuccessModalOpen && (
+      {/* {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center max-w-sm w-full animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
@@ -1770,7 +1853,15 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
             </button>
           </div>
         </div>
-      )}
+      )} */}
+      <ActionFeedbackModal
+        isOpen={feedbackModal.isOpen}
+        type={feedbackModal.type}
+        title={feedbackModal.title}
+        message={feedbackModal.message}
+        onClose={closeFeedbackModal}
+        onConfirm={feedbackModal.onConfirm}
+      />
     </div>
   );
 }
