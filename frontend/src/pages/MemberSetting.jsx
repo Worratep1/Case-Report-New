@@ -26,6 +26,8 @@ import {
  import ButtonBack from "../components/ButtonBack";
 
  import ButtonAdd from "../components/ButtonAdd"
+ import ButtonSave from "../components/ButtonSave";
+ import ButtonCancel from "../components/ButtonCancel";
 // ✅ 1. Import Component ใหม่
 
 
@@ -153,7 +155,7 @@ export default function MemberSetting() {
         isOpen: true,
         type: 'error',
         title: 'ข้อมูลไม่ครบถ้วน',
-        message: 'กรุณากรอก Username, First Name, Last Name และ Email ให้ครบ',
+        message: 'กรุณากรอกข้อมูลให้ครบถ้วน',
       });
       return;
     }
@@ -244,7 +246,6 @@ export default function MemberSetting() {
     const memberName = `${members[indexToDelete].first_name} ${members[indexToDelete].last_name}`;
     const userId = members[indexToDelete].user_id;
 
-    // ✅ แทนที่ window.confirm() ด้วย Modal Confirm
     setFeedbackModal({
       isOpen: true,
       type: 'confirm-delete',
@@ -490,7 +491,7 @@ export default function MemberSetting() {
                         ? "Enter new password (optional)"
                         : "Enter password"
                     }
-                    className="w-full pl-9 pr-10 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    className="w-full pl-9 pr-10 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 [&::-ms-reveal]:hidden"
                   />
                   <button
                     type="button"
@@ -524,7 +525,8 @@ export default function MemberSetting() {
                         ? "Re-enter new password (optional)"
                         : "Re-enter password"
                     }
-                    className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${
+                    className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 [&::-ms-reveal]:hidden
+                      ${
                       formData.confirmPassword &&
                       formData.password !== formData.confirmPassword
                         ? "border-red-300 bg-red-50"
@@ -555,20 +557,11 @@ export default function MemberSetting() {
               </div>
 
               <div className="pt-4 flex gap-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 py-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium transition-colors text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-md shadow-blue-200 transition-colors text-sm flex items-center justify-center gap-2"
-                >
-                  <Save size={16} />
-                  Save Member
-                </button>
+                < ButtonCancel type="button" onClick={closeModal}> Cancel
+               </ButtonCancel>
+                <ButtonSave type="submit" onClick={handleSave} >
+                  <Save size={16} /> Save Member
+                </ButtonSave>
               </div>
             </form>
           </div>

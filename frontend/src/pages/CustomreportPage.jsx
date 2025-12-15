@@ -59,6 +59,7 @@ import ExportButton from '../components/ButtonExport';
 import ButtonHome from '../components/ButtonHome';
 import ButtonSend from '../components/ButtonSend';
 import ButtonCancel from '../components/ButtonCancel';
+import ButtonSave from '../components/ButtonSave';
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import { STATUS_CONFIG } from "../constants/status";
 
@@ -675,7 +676,7 @@ const StatusSummaryCard = ({ data }) => {
     const endDate = new Date(0, 0, 0, endHour, endMinute, 0);
     
     let diff = endDate.getTime() - startDate.getTime();
-    if (diff < 0) return "เวลาไม่ถูกต้อง"; 
+    if (diff < 0) return  "เวลาไม่ถูกต้อง "; 
 
     const minutes = Math.floor(diff / 1000 / 60);
     const hours = Math.floor(minutes / 60);
@@ -1507,11 +1508,16 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1 text-left ml-1">ระยะเวลา (Duration)</label>
-                        <input 
+                      <input 
                             type="text" 
                             value={currentCase.duration} 
                             onChange={(e) => setCurrentCase({...currentCase, duration: e.target.value})} 
-                            className="w-full border rounded-xl p-2.5 text-sm bg-slate-50" 
+                            //  เช็คว่าถ้ามีคำว่า "ไม่ถูกต้อง" ให้เป็นสีแดง+พื้นหลังแดงจางๆ
+                            className={`w-full border rounded-xl p-2.5 text-sm transition-colors
+                              ${currentCase.duration.includes("ไม่ถูกต้อง") 
+                                ? "bg-red-50 text-red-600 border-red-300 font-bold" 
+                                : "bg-slate-50 text-slate-900 border-slate-200"
+                              }`} 
                             placeholder="ระบบคำนวณอัตโนมัติ"
                         />
                     </div>
@@ -1573,9 +1579,12 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
 
                     <ButtonCancel   
                     onClick={()=>setIsEditModalOpen(false)}> Cancel </ButtonCancel>
-                    <button onClick={handleInitiateSave} className={`px-4 py-2 text-white rounded-xl text-sm font-normal shadow flex items-center gap-2 ${currentCase.id === null ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}>
-                        <Save size={16}/> {currentCase.id === null ? 'Create Case' : 'Save Changes'}
-                    </button>
+
+
+                    <ButtonSave onClick={handleInitiateSave}  >
+                      <Save size={20}/> {currentCase.id === null ? 'Create Case' : 'Save Changes'} 
+        
+                    </ButtonSave>
                 </div>
             </div>
         </div>

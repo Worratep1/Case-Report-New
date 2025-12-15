@@ -4,6 +4,8 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import { login } from "../api/auth";
 
+import ActionFeedbackModal from "../components/ActionFeedbackModal";
+
 export default function LoginPage() {
   const navigate = useNavigate();
 
@@ -12,27 +14,33 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   
+  // ✅ แก้ชื่อตัวแปรให้เป็น CamelCase (S ตัวใหญ่) ให้ตรงกัน
+  const [showErrorModal , setShowErrorModal] = useState(false);
+  const [errorMessage , setErrorMessage] = useState("");
+  
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("");
-     setLoading(true);
-
-    
+    setLoading(true);
 
     try {
       const data = await login(username, password);
       // 🎯 เก็บ token + user ไว้
 
       localStorage.setItem("token", data.token);
-
-
       localStorage.setItem("user", JSON.stringify(data.user));
       setMessage("เข้าสู่ระบบสำเร็จ 🎉");
-       navigate("/menu");  // ไปหน้า MainPage
+      navigate("/menu");  // ไปหน้า MainPage (เฉพาะตอน Login ผ่านเท่านั้น)
     } catch (err) {
-       console.error(err);
-      setMessage(err.message);
+       console.error("Login Error", err);
+
+       const msg = err.response?.data?.message || "Username หรือ Password ไม่ถูกต้อง";
+       
+       setErrorMessage(msg);
+       setShowErrorModal(true); // ✅ เรียกใช้ตัวแปรที่ถูก
+
+      // setMessage(err.message); // อันนี้อาจจะไม่ต้องใช้แล้วก็ได้ถ้ามี Modal
     } finally {
       setLoading(false);
     }
@@ -65,25 +73,26 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button  
-          onClick={() => navigate("/menu")} type="submit">Login</Button>
+         
+          <Button type="submit" disabled={loading}>
+            {loading ? "กำลังเข้าสู่ระบบ..." : "Login"}
+          </Button>
         </form>
 
-        {message && (
-          <p className="mt-4 text-center text-red-500 text-sm">{message}</p>
-        )}
+        {/* ถ้าอยากซ่อนข้อความ text สีแดงเดิม ก็ลบส่วนนี้ออกได้ เพราะมี Modal แล้ว
+        {message && !showErrorModal && (
+          <p className="mt-4 text-center text-green-600 text-sm">{message}</p>
+        )} */}
       </div>
+      
+      <ActionFeedbackModal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)} // ✅ ตอนนี้ชื่อตรงกันแล้ว
+        type="error" 
+        title="เข้าสู่ระบบไม่สำเร็จ"
+        message={errorMessage} 
+        confirmText="ลองใหม่อีกครั้ง"
+      />
     </div>
   );
 }
-
-// export default function LoginPage() {
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-slate-100">
-//       <h1 className="text-2xl font-bold text-slate-800">
-//         Login Page
-//       </h1>
-//     </div>
-//   );
-// }
-

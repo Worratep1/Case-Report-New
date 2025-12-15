@@ -310,7 +310,7 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{  //ทำให้ชื่อเกมเอียง 45 
+                  tick={{  //ทำให้ชื่อเกมเอียง 45 องศา
                     fill: "#64748b", 
                     fontSize: 12 ,
                     angle : -45,
@@ -1413,6 +1413,7 @@ export default function DailyReport() {
                     {selectedCaseDetail.endTime}
                   </p>
                 </div>
+
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                   <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
                     Start Date
@@ -1456,12 +1457,21 @@ export default function DailyReport() {
                 </div>
               </div>
 
+               <div>
+                <label className="text-sm font-medium text-slate-700 mb-1 block">
+                 ระยะเวลา (Duration)
+                </label>
+                <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 text-sm ">
+                    {selectedCaseDetail.duration}
+                </div>
+              </div>
+
               {/* ROW 3: Problem  */}
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1 block">
                   ปัญหา (Problem)
                 </label>
-                <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700">
+                <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 text-sm">
                   {selectedCaseDetail.problemType || selectedCaseDetail.problem}
                 </div>
               </div>

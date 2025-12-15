@@ -26,6 +26,8 @@ import ActionFeedbackModal from "../components/ActionFeedbackModal";
 
 import ButtonBack from "../components/ButtonBack";
 import ButtonAdd from "../components/ButtonAdd"
+import ButtonCancel from "../components/ButtonCancel"
+import ButtonSave from "../components/ButtonSave";
 
 export default function RecipientSetting() {
   const navigate = useNavigate();
@@ -465,23 +467,21 @@ export default function RecipientSetting() {
                 </div>
 
                 {/* Buttons */}
+              
                 <div className="flex gap-3 pt-2">
-                  <button
+                  <ButtonCancel   type="button"  onClick={closeModal} disabled={loading} >
+                  {/* <button
                     type="button"
                     onClick={closeModal}
                     className="flex-1 py-3 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium transition-colors"
                     disabled={loading}
-                  >
+                  > */}
                     Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-lg shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60"
-                    disabled={loading}
-                  >
-                    <Save size={18} />
-                    {editingIndex !== null ? "Save Changes" : "Save Recipient"}
-                  </button>
+                  </ButtonCancel>
+                 <ButtonSave type="submit" onClick={handleSave} disabled={loading}>
+                     <Save size={16} />
+                     {editingIndex !== null ? "Save Changes" : "Save Recipient"}
+                  </ButtonSave>
                 </div>
               </form>
             </div>

@@ -11,37 +11,25 @@ import {
   ChevronRight,
   User,
   Wrench,
-  Send,
   AlertTriangle,
 } from "lucide-react";
 
 import ButtonCancel from "../components/ButtonCancel";
 import ButtonSubmit from "../components/ButtonSubmit";
+import ActionFeedbackModal from "../components/ActionFeedbackModal"; // ✅ Import ถูกต้องแล้ว
 
-
-import { createCase } from "../api/case"; // ตรวจสอบ Path import ให้ถูกต้อง
-
+import { createCase } from "../api/case";
 import { getproducts } from "../api/products";
 import { getStatuses } from "../api/status";
 import { getMembers } from "../api/member";
 import { getProblems } from "../api/problems";
 
 // ==========================================
-// 1. Helper Functions (ไม่เปลี่ยนแปลง)
+// 1. Helper Functions
 // ==========================================
 const THAI_MONTHS = [
-  "มกราคม",
-  "กุมภาพันธ์",
-  "มีนาคม",
-  "เมษายน",
-  "พฤษภาคม",
-  "มิถุนายน",
-  "กรกฎาคม",
-  "สิงหาคม",
-  "กันยายน",
-  "ตุลาคม",
-  "พฤศจิกายน",
-  "ธันวาคม",
+  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
 ];
 
 const formatThaiDate = (dateObj) => {
@@ -52,13 +40,32 @@ const formatThaiDate = (dateObj) => {
   return `${day} ${month} ${year}`;
 };
 
+const calculateDuration = (sDate, sTime, eDate, eTime) => {
+  if (!sDate || !sTime || !eDate || !eTime) return "";
+
+  const start = new Date(`${sDate}T${sTime}:00`);
+  const end = new Date(`${eDate}T${eTime}:00`);
+
+  const diffMs = end - start;
+
+  if (diffMs < 0) return "เวลาไม่ถูกต้อง";
+
+  const diffMins = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMins / 60);
+  const minute = diffMins % 60;
+
+  if (hours > 0) {
+    return `${hours} ชม. ${minute} นาที`;
+  }
+  return `${minute} นาที`;
+};
+
 // ==========================================
-// 2. Reusable Components (ปรับ CustomSelect)
+// 2. Reusable Components
 // ==========================================
 
-// --- Custom Time Picker (โค้ดเดิม) ---
+// --- Custom Time Picker (แก้ให้สะอาด ลบ Modal ที่วางผิดออกแล้ว) ---
 const CustomTimePicker = ({ label, value, onChange }) => {
-  /* ... โค้ดเดิม ... */
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const hours = Array.from({ length: 24 }, (_, i) =>
@@ -90,6 +97,8 @@ const CustomTimePicker = ({ label, value, onChange }) => {
     if (type === "minute") newM = val;
     onChange(`${newH}:${newM}`);
   };
+
+  // ❌ ลบ Modal ที่วางผิดที่ออกไปแล้ว
 
   return (
     <div className="relative" ref={containerRef}>
@@ -124,7 +133,7 @@ const CustomTimePicker = ({ label, value, onChange }) => {
             </div>
           </div>
           <div className="flex h-48">
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-200">
               {hours.map((h) => (
                 <div
                   key={h}
@@ -139,7 +148,7 @@ const CustomTimePicker = ({ label, value, onChange }) => {
                 </div>
               ))}
             </div>
-            <div className="flex-1 overflow-y-auto border-l border-slate-100 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
+            <div className="flex-1 overflow-y-auto border-l border-slate-100 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-200">
               {minutes.map((m) => (
                 <div
                   key={m}
@@ -161,7 +170,7 @@ const CustomTimePicker = ({ label, value, onChange }) => {
   );
 };
 
-// ✅ --- Custom Select (ปรับให้รับ Object และคืนค่า ID) ---
+// --- Custom Select ---
 const CustomSelect = ({
   label,
   value,
@@ -174,13 +183,9 @@ const CustomSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // ค้นหาชื่อที่ต้องแสดงผลจาก options
   const safeOptions = Array.isArray(options) ? options : [];
-
   const selectedOption = safeOptions.find((opt) => opt[valueKey] === value);
-  const displayValue = selectedOption
-    ? selectedOption[displayKey]
-    : placeholder;
+  const displayValue = selectedOption ? selectedOption[displayKey] : placeholder;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -206,10 +211,8 @@ const CustomSelect = ({
             : "border-slate-200 hover:border-blue-300"
         }`}
       >
-        <span
-          className={value ? "text-slate-700 font-medium" : "text-slate-400"}
-        >
-          {displayValue} {/* ✅ แสดงชื่อที่ค้นหามา */}
+        <span className={value ? "text-slate-700 font-medium" : "text-slate-400"}>
+          {displayValue}
         </span>
         <ChevronDown
           className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
@@ -226,9 +229,9 @@ const CustomSelect = ({
             </div>
             {safeOptions.map((option) => (
               <div
-                key={option[valueKey]} // ✅ ใช้ ID เป็น Key
+                key={option[valueKey]}
                 onClick={() => {
-                  onChange(option[valueKey]); // ✅ ส่งค่า ID กลับไป
+                  onChange(option[valueKey]);
                   setIsOpen(false);
                 }}
                 className={`px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
@@ -237,7 +240,7 @@ const CustomSelect = ({
                     : "text-slate-700 hover:bg-blue-50"
                 }`}
               >
-                {option[displayKey]} {/* ✅ แสดงชื่อ */}
+                {option[displayKey]}
                 {value === option[valueKey] && (
                   <CheckCircle className="w-4 h-4 text-white" />
                 )}
@@ -255,16 +258,14 @@ const CustomSelect = ({
   );
 };
 
-// --- Custom Date Picker (โค้ดเดิม) ---
+// --- Custom Date Picker ---
 const CustomDatePicker = ({ label, value, onChange }) => {
-  /* ... โค้ดเดิม ... */
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(
     value ? new Date(value) : new Date()
   );
   const containerRef = useRef(null);
 
-  // ... (logic เดิม)
   const getDaysInMonth = (year, month) =>
     new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
@@ -276,12 +277,11 @@ const CustomDatePicker = ({ label, value, onChange }) => {
 
   const handleSelectDate = (day) => {
     const year = viewDate.getFullYear();
-    const month = viewDate.getMonth() + 1; // 0-based → 1-based
-
+    const month = viewDate.getMonth() + 1;
     const localDateStr = `${year}-${String(month).padStart(2, "0")}-${String(
       day
     ).padStart(2, "0")}`;
-    onChange(localDateStr); // 👉 ได้ "2025-12-02" แบบไม่ยุ่ง timezone
+    onChange(localDateStr);
     setIsOpen(false);
   };
 
@@ -340,7 +340,6 @@ const CustomDatePicker = ({ label, value, onChange }) => {
         >
           {value ? formatThaiDate(new Date(value)) : "วว/ดด/ปปปป"}
         </span>
-        {/* <span>{value ? formatThaiDate(value) : "วว/ดด/ปปปป"}</span> */}
       </div>
       {isOpen && (
         <div className="absolute left-0 z-50 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 animate-fade-in-down">
@@ -349,18 +348,10 @@ const CustomDatePicker = ({ label, value, onChange }) => {
               {THAI_MONTHS[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
             </h3>
             <div className="flex gap-1">
-              <button
-                type="button"
-                onClick={handlePrevMonth}
-                className="p-1 hover:bg-slate-100 rounded-full text-slate-500"
-              >
+              <button onClick={handlePrevMonth} type="button" className="p-1 hover:bg-slate-100 rounded-full text-slate-500">
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button
-                type="button"
-                onClick={handleNextMonth}
-                className="p-1 hover:bg-slate-100 rounded-full text-slate-500"
-              >
+              <button onClick={handleNextMonth} type="button" className="p-1 hover:bg-slate-100 rounded-full text-slate-500">
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
@@ -406,7 +397,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
 };
 
 // ==========================================
-// 3. Main Component (แก้ไข)
+// 3. Main Component
 // ==========================================
 
 export default function CasePage() {
@@ -414,30 +405,25 @@ export default function CasePage() {
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const loggedInUserId = storedUser?.user_id ?? null;
 
-  // ✅ 1. State สำหรับ Master Data
   const [lookupData, setLookupData] = useState({
     products: [],
     statuses: [],
     problems: [],
-    users: [], // สำหรับ Solver
+    users: [],
   });
   const [loadingLookup, setLoadingLookup] = useState(true);
 
-  // ✅ 2. State สำหรับส่งไป Backend (เปลี่ยนชื่อให้ตรงกับ API)
   const initialFormState = () => {
-    // 1. หาเวลาปัจจุบัน
     const now = new Date();
     const currentHour = String(now.getHours()).padStart(2, "0");
     const currentMinute = String(now.getMinutes()).padStart(2, "0");
-    const currentTime = `${currentHour}:${currentMinute}`; // ตัวอย่าง: "14:30"
+    const currentTime = `${currentHour}:${currentMinute}`;
 
     return {
-      start_datetime: now.toISOString().split("T")[0], // วันที่ปัจจุบัน
-      end_datetime: now.toISOString().split("T")[0], // วันที่ปัจจุบัน
-
-      timeStart: currentTime, // ✅ ใช้เวลาปัจจุบัน
-      timeEnd: currentTime, // ✅ ใช้เวลาปัจจุบัน (หรือจะบวกเพิ่มก็ได้)
-
+      start_datetime: now.toISOString().split("T")[0],
+      end_datetime: now.toISOString().split("T")[0],
+      timeStart: currentTime,
+      timeEnd: currentTime,
       product_id: null,
       status_id: null,
       problem_id: null,
@@ -456,17 +442,22 @@ export default function CasePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
-  // --- 4. Fetch Lookup Data (ดึง Master Data) ---
+  const currentDuration = calculateDuration(
+    formData.start_datetime,
+    formData.timeStart,
+    formData.end_datetime,
+    formData.timeEnd
+  );
+
   useEffect(() => {
     const fetchLookupData = async () => {
       setLoadingLookup(true);
       try {
-        // ดึงข้อมูลอ้างอิงทั้งหมดพร้อมกัน (Promise.all)
         const [products, statuses, problems, users] = await Promise.all([
-          getproducts(), // ดึงสถานะ
-          getStatuses(), // ดึงเกม
-          getProblems(), // ดึงปัญหา
-          getMembers(), // ดึงสมาชิก (สำหรับ Solver)
+          getproducts(),
+          getStatuses(),
+          getProblems(),
+          getMembers(),
         ]);
         setLookupData({
           products: products.products || [],
@@ -474,7 +465,6 @@ export default function CasePage() {
           problems: problems.problems || [],
           users: users.users || users.data || [],
         });
-        console.log("product is ready", products);
       } catch (err) {
         console.error("Error fetching lookup data:", err);
       } finally {
@@ -484,7 +474,6 @@ export default function CasePage() {
     fetchLookupData();
   }, []);
 
-  // --- 5. Handlers ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -494,11 +483,8 @@ export default function CasePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  //เช็คว่ากรอกข้อมูลครมไหม
-
   const handleSaveClick = (e) => {
     e.preventDefault();
-    // ✅ 6. Validation เช็ค ID แทนชื่อ
     if (
       !formData.product_id ||
       !formData.problem_id ||
@@ -516,8 +502,6 @@ export default function CasePage() {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    // ✅ 7. สร้าง Payload ให้ถูกต้อง (รวมวันที่และเวลาเข้าด้วยกัน)
-    // ต้องใส่ 'Z' หรือ Timezone Offset ท้ายสุดเพื่อให้ PostgreSQL รู้ว่าเป็น ISO format
     const start_datetime = `${formData.start_datetime}T${formData.timeStart}:00.000`;
     const end_datetime = `${formData.end_datetime}T${formData.timeEnd}:00.000`;
 
@@ -530,24 +514,21 @@ export default function CasePage() {
       description: formData.description,
       requester_name: formData.requester_name,
       solution: formData.solution,
-      solver: formData.solver, // ✅ User ID ของ Solver (user_id)
-      created_by: formData.created_by, // 🛑 สมมติ ID ของ User ที่กำลัง Login (ต้องแก้เมื่อทำ Auth เสร็จ)
+      solver: formData.solver,
+      created_by: formData.created_by,
     };
-    console.log("payload ที่จะส่ง:", payload); // 👀
-    console.log("loggedInUserId:", loggedInUserId);
-    try {
-      // [BACKEND]: จุดเชื่อมต่อ API
-      await createCase(payload);
 
+    try {
+      await createCase(payload);
       setShowConfirmModal(false);
       setShowSuccessModal(true);
-      setFormData(initialFormState()); // Reset form
+      setFormData(initialFormState());
     } catch (error) {
       console.error("Error on submission:", error.response || error);
       setSubmitError(
         error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล"
       );
-      setShowConfirmModal(false); // ปิด Confirm Modal
+      setShowConfirmModal(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -558,11 +539,9 @@ export default function CasePage() {
     setSubmitError(null);
   };
 
-  // [UI]: รวมวันที่และเวลาในฟอร์ม
   return (
     <div className="fixed grid place-items-center inset-0 w-full h-full bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 overflow-y-auto z-0 p-10">
       <div className="w-full max-w-2xl bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 relative">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600">
             Create New Case
@@ -572,7 +551,6 @@ export default function CasePage() {
           </p>
         </div>
 
-        {/* 🛑 Display Error Message from API */}
         {submitError && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm font-medium flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" /> Error: {submitError}
@@ -589,15 +567,13 @@ export default function CasePage() {
         )}
 
         <form onSubmit={handleSaveClick} className="space-y-6">
-          {/* --- Section 1: วันที่และเวลา --- */}
           <div className="space-y-4 text-left">
             <h2 className="text-sm font-medium text-slate-800 flex items-center gap-2">
               วันที่-เวลา
             </h2>
 
             <div className="space-y-4 ">
-              {/* Custom Calendar Picker Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4  ">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <CustomDatePicker
                   label="วันที่เริ่ม Case"
                   value={formData.start_datetime}
@@ -610,7 +586,6 @@ export default function CasePage() {
                 />
               </div>
 
-              {/* Custom Time Pickers */}
               <div className="grid grid-cols-2 gap-4">
                 <CustomTimePicker
                   label="เวลาเริ่ม"
@@ -623,12 +598,29 @@ export default function CasePage() {
                   onChange={(val) => handleCustomChange("timeEnd", val)}
                 />
               </div>
+
+              {/* ส่วนแสดง Duration */}
+              <div className="mt-4">
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+                  ระยะเวลาที่ใช้ (Duration)
+                </label>
+                <div
+                  className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors
+                   ${
+                     currentDuration.includes("ไม่ถูกต้อง")
+                       ? "bg-red-50 text-red-600 border-red-200"
+                       : "bg-slate-50 text-slate-700 border-slate-200"
+                   }
+                  `}
+                >
+                  {currentDuration || "-"}
+                </div>
+              </div>
             </div>
           </div>
 
           <hr className="border-slate-100" />
 
-          {/* --- Section 2: ข้อมูลเคส --- */}
           <div className="space-y-4 text-left">
             <h2 className="text-sm font-medium text-slate-800 flex items-center gap-2">
               ข้อมูลเคส
@@ -638,18 +630,18 @@ export default function CasePage() {
               <CustomSelect
                 label="Game "
                 placeholder="เลือกเกม..."
-                options={lookupData.products} //  ใช้ข้อมูล Lookup
-                value={formData.product_id} //  ใช้ ID
-                onChange={(val) => handleCustomChange("product_id", val)} // ✅ ส่ง ID
-                displayKey="product_name" // ชื่อเกม
+                options={lookupData.products}
+                value={formData.product_id}
+                onChange={(val) => handleCustomChange("product_id", val)}
+                displayKey="product_name"
                 valueKey="product_id"
               />
               <CustomSelect
                 label="Status"
                 placeholder="เลือกสถานะ..."
-                options={lookupData.statuses} // ✅ ใช้ข้อมูล Lookup
-                value={formData.status_id} // ✅ ใช้ ID
-                onChange={(val) => handleCustomChange("status_id", val)} // ✅ ส่ง ID
+                options={lookupData.statuses}
+                value={formData.status_id}
+                onChange={(val) => handleCustomChange("status_id", val)}
                 displayKey="status_name"
                 valueKey="status_id"
               />
@@ -658,9 +650,9 @@ export default function CasePage() {
             <CustomSelect
               label="ปัญหา (Problem)"
               placeholder="เลือกประเภทปัญหา..."
-              options={lookupData.problems} // ✅ ใช้ข้อมูล Lookup
-              value={formData.problem_id} // ✅ ใช้ ID
-              onChange={(val) => handleCustomChange("problem_id", val)} // ✅ ส่ง ID
+              options={lookupData.problems}
+              value={formData.problem_id}
+              onChange={(val) => handleCustomChange("problem_id", val)}
               displayKey="problem_name"
               valueKey="problem_id"
             />
@@ -683,7 +675,6 @@ export default function CasePage() {
 
           <hr className="border-slate-100" />
 
-          {/* --- Section 3: ผู้เกี่ยวข้อง --- */}
           <div className="space-y-4 text-left">
             <h2 className="text-sm font-medium text-slate-800 flex items-center gap-2">
               ผู้เกี่ยวข้อง
@@ -733,7 +724,7 @@ export default function CasePage() {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 w-4 h-4" />
                 <input
                   type="text"
-                  name="solver" // 👈 ผูกกับ solver_name
+                  name="solver"
                   value={formData.solver}
                   onChange={handleChange}
                   maxLength={100}
@@ -744,8 +735,7 @@ export default function CasePage() {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-between pt-6 mt-4">
+          <div className="flex justify-between pt-6 mt-4 gap-8">
             <ButtonCancel
               type="button"
               onClick={() => {
@@ -755,102 +745,54 @@ export default function CasePage() {
             >
               Cancel
             </ButtonCancel>
-            <ButtonSubmit
-              disabled={loadingLookup} // ปิดปุ่มถ้าข้อมูลอ้างอิงยังไม่โหลด
-            >
-              Submit Case
-            </ButtonSubmit>
+            <ButtonSubmit disabled={loadingLookup}>Submit Case</ButtonSubmit>
           </div>
         </form>
       </div>
 
-      {/* --- Modals --- */}
-      {showWarningModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-6 text-center transform scale-100">
-            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-800 mb-2">
-              ข้อมูลไม่ครบถ้วน
-            </h3>
-            <p className="text-s text-slate-500 mb-6">
-              กรุณากรอกข้อมูล ให้ครบถ้วน
-            </p>
-            <button
-              onClick={() => setShowWarningModal(false)}
-              className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm hover:bg-slate-200 transition-colors"
-            >
-              ตกลง
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ✅ Action Feedback Modals (วางตรงนี้ถูกต้องแล้ว) */}
 
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-100">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-6 h-6 text-yellow-600" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-800">
-                ยืนยันการส่งข้อมูล?
-              </h3>
-              <p className="text-sm text-slate-500 mt-2 mb-6">
-                กรุณาตรวจสอบความถูกต้องก่อนกดส่ง
-              </p>
-              {submitError && (
-                <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-xl text-xs font-medium">
-                  {submitError}
-                </div>
-              )}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 py-2 rounded-lg border text-slate-600 hover:bg-slate-50"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  onClick={confirmSubmit}
-                  disabled={isSubmitting}
-                  className="flex-1 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex justify-center items-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    "ยืนยัน"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 1. Modal เตือนข้อมูลไม่ครบ (Warning) */}
+      <ActionFeedbackModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        type="error"
+        title="ข้อมูลไม่ครบถ้วน"
+        message="กรุณากรอกข้อมูล ให้ครบถ้วน"
+        confirmText="ตกลง"
+      />
 
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-bounce-in">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800">
-              ส่งข้อมูลสำเร็จ!
-            </h3>
-           <button
-  onClick={() => {
-    setShowSuccessModal(false);
-    navigate("/dailyreport",{ replace: true });    
-  }}
-  className="mt-6 w-full py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
->
-  ไปหน้า Daily Report
-              
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 2. Modal ยืนยันการส่ง (Confirm) */}
+      <ActionFeedbackModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        type="confirm"
+        title="ยืนยันการส่งข้อมูล?"
+        message="กรุณาตรวจสอบความถูกต้องก่อนกดส่ง"
+        confirmText="ยืนยัน"
+        cancelText="ยกเลิก"
+        onConfirm={confirmSubmit}
+        isLoading={isSubmitting}
+      />
+
+      {/* 3. Modal สำเร็จ (Success) */}
+     <ActionFeedbackModal
+        isOpen={showSuccessModal}
+        type="success"
+        title="ส่งข้อมูลสำเร็จ!"
+        message="ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว"
+        
+        //  สั่งเปิด 2 ปุ่มเฉพาะตรงนี้
+        showSecondaryButton={true} 
+        
+        cancelText="กลับหน้าหลัก"
+        confirmText="ดูรายการเคส"
+        onClose={() => navigate("/menu")} 
+        onConfirm={() => {
+          setShowSuccessModal(false);
+          navigate("/dailyreport", { replace: true });
+        }}
+      />
     </div>
   );
 }
