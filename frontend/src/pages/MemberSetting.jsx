@@ -8,13 +8,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
-  Search,
   Edit2,
   Trash2,
   Mail,
   User,
   Lock,
-  ChevronLeft,
   X,
   Save,
   AlertCircle,
@@ -22,14 +20,12 @@ import {
   EyeOff,
   CheckCircle,
 } from "lucide-react";
- import ActionFeedbackModal from "../components/ActionFeedbackModal";
- import ButtonBack from "../components/ButtonBack";
 
- import ButtonAdd from "../components/ButtonAdd"
- import ButtonSave from "../components/ButtonSave";
- import ButtonCancel from "../components/ButtonCancel";
-// ✅ 1. Import Component ใหม่
-
+import ActionFeedbackModal from "../components/ActionFeedbackModal";
+import ButtonBack from "../components/ButtonBack";
+import ButtonAdd from "../components/ButtonAdd";
+import ButtonSave from "../components/ButtonSave";
+import ButtonCancel from "../components/ButtonCancel";
 
 export default function MemberSetting() {
   const navigate = useNavigate();
@@ -40,11 +36,10 @@ export default function MemberSetting() {
   // -----------------------------
   const fetchMembers = async () => {
     try {
-      const data = await getMembers(); // backend ส่ง { users: [...] }
+      const data = await getMembers();
       setMembers(data.users || []);
     } catch (error) {
       console.error("Error fetching members:", error);
-      // ✅ ใช้ Modal แทน alert()
       setFeedbackModal({
         isOpen: true,
         type: 'error',
@@ -78,19 +73,17 @@ export default function MemberSetting() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // ✅ 2. State สำหรับ Feedback Modal (แจ้งเตือน/ยืนยัน)
   const [feedbackModal, setFeedbackModal] = useState({
     isOpen: false,
-    type: 'success', // success, error, confirm-delete
+    type: 'success',
     title: '',
     message: '',
-    onConfirm: () => {} // ฟังก์ชันที่จะรันเมื่อกด 'ยืนยัน'
+    onConfirm: () => {}
   });
 
   const closeFeedbackModal = () => {
     setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
   };
-
 
   // -----------------------------
   // 3) เปิด/ปิด Modal
@@ -123,7 +116,7 @@ export default function MemberSetting() {
   };
 
   // -----------------------------
-  // 4) handleChange ของฟอร์ม
+  // 4) handleChange
   // -----------------------------
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -134,7 +127,7 @@ export default function MemberSetting() {
   };
 
   // -----------------------------
-  // 5) บันทึก (Add / Edit) ใช้ axios ผ่าน API
+  // 5) บันทึก (Add / Edit)
   // -----------------------------
   const handleSave = async (e) => {
     e.preventDefault();
@@ -148,8 +141,7 @@ export default function MemberSetting() {
       is_active,
     } = formData;
 
-    // ✅ แทนที่ alert() ด้วย Modal Error
-    // กรอกช่องบังคับ
+    // Validation
     if (!username || !first_name || !last_name || !email) {
       setFeedbackModal({
         isOpen: true,
@@ -160,8 +152,8 @@ export default function MemberSetting() {
       return;
     }
 
-    // สมัครใหม่ → ต้องกรอก password + confirm
-    if (editingIndex === null) {
+    // Password Validation
+    if (editingIndex === null) { // กรณีเพิ่มใหม่
       if (!password || !confirmPassword) {
         setFeedbackModal({
             isOpen: true,
@@ -182,8 +174,7 @@ export default function MemberSetting() {
       }
     }
 
-    // แก้ไข → ถ้าใส่ password ใหม่ ให้เช็คว่าตรงกัน
-    if (editingIndex !== null && (password || confirmPassword)) {
+    if (editingIndex !== null && (password || confirmPassword)) { // กรณีแก้ไขและมีการกรอกรหัสผ่าน
       if (password !== confirmPassword) {
         setFeedbackModal({
             isOpen: true,
@@ -197,7 +188,7 @@ export default function MemberSetting() {
 
     const payload = {
       username,
-      password, // ถ้าเป็นแก้ไขแล้ว password = "" → backend จะใช้ password เดิม
+      password,
       first_name,
       last_name,
       email,
@@ -217,7 +208,6 @@ export default function MemberSetting() {
       await fetchMembers();
       closeModal();
       
-      // ✅ Modal บันทึกสำเร็จ
       setFeedbackModal({
         isOpen: true,
         type: 'success',
@@ -229,7 +219,6 @@ export default function MemberSetting() {
 
     } catch (err) {
       console.error("Save error:", err);
-      // ✅ Modal บันทึกไม่สำเร็จ
       setFeedbackModal({
         isOpen: true,
         type: 'error',
@@ -256,7 +245,6 @@ export default function MemberSetting() {
           await deleteMember(userId);
           await fetchMembers();
           
-          // Modal ลบสำเร็จ
           setFeedbackModal({
             isOpen: true,
             type: 'success',
@@ -265,7 +253,6 @@ export default function MemberSetting() {
           });
         } catch (err) {
           console.error("Delete error:", err);
-          // Modal ลบไม่สำเร็จ
           setFeedbackModal({
             isOpen: true,
             type: 'error',
@@ -277,50 +264,45 @@ export default function MemberSetting() {
     });
   };
 
-  // Helper สำหรับสี Avatar
   const getAvatarColor = (name) => {
     const colors = [
-      "bg-blue-500",
-      "bg-emerald-500",
-      "bg-purple-500",
-      "bg-amber-500",
-      "bg-rose-500",
+      "bg-blue-500", "bg-emerald-500", "bg-purple-500", "bg-amber-500", "bg-rose-500",
     ];
     const charCode = name ? name.charCodeAt(0) : 0;
     return colors[charCode % colors.length];
   };
 
-  // -----------------------------
-  // 7) UI
-  // -----------------------------
   return (
-   <div className="fixed grid place-items-center inset-0 w-full h-full 
-  bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
-  overflow-y-auto z-0 pt-10">
+   <div className="fixed inset-0 w-full h-full overflow-y-auto pt-10
+    bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
+    dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900
+    grid place-items-center">
+      
       {/* --- UI Container หลัก --- */}
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden relative">
+      <div className="w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden relative
+        bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+        
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
+        <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4
+          bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700">
           <div>
-            <h1 className="text-2xl font-medium text-slate-900 text-left">
+            <h1 className="text-2xl font-medium text-left text-slate-900 dark:text-white">
               Member Setting
             </h1>
-            <p className="text-sm text-slate-500 mt-1 text-left">
+            <p className="text-sm mt-1 text-left text-slate-500 dark:text-slate-400">
               Manage usernames and passwords
             </p>
           </div>
-          <ButtonAdd
-            onClick={() => openModal()}
-          >
+          <ButtonAdd onClick={() => openModal()}>
             <Plus size={18} />
             Add Member
           </ButtonAdd>
         </div>
 
         {/* List Content */}
-        <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+        <div className="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
           {members.length === 0 ? (
-            <div className="p-10 text-center flex flex-col items-center text-slate-400">
+            <div className="p-10 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
               <AlertCircle size={48} className="mb-2 opacity-20" />
               <p>No members found.</p>
             </div>
@@ -328,24 +310,21 @@ export default function MemberSetting() {
             members.map((member, index) => (
               <div
                 key={member.user_id ?? index}
-                className="group p-4 sm:px-6 hover:bg-slate-50 transition-colors flex items-center justify-between gap-4"
+                className="group p-4 sm:px-6 transition-colors flex items-center justify-between gap-4
+                  hover:bg-slate-50 dark:hover:bg-slate-700/50"
               >
                 {/* ข้อมูลสมาชิก */}
                 <div className="flex items-center gap-4 min-w-0">
-                  <div
-                    className={`w-12 h-12 rounded-full ${getAvatarColor(
-                      member.first_name
-                    )} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0`}
-                  >
+                  <div className={`w-12 h-12 rounded-full ${getAvatarColor(member.first_name)} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0`}>
                     {member.first_name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-normal text-slate-900 truncate">
+                      <h3 className="font-normal truncate text-slate-900 dark:text-slate-200">
                         {member.first_name} {member.last_name}
                       </h3>
                     </div>
-                    <p className="text-sm text-slate-500 truncate flex items-center gap-1.5 mt-0.5">
+                    <p className="text-sm truncate flex items-center gap-1.5 mt-0.5 text-slate-500 dark:text-slate-400">
                       <Mail size={12} /> {member.email}
                     </p>
                   </div>
@@ -355,14 +334,18 @@ export default function MemberSetting() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => openModal(index)}
-                    className="p-2 text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                    className="p-2 rounded-lg transition-colors
+                      text-slate-400 hover:text-yellow-600 hover:bg-yellow-50 
+                      dark:hover:text-yellow-400 dark:hover:bg-yellow-900/30"
                     title="Edit"
                   >
                     <Edit2 size={18} />
                   </button>
                   <button
                     onClick={() => handleDelete(index)}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 rounded-lg transition-colors
+                      text-slate-400 hover:text-red-600 hover:bg-red-50 
+                      dark:hover:text-red-400 dark:hover:bg-red-900/30"
                     title="Delete"
                   >
                     <Trash2 size={18} />
@@ -374,25 +357,28 @@ export default function MemberSetting() {
         </div>
 
         {/* Footer / Back Button */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 text-left">
-          
-        <ButtonBack onClick={() => navigate("/setting")}>Back</ButtonBack>
-          
-          
+        <div className="p-4 border-t text-left
+          bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-700">
+          <div className="w-fit">
+             <ButtonBack onClick={() => navigate("/setting")}>Back</ButtonBack>
+          </div>
         </div>
       </div>
 
       {/* --- MODAL FORM --- */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 sticky top-0 bg-white/95 backdrop-blur z-10">
-              <h3 className="font-semibold text-lg text-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto
+            bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+            
+            <div className="p-5 border-b flex justify-between items-center sticky top-0 z-10 backdrop-blur
+              bg-slate-50/80 dark:bg-slate-900/80 border-slate-100 dark:border-slate-700">
+              <h3 className="font-semibold text-lg text-slate-800 dark:text-white">
                 {editingIndex !== null ? "Edit Member" : "Add New Member"}
               </h3>
               <button
                 onClick={closeModal}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
               >
                 <X size={20} />
               </button>
@@ -401,28 +387,26 @@ export default function MemberSetting() {
             <form onSubmit={handleSave} className="p-5 space-y-4 text-left">
               {/* Username */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
                   Username
                 </label>
                 <div className="relative">
-                  <User
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
                     maxLength={50}
                     placeholder="Enter username"
-                    className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
               </div>
 
               {/* First Name */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
                   First Name
                 </label>
                 <input
@@ -431,13 +415,14 @@ export default function MemberSetting() {
                   onChange={handleChange}
                   maxLength={100}
                   placeholder="Enter first name"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                    bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                 />
               </div>
 
               {/* Last Name */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
                   Last Name
                 </label>
                 <input
@@ -446,57 +431,50 @@ export default function MemberSetting() {
                   onChange={handleChange}
                   maxLength={100}
                   placeholder="Enter last name"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                    bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
                   Email
                 </label>
                 <div className="relative">
-                  <Mail
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter email address"
-                    className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
               </div>
 
               {/* Password */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+                  <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     maxLength={64}
-                    placeholder={
-                      editingIndex !== null
-                        ? "Enter new password (optional)"
-                        : "Enter password"
-                    }
-                    className="w-full pl-9 pr-10 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 [&::-ms-reveal]:hidden"
+                    placeholder={editingIndex !== null ? "Enter new password (optional)" : "Enter password"}
+                    className="w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none"
                     tabIndex="-1"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -506,60 +484,44 @@ export default function MemberSetting() {
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <CheckCircle
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+                  <CheckCircle size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                      maxLength={64}
-                    placeholder={
-                      editingIndex !== null
-                        ? "Re-enter new password (optional)"
-                        : "Re-enter password"
-                    }
-                    className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 [&::-ms-reveal]:hidden
-                      ${
-                      formData.confirmPassword &&
-                      formData.password !== formData.confirmPassword
-                        ? "border-red-300 bg-red-50"
-                        : "border-slate-200"
-                    }`}
+                    placeholder={editingIndex !== null ? "Re-enter new password (optional)" : "Re-enter password"}
+                    className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                      bg-white dark:bg-slate-900 text-slate-800 dark:text-white
+                      ${formData.confirmPassword && formData.password !== formData.confirmPassword
+                        ? "border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-500"
+                        : "border-slate-200 dark:border-slate-700"
+                      }`}
                   />
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none"
                     tabIndex="-1"
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                {formData.confirmPassword &&
-                  formData.password !== formData.confirmPassword && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Passwords do not match
-                    </p>
+                {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
                   )}
               </div>
 
               <div className="pt-4 flex gap-3">
-                < ButtonCancel type="button" onClick={closeModal}> Cancel
-               </ButtonCancel>
-                <ButtonSave type="submit" onClick={handleSave} >
+                <ButtonCancel type="button" onClick={closeModal}>
+                   Cancel
+                </ButtonCancel>
+                <ButtonSave type="submit" onClick={handleSave}>
                   <Save size={16} /> Save Member
                 </ButtonSave>
               </div>
@@ -568,7 +530,6 @@ export default function MemberSetting() {
         </div>
       )}
       
-     
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
         type={feedbackModal.type}

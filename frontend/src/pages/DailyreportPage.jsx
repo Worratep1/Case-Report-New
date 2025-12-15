@@ -54,17 +54,19 @@ import { STATUS_CONFIG } from "../constants/status";
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 
 // --- CONSTANTS ---
+
+
 const CONFIG = {
   MAX_FILE_SIZE_MB: 5,
   MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
   ALLOWED_FILE_TYPES: [
-    "application/pdf", // PDF
-    "image/jpeg", // JPG/JPEG
-    "image/png", // PNG
-    "application/msword", // DOC
-    "application/vnd.ms-excel", //  XLS
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", //  XLSX
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
+    "application/pdf", 
+    "image/jpeg", 
+    "image/png", 
+    "application/msword", 
+    "application/vnd.ms-excel", 
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
   ],
 };
 
@@ -72,7 +74,6 @@ const ITEMS_PER_PAGE = 5;
 
 // --- HELPER FUNCTIONS (TIMEZONE SAFE) ---
 
-// 1. Get Today as "YYYY-MM-DD" safely using Local Time
 const getTodayString = () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -81,16 +82,6 @@ const getTodayString = () => {
   return `${year}-${month}-${day}`;
 };
 
-const getYesterdayString = () => {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-// 2. Format Date Object to "YYYY-MM-DD" safely
 const formatDateToISO = (date) => {
   if (!date) return "";
   const year = date.getFullYear();
@@ -99,28 +90,26 @@ const formatDateToISO = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// 3. Parse "YYYY-MM-DD" string to Date Object safely
 const parseISODate = (dateStr) => {
-  if (!dateStr) return new Date(); // Default to today
+  if (!dateStr) return new Date(); 
   const [year, month, day] = dateStr.split("-").map(Number);
-  // Set time to 12:00:00 to prevent timezone shift issues on Date boundaries
   return new Date(year, month - 1, day, 12, 0, 0);
 };
 
-// --- INTERNAL DASHBOARD COMPONENTS ---
+// --- INTERNAL DASHBOARD COMPONENTS (Updated for Dark Mode) ---
 
 const StatCard = ({ title, value, icon, color }) => (
   <div
-    className={`bg-white px-6 py-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col justify-center`}
+    className={`bg-white dark:bg-slate-800 px-6 py-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col justify-center`}
   >
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-slate-500 text-sm font-medium mb-0.5">{title}</p>
-        <h3 className="text-4xl font-bold text-slate-800 leading-none">
+        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-0.5">{title}</p>
+        <h3 className="text-4xl font-bold text-slate-800 dark:text-white leading-none">
           {value}
         </h3>
       </div>
-      <div className={`p-3 rounded-lg ${color}`}>{icon}</div>
+      <div className={`p-3 rounded-lg ${color} dark:bg-opacity-20`}>{icon}</div>
     </div>
   </div>
 );
@@ -163,9 +152,9 @@ const StatusSummaryCard = ({ data }) => {
   };
 
   return (
-    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full flex flex-col justify-center hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-full flex flex-col justify-center hover:shadow-md transition-shadow">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="text-xs font-medium text-slate-800 uppercase tracking-wider flex items-center gap-2">
+        <h4 className="text-xs font-medium text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
           <PieChartIcon size={14} /> Status Summary
         </h4>
       </div>
@@ -198,7 +187,7 @@ const StatusSummaryCard = ({ data }) => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
               <PieChartIcon size={32} className="mb-1 opacity-50" />
               <p className="text-xs">No Data</p>
             </div>
@@ -214,16 +203,16 @@ const StatusSummaryCard = ({ data }) => {
                   className="w-2.5 h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: entry.color }}
                 ></div>
-                <span className="text-[10px] text-slate-500 font-medium truncate">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">
                   {entry.name}
                 </span>
-                <span className="text-xs font-bold text-slate-500">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
                   ({entry.value})
                 </span>
               </div>
             ))
           ) : (
-            <p className="text-xs text-slate-400 italic text-center col-span-2">
+            <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center col-span-2">
               No data available
             </p>
           )}
@@ -277,8 +266,8 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
           <StatCard
             title="Total Cases"
             value={dashboardData.stats.total}
-            icon={<AlertCircle className="w-6 h-6 text-blue-600" />}
-            color="bg-blue-50 border-blue-100"
+            icon={<AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+            color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
           />
         </div>
         <div className="md:col-span-2">
@@ -286,10 +275,10 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center gap-2 mb-6">
-          <Gamepad2 className="text-blue-500" size={24} />
-          <h3 className="text-lg font-medium text-slate-800">
+          <Gamepad2 className="text-blue-500 dark:text-blue-400" size={24} />
+          <h3 className="text-lg font-medium text-slate-800 dark:text-white">
             Game Issues Breakdown ({selectedDate})
           </h3>
         </div>
@@ -305,13 +294,14 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                   strokeDasharray="3 3"
                   vertical={false}
                   stroke="#f1f5f9"
+                  strokeOpacity={0.1}
                 />
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
                   tick={{  //ทำให้ชื่อเกมเอียง 45 องศา
-                    fill: "#64748b", 
+                    fill: "gray", // สีตัวอักษร
                     fontSize: 12 ,
                     angle : -45,
                     textAnchor:"end"
@@ -325,15 +315,6 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
                   allowDecimals={false}
                 />
-                {/* <Tooltip
-                  cursor={{ fill: "#f8fafc" }}
-                  contentStyle={{
-                    borderRadius: "12px",
-                    border: "none",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                  }}
-                /> */}
-
                 <Bar
                   dataKey="count"
                   fill="#4f46e5"
@@ -342,7 +323,7 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                   //  ใส่ label เพื่อโชว์เลขบนหัวกราฟ
                   label={{
                     position: "top",
-                    fill: "#64748b",
+                    fill: "gray",
                     fontSize: 12,
                     fontWeight: "bold",
                   }}
@@ -350,7 +331,7 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+            <div className="h-full flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
               <BarChart2 size={32} className="mb-2 opacity-50" />
               <span className="text-sm">ยังไม่มีเคสในวันที่เลือก</span>
             </div>
@@ -472,11 +453,11 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
             ${
               isSelected
                 ? "bg-indigo-600 text-white"
-                : "hover:bg-indigo-50 text-slate-700"
+                : "hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-300"
             }
             ${
               isToday && !isSelected
-                ? "border border-indigo-600 text-indigo-600"
+                ? "border border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400"
                 : ""
             }
           `}
@@ -508,11 +489,12 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm transition-all duration-200
+        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+          bg-white dark:bg-slate-900
           ${
             isOpen
               ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-              : "hover:border-indigo-300"
+              : "border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500"
           }
         `}
       >
@@ -520,7 +502,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
           <CalendarDays size={18} className="text-indigo-500" />
           <span
             className={`${
-              value ? "text-slate-700 font-medium" : "text-slate-400"
+              value ? "text-slate-700 dark:text-slate-200 font-medium" : "text-slate-400"
             }`}
           >
             {value ? formatDateDisplay(value) : placeholder}
@@ -529,21 +511,22 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 p-4 bg-white rounded-2xl shadow-xl border border-slate-100 w-[300px] animate-in fade-in zoom-in-95 duration-200 left-0 sm:left-auto right-0 sm:right-0">
+        <div className="absolute z-50 mt-2 p-4 rounded-2xl shadow-xl w-[300px] animate-in fade-in zoom-in-95 duration-200 left-0 sm:left-auto right-0 sm:right-0
+          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-700">
+            <h3 className="font-bold text-slate-700 dark:text-slate-200">
               {thaiMonths[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
             </h3>
             <div className="flex gap-1">
               <button
                 onClick={() => changeMonth(-1)}
-                className="p-1 hover:bg-slate-100 rounded-full text-slate-500"
+                className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={() => changeMonth(1)}
-                className="p-1 hover:bg-slate-100 rounded-full text-slate-500"
+                className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <ChevronRight size={20} />
               </button>
@@ -559,16 +542,16 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
           <div className="grid grid-cols-7 gap-y-1 justify-items-center">
             {renderCalendarDays()}
           </div>
-          <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100">
+          <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
             <button
               onClick={clearDate}
-              className="text-xs text-slate-500 hover:text-red-500 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+              className="text-xs text-slate-500 hover:text-red-500 font-medium px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
             >
               ล้างค่า
             </button>
             <button
               onClick={setToday}
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-bold px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
+              className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold px-2 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
             >
               วันนี้
             </button>
@@ -621,11 +604,12 @@ const CustomSelect = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm transition-all duration-200
+        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+          bg-white dark:bg-slate-900
           ${
             isOpen
               ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-              : "hover:border-indigo-300"
+              : "border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500"
           }
         `}
       >
@@ -633,7 +617,7 @@ const CustomSelect = ({
           {Icon && <Icon size={16} className="text-slate-400 shrink-0" />}
           <span
             className={`truncate ${
-              !value ? "text-slate-400" : "text-slate-700 font-medium"
+              !value ? "text-slate-400" : "text-slate-700 dark:text-slate-200 font-medium"
             }`}
           >
             {getDisplayLabel()}
@@ -648,7 +632,8 @@ const CustomSelect = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1.5 bg-white border border-slate-100 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1.5 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute z-50 w-full mt-1.5 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1.5 animate-in fade-in zoom-in-95 duration-100
+          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
           {options.map((option, index) => {
             const optValue = typeof option === "object" ? option.value : option;
             const optLabel = typeof option === "object" ? option.label : option;
@@ -661,8 +646,8 @@ const CustomSelect = ({
                 className={`px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors mb-0.5 last:mb-0
                   ${
                     isSelected
-                      ? "bg-indigo-50 text-indigo-700 font-semibold"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-semibold"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
                   }
                 `}
               >
@@ -680,7 +665,7 @@ const StatusBadge = ({ status }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.others;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${config.bg} ${config.text} border-transparent`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${config.bg} ${config.text} border-transparent bg-opacity-90`}
     >
       <div
         className="w-1.5 h-1.5 rounded-full"
@@ -1028,7 +1013,7 @@ export default function DailyReport() {
     setIsLoading(true);
 
     try {
-      await sendDailyReport(formData); // ✅ เรียก API ที่เราแก้ในข้อ 1
+      await sendDailyReport(formData); //  เรียก API ที่เราแก้ในข้อ 1
       setIsEmailModalOpen(false);
       // setIsSuccessModalOpen(true);
       setFeedbackModal({
@@ -1073,23 +1058,28 @@ export default function DailyReport() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Data for Dashboard Cards
+  // Data for Dashboard Cards 
   const casesOfSelectedDate = cases.filter((c) => c.date === selectedDate);
 
-  // TODO: [BACKEND] selectedDate ตัวนี้สามารถใช้เป็นพารามิเตอร์เรียก API
-  // เพื่อดึงข้อมูลรายงานประจำวันที่เลือกจากฐานข้อมูลจริงได้
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+    
+    <div className="fixed inset-0 w-full h-full overflow-y-auto font-sans text-slate-900 pb-20 
+      bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
+      dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"> {/* contanier  Background Dark Mode */}
+      
       {/* Header Bar */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-40 shadow-sm
+        bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"> {/*  Header Bar Dark Mode */}
+        <div className="w-full px-1 sm:px-8 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             {/* Logo & Title */}
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
+            <div className="flex items-center gap-3 w-full md:w-auto px-48">
+              <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
                 <button
-                  className=" p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+                  className=" p-2 rounded-full
+                   text-slate-500 dark:text-slate-400 
+                   transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
                   onClick={() => window.history.back()}
                   aria-label="Go back"
                 >
@@ -1103,18 +1093,16 @@ export default function DailyReport() {
                   <FileText className="w-5 h-5 text-white " />
                 </div>
                 <div>
-                  <h1 className="text-xl font-medium text-slate-800 leading-tight">
-                    {" "}
-                    Daily Report{" "}
+                  <h1 className="text-xl font-medium text-slate-800 dark:text-white leading-tight">
+                    Daily Report
                   </h1>
-                  <p className="text-xs text-slate-500">ระบบรายงานประจำวัน</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">ระบบรายงานประจำวัน</p>
                 </div>
               </div>
             </div>
 
             {/* Controls */}
-
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end  ">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end px-36">
               <div className="w-48 ">
                 <CustomDatePicker
                   value={selectedDate}
@@ -1123,35 +1111,16 @@ export default function DailyReport() {
                 />
               </div>
 
-              {/* ปุ่ม Export Report */}
-
               <ExportButton
                 onClick={handleExport}
                 isExporting={isExporting}
                 disabled={casesOfSelectedDate.length === 0}
               />
 
-              {/* ปุ่ม send report mail */}
-
               <ButtonSend
                 onClick={handleOpenEmailModal}
                 disabled={casesOfSelectedDate.length === 0}
               />
-
-              {/* <button
-                onClick={handleOpenEmailModal}
-                disabled={casesOfSelectedDate.length === 0}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-normal ml-2 whitespace-nowrap
-                    duration-300 hover:-translate-y-1  hover:shadow-md
-                    ${
-                      casesOfSelectedDate.length === 0
-                        ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
-                        : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200"
-                    }`}
-              >
-                <Send size={16} />
-                <span className="hidden sm:inline">Send Report</span>
-              </button> */}
             </div>
           </div>
         </div>
@@ -1160,18 +1129,18 @@ export default function DailyReport() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Date Header Display */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
             ภาพรวมประจำวันที่{" "}
-            <span className="text-indigo-600 border-b-2 border-indigo-600/20 px-1">
+            <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
               {selectedDate}
             </span>
           </h2>
-          <p className="text-slate-500 text-sm mt-1 text-left">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 text-left">
             สรุปข้อมูลการดำเนินงานประจำวัน
           </p>
         </div>
 
-        {/* [UPDATED] Include Internal ReportDashboard Component */}
+        {/* Dashboard */}
         <div className="mb-8">
           <ReportDashboard
             cases={casesOfSelectedDate}
@@ -1180,9 +1149,10 @@ export default function DailyReport() {
         </div>
 
         {/* Toolbar & Filters */}
-        <div className="bg-white p-4 rounded-t-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="p-4 rounded-t-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4
+          bg-white dark:bg-slate-800"> {/*  Toolbar Dark Mode */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <h2 className="text-lg font-semibold text-slate-800">
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
               รายการแจ้งปัญหา
             </h2>
           </div>
@@ -1204,18 +1174,21 @@ export default function DailyReport() {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="ค้นหาปัญหา, เกม..."
-                className="pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
-              />
+                className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64
+                  bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
+              /> {/*  Search Input Dark Mode */}
             </div>
           </div>
         </div>
 
         {/* Main Table */}
-        <div className="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm overflow-hidden min-h-[300px]">
+        <div className="rounded-b-xl shadow-sm overflow-hidden min-h-[300px]
+          bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-700"> {/*  Table Container Dark Mode */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold tracking-wider">
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-semibold tracking-wider
+                  bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"> {/*  Table Header Dark Mode */}
                   <th className="px-6 py-4 w-16 text-center">ID</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Time / Duration</th>
@@ -1224,13 +1197,13 @@ export default function DailyReport() {
                   <th className="px-6 py-4">Requester / Operator</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {/* 1. เช็คว่ากำลังโหลดข้อมูลอยู่หรือไม่ */}
                 {loadingData ? (
                   <tr>
                     <td
                       colSpan="6"
-                      className="px-6 py-12 text-center text-slate-500"
+                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2">
                         <Loader2
@@ -1247,7 +1220,8 @@ export default function DailyReport() {
                     <tr
                       key={item.id}
                       onClick={() => handleCaseClick(item)}
-                      className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                      className="transition-colors group cursor-pointer
+                      hover:bg-slate-50 dark:hover:bg-slate-700/50" /*  Row Hover Dark Mode */
                       title="คลิกเพื่อดูรายละเอียด"
                     >
                       <td className="px-6 py-4 whitespace-nowrap align-top text-center text-slate-400 font-medium">
@@ -1258,11 +1232,12 @@ export default function DailyReport() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap align-top">
                         <div className="flex flex-col gap-1.5">
-                          <div className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+                          <div className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                             <Clock size={14} className="text-slate-400" />
                             {item.startTime} - {item.endTime}
                           </div>
-                          <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-500 w-fit">
+                          <span className="text-xs px-2 py-0.5 rounded w-fit
+                            bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                             ใช้เวลา: {item.duration}
                           </span>
                         </div>
@@ -1270,27 +1245,28 @@ export default function DailyReport() {
                       <td className="px-6 py-4 align-top">
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1.5">
-                            <Gamepad2 size={14} className="text-indigo-500" />
-                            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">
+                            <Gamepad2 size={14} className="text-indigo-500 dark:text-indigo-400" />
+                            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 uppercase tracking-wide">
                               {item.game}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-slate-800 line-clamp-1">
+                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 line-clamp-1">
                             {item.problem}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 align-top max-w-xs">
                         <div className="space-y-2">
-                          <p className="text-sm text-slate-600 line-clamp-2">
-                            <span className="font-medium text-slate-900">
+                          <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+                            <span className="font-medium text-slate-900 dark:text-white">
                               รายละเอียด:
                             </span>{" "}
                             {item.details}
                           </p>
                           {item.solution && (
-                            <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-lg line-clamp-2">
-                              <span className="font-medium text-emerald-700">
+                            <div className="text-xs px-3 py-2 rounded-lg line-clamp-2
+                              bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30">
+                              <span className="font-medium text-emerald-700 dark:text-emerald-400">
                                 แก้ไข:
                               </span>{" "}
                               {item.solution}
@@ -1301,18 +1277,20 @@ export default function DailyReport() {
                       <td className="px-6 py-4 align-top">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-medium">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                              bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                               R
                             </div>
-                            <span className="text-sm text-slate-700 font-normal">
+                            <span className="text-sm font-normal text-slate-700 dark:text-slate-300">
                               {item.reporter}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-medium">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                              bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                               O
                             </div>
-                            <span className="text-sm text-slate-700 font-normal">
+                            <span className="text-sm font-normal text-slate-700 dark:text-slate-300">
                               {item.operator}
                             </span>
                           </div>
@@ -1325,10 +1303,10 @@ export default function DailyReport() {
                   <tr>
                     <td
                       colSpan="6"
-                      className="px-6 py-12 text-center text-slate-500"
+                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2">
-                        <Search size={32} className="text-slate-300" />
+                        <Search size={32} className="text-slate-300 dark:text-slate-600" />
                         <p>ไม่พบข้อมูลในวันที่เลือก</p>
                       </div>
                     </td>
@@ -1338,8 +1316,9 @@ export default function DailyReport() {
             </table>
           </div>
 
-          <div className="bg-white px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-            <span className="text-sm text-slate-500">
+          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between
+            bg-white dark:bg-slate-800"> {/*  Pagination Footer Dark Mode */}
+            <span className="text-sm text-slate-500 dark:text-slate-400">
               หน้า {currentPage} จาก {totalPages} ({filteredCases.length}{" "}
               รายการ)
             </span>
@@ -1347,7 +1326,7 @@ export default function DailyReport() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 disabled:opacity-50"
               >
                 <ChevronLeft size={18} />
               </button>
@@ -1359,8 +1338,8 @@ export default function DailyReport() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
                         currentPage === page
-                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
-                          : "text-slate-600 hover:bg-slate-50"
+                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/50"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                       }`}
                     >
                       {page}
@@ -1373,7 +1352,7 @@ export default function DailyReport() {
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                 }
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="w-9 h-9 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+                className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 disabled:opacity-50"
               >
                 <ChevronRight size={18} />
               </button>
@@ -1382,19 +1361,22 @@ export default function DailyReport() {
         </div>
       </main>
 
-      {/* --- CASE DETAIL MODAL (Updated Layout) --- */}
+      {/* --- CASE DETAIL MODAL --- */}
       {isCaseDetailModalOpen && selectedCaseDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+          <div className="rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
+            bg-white dark:bg-slate-800"> {/*  Modal Container Dark Mode */}
+            
+            <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center
+              bg-slate-50 dark:bg-slate-900"> {/*  Modal Header Dark Mode */}
               <div>
-                <h3 className="font-semibold text-xl text-slate-800">
+                <h3 className="font-semibold text-xl text-slate-800 dark:text-white">
                   Case Details
                 </h3>
               </div>
               <button
                 onClick={() => setIsCaseDetailModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -1403,132 +1385,113 @@ export default function DailyReport() {
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-5 text-left">
               {/* ROW 1: Time and Dates (3 Columns) */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                    Time Period
-                  </label>
-                  <p className="font-medium text-slate-800 text-sm flex items-center gap-1.5">
-                    <Clock size={14} className="text-indigo-500" />
-                    {selectedCaseDetail.startTime} -{" "}
-                    {selectedCaseDetail.endTime}
-                  </p>
-                </div>
-
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                    Start Date
-                  </label>
-                  <p className="font-medium text-slate-800 text-sm flex items-center gap-1.5">
-                    <CalendarIcon size={14} className="text-indigo-500" />
-                    {selectedCaseDetail.startDate || selectedCaseDetail.date}
-                  </p>
-                </div>
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                    End Date
-                  </label>
-                  <p className="font-medium text-slate-800 text-sm flex items-center gap-1.5">
-                    <CalendarIcon size={14} className="text-indigo-500" />
-                    {selectedCaseDetail.endDate || selectedCaseDetail.date}
-                  </p>
-                </div>
+                {['Time Period', 'Start Date', 'End Date'].map((label, i) => (
+                    <div key={label} className="p-3 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <label className="text-xs font-bold uppercase block mb-1 text-slate-500 dark:text-slate-400">{label}</label>
+                        <p className="font-medium text-sm flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+                            <Clock size={14} className="text-indigo-500" />
+                            {i === 0 ? `${selectedCaseDetail.startTime} - ${selectedCaseDetail.endTime}` : (i === 1 ? (selectedCaseDetail.startDate || selectedCaseDetail.date) : (selectedCaseDetail.endDate || selectedCaseDetail.date))}
+                        </p>
+                    </div>
+                ))}
               </div>
 
               {/* ROW 2: Game & Status */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
                     Game
                   </label>
-                  <div className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white">
+                  <div className="flex items-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900">
                     <Gamepad2 size={16} className="text-indigo-500" />
-                    <span className="text-sm font-medium text-slate-800">
+                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                       {selectedCaseDetail.game}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
                     Status
                   </label>
-                  <div className="flex items-center px-3 py-2 border border-slate-200 rounded-lg bg-white">
+                  <div className="flex items-center px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900">
                     <StatusBadge status={selectedCaseDetail.status} />
                   </div>
                 </div>
               </div>
 
                <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">
+                <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
                  ระยะเวลา (Duration)
                 </label>
-                <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 text-sm ">
+                <div className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-sm ">
                     {selectedCaseDetail.duration}
                 </div>
               </div>
 
               {/* ROW 3: Problem  */}
               <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">
+                <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
                   ปัญหา (Problem)
                 </label>
-                <div className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-700 text-sm">
+                <div className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-sm">
                   {selectedCaseDetail.problemType || selectedCaseDetail.problem}
                 </div>
               </div>
 
               {/* ROW 4: Details */}
               <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block">
+                <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
                   รายละเอียด (Details)
                 </label>
                 <textarea
                   disabled
                   rows={3}
                   value={selectedCaseDetail.details}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-600 resize-none text-sm leading-relaxed"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 resize-none text-sm leading-relaxed"
                 />
               </div>
 
               {/* ROW 5: Solution */}
               <div>
-                <label className="text-sm font-medium text-slate-700 mb-1 block text-emerald-700">
+                <label className="text-sm font-medium mb-1 block text-emerald-700 dark:text-emerald-400">
                   วิธีการแก้ไข (Solution)
                 </label>
                 <textarea
                   disabled
                   rows={3}
                   value={selectedCaseDetail.solution || "-"}
-                  className="w-full px-3 py-2 border border-emerald-200 rounded-lg bg-emerald-50 text-emerald-800 resize-none text-sm leading-relaxed"
+                  className="w-full px-3 py-2 border border-emerald-200 dark:border-emerald-900/50 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 resize-none text-sm leading-relaxed"
                 />
               </div>
 
               {/* ROW 6: People */}
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <label className="text-sm font-medium text-slate-700  mb-1 flex items-center gap-1.5">
+                  <label className="text-sm font-medium mb-1 flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                     <User size={14} className="text-orange-500" /> ผู้ร้องขอ
                     (Requester)
                   </label>
-                  <div className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white">
+                  <div className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">
                     {selectedCaseDetail.reporter}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-700  mb-1 flex items-center gap-1.5">
+                  <label className="text-sm font-medium mb-1 flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                     <User size={14} className="text-blue-500" /> ผู้ดำเนินเเก้ไข
                     (Operator)
                   </label>
-                  <div className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white">
+                  <div className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">
                     {selectedCaseDetail.operator}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end">
+            <div className="p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-end">
               <button
                 onClick={() => setIsCaseDetailModalOpen(false)}
-                className="px-6 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg font-bold text-sm transition-colors shadow-sm"
+                className="px-6 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm
+                  bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
               >
                 Close
               </button>
@@ -1540,22 +1503,24 @@ export default function DailyReport() {
       {/* Email Modal */}
       {isEmailModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-medium text-xl text-slate-800 flex items-center gap-2">
-                <Send size={20} className="text-indigo-600" />
+          <div className="rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
+            bg-white dark:bg-slate-800"> {/*  Modal Container Dark Mode */}
+            
+            <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
+              <h3 className="font-medium text-xl text-slate-800 dark:text-white flex items-center gap-2">
+                <Send size={20} className="text-indigo-600 dark:text-indigo-400" />
                 Send Daily Report
               </h3>
               <button
                 onClick={() => setIsEmailModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
               <div>
-                <label className=" text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
+                <label className=" text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <User size={16} /> Select Recipients
                 </label>
                 <div className="relative">
@@ -1564,11 +1529,13 @@ export default function DailyReport() {
                     onClick={() =>
                       setIsRecipientDropdownOpen(!isRecipientDropdownOpen)
                     }
-                    className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl bg-white text-left transition-all ${
-                      isRecipientDropdownOpen
-                        ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-                        : "border-slate-200 hover:bg-slate-50"
-                    }`}
+                    className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-left transition-all 
+                      bg-white dark:bg-slate-900
+                      ${
+                        isRecipientDropdownOpen
+                          ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      }`}
                   >
                     <div className="flex flex-wrap gap-2 items-center w-full overflow-hidden">
                       {selectedRecipientIds.length === 0 ? (
@@ -1577,10 +1544,10 @@ export default function DailyReport() {
                         </span>
                       ) : (
                         <>
-                          <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap">
+                          <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap">
                             {selectedRecipientIds.length} Selected
                           </span>
-                          <span className="text-sm text-slate-600 truncate flex-1">
+                          <span className="text-sm text-slate-600 dark:text-slate-400 truncate flex-1">
                             {availableRecipients
                               .filter((u) =>
                                 selectedRecipientIds.includes(u.recipient_id)
@@ -1594,17 +1561,18 @@ export default function DailyReport() {
                     {isRecipientDropdownOpen ? (
                       <ChevronUp
                         size={20}
-                        className="text-slate-400 shrink-0 ml-2"
+                        className="text-slate-400"
                       />
                     ) : (
                       <ChevronDown
                         size={20}
-                        className="text-slate-400 shrink-0 ml-2"
+                        className="text-slate-400"
                       />
                     )}
                   </button>
                   {isRecipientDropdownOpen && (
-                    <div className="absolute z-20 left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="absolute z-20 left-0 right-0 mt-2 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 animate-in fade-in zoom-in-95 duration-100
+                      bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                       {availableRecipients.length > 0 ? (
                         availableRecipients.map((user) => {
                           const isSelected = selectedRecipientIds.includes(
@@ -1616,14 +1584,14 @@ export default function DailyReport() {
                               onClick={() => toggleRecipient(user.recipient_id)}
                               className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                                 isSelected
-                                  ? "bg-indigo-50 text-indigo-700"
-                                  : "hover:bg-slate-50 text-slate-700"
+                                  ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                                  : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
                               }`}
                             >
                               <div
                                 className={`shrink-0 ${
                                   isSelected
-                                    ? "text-indigo-600"
+                                    ? "text-indigo-600 dark:text-indigo-400"
                                     : "text-slate-300"
                                 }`}
                               >
@@ -1635,10 +1603,10 @@ export default function DailyReport() {
                               </div>
 
                               <div className="flex flex-col min-w-0">
-                                <span className="text-sm truncate text-slate-500 font-normal text-left">
+                                <span className="text-sm truncate font-normal text-left text-slate-500 dark:text-slate-400">
                                   {user.name}
                                 </span>
-                                <span className="font-normal text-sm truncate text-slate-800 text-left ">
+                                <span className="font-normal text-sm truncate text-left text-slate-800 dark:text-slate-200">
                                   {user.email}
                                 </span>
                               </div>
@@ -1656,30 +1624,32 @@ export default function DailyReport() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1 text-left ml-1">
+                  <label className="block text-xs font-semibold uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
                     Subject
                   </label>
                   <input
                     value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase mb-1 text-left ml-1">
+                  <label className="block text-xs font-semibold uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
                     Message
                   </label>
                   <textarea
                     value={emailBody}
                     onChange={(e) => setEmailBody(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none
+                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
               </div>
               {/* ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
               <div>
-                <label className=" text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <label className=" text-sm font-bold mb-3 flex items-center gap-2 text-slate-700 dark:text-slate-300">
                   <Paperclip size={16} /> Attachments (ไม่บังคับ, สูงสุด 5 ไฟล์)
                 </label>
 
@@ -1689,13 +1659,13 @@ export default function DailyReport() {
                     <div key={index} className="flex items-center gap-3">
                       {file ? (
                         // --- Display Area when File Exists ---
-                        <div className="flex-1 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                        <div className="flex-1 flex items-center justify-between p-3 rounded-lg text-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
                           <div className="flex items-center gap-3 overflow-hidden">
                             <FileText
                               size={16}
                               className="text-indigo-500 shrink-0"
                             />
-                            <span className="truncate font-medium text-slate-700">
+                            <span className="truncate font-medium text-slate-700 dark:text-slate-200">
                               {file.name}
                             </span>
                             <span className="text-xs text-slate-400">
@@ -1715,9 +1685,10 @@ export default function DailyReport() {
                         <div className="flex-1">
                           <label
                             htmlFor={`file-input-${index}`}
-                            className="block border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 hover:border-indigo-400 transition-colors group"
+                            className="block border-2 border-dashed rounded-xl p-3 text-center cursor-pointer hover:border-indigo-400 transition-colors group
+                              border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
                           >
-                            <span className="text-sm text-slate-600 font-medium flex items-center justify-center gap-2 ">
+                            <span className="text-sm font-medium flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
                               <Paperclip
                                 size={16}
                                 className="text-slate-400 group-hover:text-indigo-500"
@@ -1736,27 +1707,26 @@ export default function DailyReport() {
                       )}
                     </div>
                   ))}
-                  <p className="text-xs text-slate-400 mt-1 text-left">
+                  <p className="text-xs mt-1 text-left text-slate-400">
                     * ไฟล์แนบแต่ละไฟล์สูงสุด {CONFIG.MAX_FILE_SIZE_MB}MB (PDF,
                     JPG, PNG, DOCX, XLSX, XLS)
                   </p>
                 </div>
               </div>
-              {/* ❌ โค้ดซ้ำซ้อน 1: Input และ div แสดงไฟล์แบบเก่า */}
-
-              {/* ❌ โค้ดซ้ำซ้อน 2: List แสดงไฟล์แนบแบบเก่า */}
             </div>
-            <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+            <div className="p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-end gap-3">
               <button
                 onClick={() => setIsEmailModalOpen(false)}
-                className="px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 font-bold text-sm"
+                className="px-6 py-2.5 rounded-lg font-bold text-sm transition-colors
+                  bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendEmail}
                 disabled={isLoading}
-                className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold text-sm shadow-md shadow-indigo-200 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 rounded-lg font-bold text-sm shadow-md shadow-indigo-200 dark:shadow-indigo-900/50 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed
+                  bg-indigo-600 text-white hover:bg-indigo-700"
               >
                 {isLoading ? (
                   <Loader2 size={16} className="animate-spin " />
@@ -1769,29 +1739,6 @@ export default function DailyReport() {
           </div>
         </div>
       )}
-
-      {/* Success Modal */}
-      {/* {isSuccessModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center max-w-sm w-full animate-in zoom-in-95 duration-200">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle2 size={40} />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">
-              ส่งรายงานเรียบร้อย
-            </h3>
-            <p className="text-slate-500 text-center mb-6">
-              ระบบได้ทำการส่งอีเมลรายงานประจำวันให้ผู้รับเรียบร้อยแล้ว
-            </p>
-            <button
-              onClick={() => setIsSuccessModalOpen(false)}
-              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 transition-transform active:scale-95"
-            >
-              ตกลง
-            </button>
-          </div>
-        </div>
-      )} */}
 
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}

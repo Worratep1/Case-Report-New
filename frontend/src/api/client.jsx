@@ -36,3 +36,22 @@ client.interceptors.response.use(
   }
 )
 export default client;
+
+// export async function getProfile() {
+
+//   try{
+//     const res = await client.get("/profile");
+//     return res.data
+
+
+//   }catch (error) {
+//   if(error.response?.status === 401 ){
+//      throw new Error("Unauthorized or token expired")
+//   }
+//     throw new Error(error.response?.data?.message || "Failed to fetch profile")
+
+
+  
+//   }
+  
+// }

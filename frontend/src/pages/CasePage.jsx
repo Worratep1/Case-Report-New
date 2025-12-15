@@ -64,7 +64,7 @@ const calculateDuration = (sDate, sTime, eDate, eTime) => {
 // 2. Reusable Components
 // ==========================================
 
-// --- Custom Time Picker (แก้ให้สะอาด ลบ Modal ที่วางผิดออกแล้ว) ---
+// --- Custom Time Picker ---
 const CustomTimePicker = ({ label, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
@@ -98,65 +98,66 @@ const CustomTimePicker = ({ label, value, onChange }) => {
     onChange(`${newH}:${newM}`);
   };
 
-  // ❌ ลบ Modal ที่วางผิดที่ออกไปแล้ว
-
   return (
     <div className="relative" ref={containerRef}>
-      <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
         {label}
       </label>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-white rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3 transition-all ${
-          isOpen
-            ? "border-blue-500 ring-2 ring-blue-100"
-            : "border-slate-200 hover:border-blue-300"
-        }`}
+        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3 transition-all 
+          bg-white dark:bg-slate-900 
+          ${
+            isOpen
+              ? "border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/50"
+              : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
+          }`}
       >
         <Clock
-          className={`w-5 h-5 ${value ? "text-blue-600" : "text-slate-400"}`}
+          className={`w-5 h-5 ${value ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
         />
         <span
-          className={value ? "text-slate-800 font-medium" : "text-slate-400"}
+          className={value ? "text-slate-800 dark:text-slate-200 font-medium" : "text-slate-400"}
         >
           {value || "--:--"}
         </span>
       </div>
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-fade-in-down flex flex-col">
-          <div className="flex border-b border-slate-100 bg-slate-50">
-            <div className="flex-1 py-2 text-center text-xs font-bold text-blue-600">
+        <div className="absolute left-0 z-50 mt-2 w-48 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-fade-in-down flex flex-col
+          bg-white dark:bg-slate-800">
+          <div className="flex border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+            <div className="flex-1 py-2 text-center text-xs font-bold text-blue-600 dark:text-blue-400">
               ชม.
             </div>
-            <div className="flex-1 py-2 text-center text-xs font-bold text-blue-600 border-l border-slate-100">
+            <div className="flex-1 py-2 text-center text-xs font-bold text-blue-600 dark:text-blue-400 border-l border-slate-100 dark:border-slate-700">
               นาที
             </div>
           </div>
           <div className="flex h-48">
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-200">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-600">
               {hours.map((h) => (
                 <div
                   key={h}
                   onClick={() => handleSelect("hour", h)}
                   className={`py-2 text-center text-sm cursor-pointer transition-colors ${
                     currentH === h
-                      ? "bg-blue-100 text-blue-700 font-bold"
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                   }`}
                 >
                   {h}
                 </div>
               ))}
             </div>
-            <div className="flex-1 overflow-y-auto border-l border-slate-100 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-200">
+            <div className="flex-1 overflow-y-auto border-l border-slate-100 dark:border-slate-700 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-600">
               {minutes.map((m) => (
                 <div
                   key={m}
                   onClick={() => handleSelect("minute", m)}
                   className={`py-2 text-center text-sm cursor-pointer transition-colors ${
                     currentM === m
-                      ? "bg-blue-100 text-blue-700 font-bold"
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                   }`}
                 >
                   {m}
@@ -199,19 +200,21 @@ const CustomSelect = ({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
         {label}
       </label>
 
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-white rounded-xl border px-4 py-3 text-sm cursor-pointer flex justify-between items-center transition-all ${
-          isOpen
-            ? "border-blue-500 ring-2 ring-blue-100"
-            : "border-slate-200 hover:border-blue-300"
-        }`}
+        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex justify-between items-center transition-all 
+          bg-white dark:bg-slate-900 
+          ${
+            isOpen
+              ? "border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/50"
+              : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
+          }`}
       >
-        <span className={value ? "text-slate-700 font-medium" : "text-slate-400"}>
+        <span className={value ? "text-slate-700 dark:text-slate-200 font-medium" : "text-slate-400"}>
           {displayValue}
         </span>
         <ChevronDown
@@ -222,9 +225,11 @@ const CustomSelect = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-fade-in-down">
+        <div className="absolute z-50 w-full mt-2 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-fade-in-down
+          bg-white dark:bg-slate-800">
           <div className="max-h-60 overflow-y-auto py-1">
-            <div className="px-3 py-2 text-xs text-slate-400 font-medium bg-slate-50 border-b border-slate-100">
+            <div className="px-3 py-2 text-xs font-medium border-b border-slate-100 dark:border-slate-700
+              bg-slate-50 dark:bg-slate-900 text-slate-400">
               เลือก{label}...
             </div>
             {safeOptions.map((option) => (
@@ -237,7 +242,7 @@ const CustomSelect = ({
                 className={`px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
                   value === option[valueKey]
                     ? "bg-blue-600 text-white"
-                    : "text-slate-700 hover:bg-blue-50"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700"
                 }`}
               >
                 {option[displayKey]}
@@ -308,8 +313,8 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           onClick={() => handleSelectDate(d)}
           className={`h-9 w-9 rounded-full text-sm flex items-center justify-center transition-all ${
             isSelected
-              ? "bg-blue-600 text-white shadow-md shadow-blue-300"
-              : "text-slate-700 hover:bg-blue-100 hover:text-blue-600"
+              ? "bg-blue-600 text-white shadow-md shadow-blue-300 dark:shadow-blue-900"
+              : "text-slate-700 dark:text-slate-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
           }`}
         >
           {d}
@@ -321,37 +326,40 @@ const CustomDatePicker = ({ label, value, onChange }) => {
 
   return (
     <div className="relative" ref={containerRef}>
-      <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
         {label}
       </label>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-white rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3 transition-all ${
-          isOpen
-            ? "border-blue-500 ring-2 ring-blue-100"
-            : "border-slate-200 hover:border-blue-300"
-        }`}
+        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3 transition-all 
+          bg-white dark:bg-slate-900 
+          ${
+            isOpen
+              ? "border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/50"
+              : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
+          }`}
       >
         <CalendarIcon
-          className={`w-5 h-5 ${value ? "text-blue-600" : "text-slate-400"}`}
+          className={`w-5 h-5 ${value ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
         />
         <span
-          className={value ? "text-slate-800 font-medium" : "text-slate-400"}
+          className={value ? "text-slate-800 dark:text-slate-200 font-medium" : "text-slate-400"}
         >
           {value ? formatThaiDate(new Date(value)) : "วว/ดด/ปปปป"}
         </span>
       </div>
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 animate-fade-in-down">
+        <div className="absolute left-0 z-50 mt-2 w-72 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-4 animate-fade-in-down
+          bg-white dark:bg-slate-800">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-slate-800 font-bold text-lg">
+            <h3 className="text-slate-800 dark:text-slate-200 font-bold text-lg">
               {THAI_MONTHS[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
             </h3>
             <div className="flex gap-1">
-              <button onClick={handlePrevMonth} type="button" className="p-1 hover:bg-slate-100 rounded-full text-slate-500">
+              <button onClick={handlePrevMonth} type="button" className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button onClick={handleNextMonth} type="button" className="p-1 hover:bg-slate-100 rounded-full text-slate-500">
+              <button onClick={handleNextMonth} type="button" className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
@@ -366,14 +374,14 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           <div className="grid grid-cols-7 gap-y-1 justify-items-center">
             {renderCalendarDays()}
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between text-xs">
+          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between text-xs">
             <button
               type="button"
               onClick={() => {
                 onChange("");
                 setIsOpen(false);
               }}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
               ล้างค่า
             </button>
@@ -385,7 +393,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
                 onChange(new Date(today - offset).toISOString().slice(0, 10));
                 setIsOpen(false);
               }}
-              className="text-blue-600 font-semibold hover:text-blue-700"
+              className="text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700"
             >
               วันนี้
             </button>
@@ -453,7 +461,8 @@ export default function CasePage() {
     const fetchLookupData = async () => {
       setLoadingLookup(true);
       try {
-        const [products, statuses, problems, users] = await Promise.all([
+        // [NOTE]: ใช้ Mock API ที่สร้างไว้
+        const [products, statuses, problems, members] = await Promise.all([
           getproducts(),
           getStatuses(),
           getProblems(),
@@ -463,7 +472,7 @@ export default function CasePage() {
           products: products.products || [],
           statuses: statuses.statuses || statuses.data || [],
           problems: problems.problems || [],
-          users: users.users || users.data || [],
+          users: members.users || members.data || [],
         });
       } catch (err) {
         console.error("Error fetching lookup data:", err);
@@ -519,7 +528,7 @@ export default function CasePage() {
     };
 
     try {
-      await createCase(payload);
+      await createCase(payload); // ใช้ Mock API
       setShowConfirmModal(false);
       setShowSuccessModal(true);
       setFormData(initialFormState());
@@ -540,27 +549,34 @@ export default function CasePage() {
   };
 
   return (
-    <div className="fixed grid place-items-center inset-0 w-full h-full bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 overflow-y-auto z-0 p-10">
-      <div className="w-full max-w-2xl bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 sm:p-10 relative">
+    <div className="fixed grid place-items-center inset-0 w-full h-full overflow-y-auto z-0 p-10
+      bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
+      dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"> {/* ✅ Background Dark Mode */}
+      <div className="w-full max-w-2xl rounded-3xl shadow-2xl border p-8 sm:p-10 relative
+        bg-white/90 backdrop-blur-xl border-white/50
+        dark:bg-slate-800/90 dark:border-slate-700"> {/* ✅ Card Dark Mode */}
+        
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600">
+          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300">
             Create New Case
           </h1>
-          <p className="text-slate-500 mt-2 text-sm font-medium">
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium"> {/* ✅ Text Dark Mode */}
             บันทึกข้อมูลเคสประจำวัน
           </p>
         </div>
 
         {submitError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm font-medium flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-xl text-sm font-medium flex items-center gap-2
+            bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"> {/* ✅ Error Box Dark Mode */}
             <AlertTriangle className="w-5 h-5" /> Error: {submitError}
           </div>
         )}
 
         {loadingLookup && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm z-50">
-            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-            <p className="mt-3 text-slate-600 font-medium">
+          <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm z-50 rounded-3xl
+            bg-white/60 dark:bg-slate-900/60"> {/* ✅ Loading Screen Dark Mode */}
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400" />
+            <p className="mt-3 font-medium text-slate-600 dark:text-slate-300">
               กำลังโหลดข้อมูล...
             </p>
           </div>
@@ -568,7 +584,7 @@ export default function CasePage() {
 
         <form onSubmit={handleSaveClick} className="space-y-6">
           <div className="space-y-4 text-left">
-            <h2 className="text-sm font-medium text-slate-800 flex items-center gap-2">
+            <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2"> {/* ✅ Section Title Dark Mode */}
               วันที่-เวลา
             </h2>
 
@@ -601,15 +617,15 @@ export default function CasePage() {
 
               {/* ส่วนแสดง Duration */}
               <div className="mt-4">
-                <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                   ระยะเวลาที่ใช้ (Duration)
                 </label>
                 <div
                   className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors
                    ${
                      currentDuration.includes("ไม่ถูกต้อง")
-                       ? "bg-red-50 text-red-600 border-red-200"
-                       : "bg-slate-50 text-slate-700 border-slate-200"
+                       ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                       : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                    }
                   `}
                 >
@@ -619,10 +635,10 @@ export default function CasePage() {
             </div>
           </div>
 
-          <hr className="border-slate-100" />
+          <hr className="border-slate-100 dark:border-slate-700" /> {/* ✅ HR Dark Mode */}
 
           <div className="space-y-4 text-left">
-            <h2 className="text-sm font-medium text-slate-800 flex items-center gap-2">
+            <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ข้อมูลเคส
             </h2>
 
@@ -658,7 +674,7 @@ export default function CasePage() {
             />
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 รายละเอียดเคส (Detail)
               </label>
               <textarea
@@ -668,20 +684,25 @@ export default function CasePage() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="พิมพ์รายละเอียดเคส..."
-                className="w-full bg-slate-50 rounded-xl border border-transparent hover:bg-white hover:border-slate-200 px-4 py-3 text-sm text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
-              />
+                className="w-full rounded-xl border border-transparent px-4 py-3 text-sm transition-all resize-none
+                  bg-slate-50 dark:bg-slate-900 
+                  text-slate-700 dark:text-slate-200 
+                  placeholder-slate-400 dark:placeholder-slate-500
+                  hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-600
+                  focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              /> {/* ✅ Textarea Dark Mode */}
             </div>
           </div>
 
-          <hr className="border-slate-100" />
+          <hr className="border-slate-100 dark:border-slate-700" /> {/* ✅ HR Dark Mode */}
 
           <div className="space-y-4 text-left">
-            <h2 className="text-sm font-medium text-slate-800 flex items-center gap-2">
+            <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ผู้เกี่ยวข้อง
             </h2>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 ผู้ร้องขอ (Requester)
               </label>
               <div className="relative">
@@ -693,13 +714,15 @@ export default function CasePage() {
                   maxLength={100}
                   onChange={handleChange}
                   placeholder="กรอกชื่อผู้ร้องขอ"
-                  className="w-full bg-white rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
+                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                /> {/* ✅ Input Dark Mode */}
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 วิธีแก้ไข
               </label>
               <div className="relative">
@@ -711,13 +734,15 @@ export default function CasePage() {
                   value={formData.solution}
                   onChange={handleChange}
                   placeholder="อธิบายวิธีแก้ไข"
-                  className="w-full bg-white rounded-xl border border-slate-200 pl-10 pr-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
-                />
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-3 text-sm transition-all resize-none
+                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                /> {/* ✅ Textarea Dark Mode */}
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1.5 block ml-1">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 ผู้ดำเนินการแก้ไข (Operator)
               </label>
               <div className="relative">
@@ -729,8 +754,10 @@ export default function CasePage() {
                   onChange={handleChange}
                   maxLength={100}
                   placeholder="กรอกชื่อผู้ดำเนินการแก้ไข"
-                  className="w-full bg-white rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                />
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
+                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                /> {/* ✅ Input Dark Mode */}
               </div>
             </div>
           </div>

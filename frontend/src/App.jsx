@@ -37,8 +37,23 @@
 // src/App.jsx
 import AppRoutes from "./routes/AppRoutes.jsx";
 import "./App.css";
+import React, { useEffect } from "react";
 
 
 export default function App() {
+
+useEffect(() => {
+    // 1. ไปดูในถังเก็บข้อมูล (localStorage) ว่าเคยเมมไว้ไหม
+    const isDarkMode = localStorage.getItem("darkMode") === "true";
+    
+    // 2. ถ้าใช่ ให้เติม class="dark" ใส่ที่ html tag ทันที
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+
   return <AppRoutes />;
 }

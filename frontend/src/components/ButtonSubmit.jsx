@@ -3,7 +3,7 @@ export default function ButtonSubmit({ children, type = "submit", onClick }) {
     <button
       type={type}
       onClick={onClick}
-      className="flex-1 py-3 rounded-lg border  bg-blue-600 text-white font-medium   hover:bg-blue-700 shadow-lg shadow-blue-500/30 
+      className="flex-1 py-3 rounded-lg  bg-blue-600 text-white font-medium   hover:bg-blue-700 shadow-lg shadow-blue-500/30 
       
       duration-300 
       hover:-translate-y-1 

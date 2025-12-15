@@ -15,7 +15,7 @@ const ExportButton = ({
       disabled={isExporting || disabled}
       className={`
         flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-normal whitespace-nowrap
-        transition-all duration-300
+        transition-all duration-300 shadow-lg shadow-green-600/50
         ${
           disabled
             ? "bg-slate-200 text-slate-400 cursor-not-allowed" // สีตอนกดไม่ได้

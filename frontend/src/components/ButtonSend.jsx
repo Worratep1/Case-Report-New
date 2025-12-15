@@ -11,7 +11,7 @@ const ButtonSend = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm font-normal whitespace-nowrap
+        flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/50 transition-all active:scale-95 text-sm font-normal whitespace-nowrap
         duration-300
         ${
           disabled

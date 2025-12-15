@@ -8,12 +8,17 @@ export default function SettingPage() {
 
   return (
     <div
-      className="fixed grid place-items-center inset-0 w-full h-full 
-  bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
-  overflow-y-auto z-0 pt-10"
+        className="fixed grid place-items-center inset-0 w-full h-full 
+      bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
+      dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900 
+      overflow-y-auto z-0 pt-10"
     >
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-        <h1 className="text-2xl font-medium text-slate-900 mb-6 text-left">
+      <div className="w-full max-w-sm rounded-2xl shadow-lg p-6 sm:p-8
+        bg-white dark:bg-slate-800 border-none dark:border dark:border-slate-700">
+
+
+        <h1 className="text-2xl font-medium mb-6 text-left
+          text-slate-900 dark:text-white">
           SETTING
         </h1>
 
@@ -31,7 +36,7 @@ export default function SettingPage() {
           />
 
           <MenuButton
-            icon={<Settings className="text-black-900" />}
+            icon={<Settings className="text-slate-400" />}
             label="Recipient Setting"
             onClick={() => navigate("/recipient")}
           />
