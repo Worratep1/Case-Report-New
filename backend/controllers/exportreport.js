@@ -8,21 +8,9 @@ const pool = require("../config/db");
 // ใช้สร้างไฟล์ Excel (.xlsx)
 const ExcelJS = require("exceljs");
 
-// ใช้สร้าง "รูปกราฟ" ด้วย Chart.js บนฝั่ง Node.js
-const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
-
 // -------------------------------------------------------------
 // 2) ตั้งค่าขนาดของกราฟที่จะสร้าง (หน่วย: พิกเซล)
 // -------------------------------------------------------------
-const width = 800;   // ความกว้างของรูปกราฟ
-const height = 400;  // ความสูงของรูปกราฟ
-
-// สร้างตัวช่วยสำหรับ render กราฟเป็นรูป PNG
-const chartJSNodeCanvas = new ChartJSNodeCanvas({
-  width,
-  height,
-  backgroundColour: "white", // ตั้งพื้นหลังเป็นสีขาว
-});
 
 // =============================================================
 // 3) CONTROLLER: EXPORT DAILY REPORT
@@ -100,52 +88,6 @@ exports.exportReport = async (req, res) => {
     
     
     // ---------------------------------------------------------
-    // 3.4 เตรียมข้อมูลสำหรับสร้างกราฟจาก gameRows
-    //     labels  = ชื่อเกม
-    //     data    = จำนวนเคสของแต่ละเกม
-    // ---------------------------------------------------------
-    const labels = gameRows.map((r) => r.game_name);
-    const data = gameRows.map((r) => Number(r.case_count));
-
-    // ---------------------------------------------------------
-    // 3.5 สร้าง config ของกราฟ (ใช้ Chart.js)
-    //     ตอนนี้ใช้กราฟแท่งธรรมดา (bar chart)
-    // ---------------------------------------------------------
-    const chartConfig = {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: `Cases per Game (${date})`,
-            data,
-            backgroundColor: "#4f46e5", // สีของแท่งกราฟ
-          },
-        ],
-      },
-      options: {
-        // ต้อง false เพราะเราสร้างรูปภาพขนาดตายตัว
-        responsive: false,
-        plugins: {
-          legend: { display: true },
-          title: { display: true, text: "Game Issues Breakdown" },
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { precision: 0 }, // ให้ตัวเลขเป็นจำนวนเต็ม
-          },
-        },
-      },
-    };
-
-    // ---------------------------------------------------------
-    // 3.6 สร้าง "รูปกราฟ" (PNG) จาก config ด้านบน
-    //     imageBuffer = binary ของรูปภาพ
-    // ---------------------------------------------------------
-    const imageBuffer = await chartJSNodeCanvas.renderToBuffer(chartConfig);
-
-    // ---------------------------------------------------------
     // 4. สร้างไฟล์ Excel และเพิ่มข้อมูลลงไปทีละส่วน
     // ---------------------------------------------------------
 
@@ -220,21 +162,6 @@ exports.exportReport = async (req, res) => {
     // ปรับความกว้างคอลัมน์ให้พอดูได้ (ใช้ร่วมกันทั้ง Status + Game)
     sheet.getColumn(1).width = 25;
     sheet.getColumn(2).width = 12;
-
-    // ---------------------------------------------------------
-    // 4.5 แทรกรูปกราฟของ Game ลงใน Excel
-    // ---------------------------------------------------------
-    const imageId = workbook.addImage({
-      buffer: imageBuffer, // รูปกราฟจาก chartJSNodeCanvas
-      extension: "png",
-    });
-
-    // วางรูปกราฟไว้ช่วงคอลัมน์ D ถึง L แถว 5 ถึง 24
-    // สามารถปรับตำแหน่ง / ขนาดตามที่ต้องการ
-    sheet.addImage(imageId, {
-      tl: { col: 3, row: 4 },   // top-left (ประมาณ D5)
-      br: { col: 11, row: 24 }, // bottom-right (ประมาณ L25)
-    });
 
     // ---------------------------------------------------------
     // 5. ส่งไฟล์ Excel กลับไปให้ Browser ดาวน์โหลด

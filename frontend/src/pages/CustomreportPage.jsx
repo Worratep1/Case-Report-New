@@ -29,7 +29,8 @@ import {
   HelpCircle,
   RotateCcw,
   BarChart2,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  FileCog
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -61,6 +62,8 @@ import ButtonSend from '../components/ButtonSend';
 import ButtonCancel from '../components/ButtonCancel';
 import ButtonSave from '../components/ButtonSave';
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
+import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
+
 import { STATUS_CONFIG } from "../constants/status";
 
 // --- CONSTANTS ---
@@ -463,7 +466,7 @@ const StatusSummaryCard = ({ data }) => {
     <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-full flex flex-col justify-center  duration-500 
                   hover:shadow-md">
        <div className="flex justify-between items-center mb-2">
-          <h4 className="text-xs font-medium text-slate-800 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <h4 className="text-xs font-medium text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
               <PieChartIcon size={14} /> Status Summary
           </h4>
        </div>
@@ -611,7 +614,10 @@ const StatusSummaryCard = ({ data }) => {
 
 // ✅ 2.2 โหลด Cases ตามวันที่
   const fetchCases = async () => {
-      // if (!selectedDate) return; 
+     if (!selectedDate) { // กดล้างค่าข้อมูลจะไม่มีขึ้นมา
+          setCases([]); 
+          return; 
+      } 
       setLoadingData(true);
       try {
           const res = await getCases({ date: selectedDate });
@@ -800,7 +806,7 @@ const openNewCaseModal = () => {
         setFeedbackModal({
             isOpen: true,
             type: 'error',
-            title: 'ข้อมูลไม่ครบถ้วน',
+            title: 'ข้อมูลไม่ครบ',
             message: 'กรุณากรอกข้อมูลให้ครบถ้วน'
         });
         return; // สำคัญ: ต้องหยุดโค้ดตรงนี้
@@ -1158,19 +1164,21 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                 <ButtonHome onClick={() => navigate("/menu")} />
               </div>
               <div className="flex items-center gap-3">
-                <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
-                  <FileText className="w-5 h-5 text-white " />
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-600">
+                  <FileCog 
+                  className="w-6 h-6 text-yellow-500 "
+                   />
                 </div>
                 <div>
-                  <h1 className="text-xl font-medium text-slate-800 dark:text-white leading-tight">
+                  <h1 className="text-xl font-medium text-slate-800 dark:text-white leading-tight text-left">
                     Custom Report
                   </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">ระบบจัดการและแก้ไขเคส </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 text-start">เพิ่มข้อมูลย้อนหลัง/แก้ไข/ลบข้อมูล </p>
                 </div>
               </div>
             </div>
 
-            {/* Controls */}
+            {/* Controls  ปุ่ม export , send email */}
             <div className="flex items-center gap-3 w-full md:w-auto justify-end px-40">
               <div className="w-48 ">
                 <CustomDatePicker
@@ -1266,10 +1274,11 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                                                 angle : -45,
                                                 textAnchor:"end"
                                               }}
-                                              dy={10}
-                                              height={60} //ไม่ให้ตัวชื่อเกมตกลงไป
+                                              dy={1}
+                                              height={75} //ไม่ให้ตัวชื่อเกมตกลงไป
                                             />
                             <YAxis 
+                                domain={[0, dataMax => dataMax + 1]} // เริ่มที่ 0, จบที่ Max+1 (กันกราฟชนเพดาน)
                                 axisLine={false} 
                                 tickLine={false} 
                                 tick={{ fill: '#94a3b8', fontSize: 12 }} 
@@ -1658,7 +1667,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                               onChange={(e) => setCurrentCase({...currentCase, reporter: e.target.value})} 
                               className="w-full border rounded-xl p-2.5 text-sm
                                  bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white" 
-                              placeholder="ระบุชื่อผู้แจ้ง" 
+                              placeholder="ระบุชื่อผู้ร้องขอ" 
                             />
                         </div>
                         <div>
@@ -1880,7 +1889,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                   />
                 </div>
               </div>
-             {/* ✅ ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
+             {/*  ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
               <div>
                 <label className=" text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <Paperclip size={16} /> Attachments (ไม่บังคับ, สูงสุด 5 ไฟล์)
@@ -1945,6 +1954,13 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
               >
                 Cancel
               </button>
+
+                <ButtonConfirmsend 
+               onClick={handleSendEmail} 
+                isLoading={isLoading}
+                > 
+                </ButtonConfirmsend> 
+{/* 
               <button
                 onClick={handleSendEmail}
                 disabled={isLoading}
@@ -1956,7 +1972,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                   <Send size={16} />
                 )}{" "}
                 Confirm Send
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

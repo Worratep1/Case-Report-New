@@ -1,10 +1,10 @@
 import React from "react";
-import { Send } from "lucide-react";
+import { Send , Mail} from "lucide-react";
 
 const ButtonSend = ({ 
   onClick, 
   disabled = false, 
-  label = "Send Report" 
+  label = "Send Email" 
 }) => {
   return (
     <button
@@ -20,7 +20,7 @@ const ButtonSend = ({
         }
       `}
     >
-      <Send size={16} />
+      <Send size={16}  />
       <span className="hidden sm:inline">{label}</span>
     </button>
   );

@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import MenuButton from "../components/MenuButton";
 import ButtonBack from "../components/ButtonBack";
-import { UserCog, Gamepad2, Settings ,ChevronLeft} from "lucide-react";
+import { UserCog, Gamepad2 , Mail} from "lucide-react";
+import DarkModeToggle from "../components/DarkModeToggle";
 
 export default function SettingPage() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function SettingPage() {
     >
       <div className="w-full max-w-sm rounded-2xl shadow-lg p-6 sm:p-8
         bg-white dark:bg-slate-800 border-none dark:border dark:border-slate-700">
-
+          <DarkModeToggle />
 
         <h1 className="text-2xl font-medium mb-6 text-left
           text-slate-900 dark:text-white">
@@ -26,18 +27,21 @@ export default function SettingPage() {
           <MenuButton
             icon={<Gamepad2 className="text-blue-500" />}
             label="Game Setting"
+            description="จัดการข้อมูลเกม"
             onClick={() => navigate("/game")} // ไปหน้า CasePage
           />
 
           <MenuButton
             icon={<UserCog className="text-yellow-600" />}
             label="Member Setting"
+            description="จัดการสมาชิก"
             onClick={() => navigate("/member")}
           />
 
           <MenuButton
-            icon={<Settings className="text-slate-400" />}
+            icon={<Mail className="text-indigo-500" />}
             label="Recipient Setting"
+            description="จัดการผู้รับอีเมล"
             onClick={() => navigate("/recipient")}
           />
 

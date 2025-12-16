@@ -8,6 +8,7 @@ import {
 // Import Components ที่แยกไฟล์ไว้
 import ButtonBack from "../components/ButtonBack";
 import MenuButton from "../components/MenuButton";
+import DarkModeToggle from '../components/DarkModeToggle';
 
 export default function ReportPage() {
   const navigate = useNavigate();
@@ -18,9 +19,11 @@ export default function ReportPage() {
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900 
       overflow-y-auto z-0 pt-10"
     >
+        
+
       <div className="w-full max-w-sm rounded-2xl shadow-lg p-6 sm:p-8
         bg-white dark:bg-slate-800 border-none dark:border dark:border-slate-700">
-        
+        <DarkModeToggle />
         {/* Title */}
         <h1 className="text-2xl font-medium mb-6 text-left
           text-slate-900 dark:text-white">
@@ -32,7 +35,7 @@ export default function ReportPage() {
           <MenuButton
             icon={<ClipboardList className="text-blue-400" />}
             label="Daily Report"
-            description="ดูรายงานประจำวัน"
+            description="รายงานประจำวัน"
             onClick={() => navigate("/dailyreport")} 
           />
 
@@ -40,7 +43,7 @@ export default function ReportPage() {
           <MenuButton
             icon={<FileCog className="text-yellow-500" />}
             label="Custom Report"
-            description="สร้างรายงานแบบกำหนดเอง"
+            description="เพิ่มข้อมูลย้อนหลัง/แก้ไข/ลบข้อมูล"
             onClick={() => navigate("/customreport")} 
           />
 

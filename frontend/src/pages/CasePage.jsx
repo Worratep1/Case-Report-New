@@ -100,7 +100,7 @@ const CustomTimePicker = ({ label, value, onChange }) => {
 
   return (
     <div className="relative" ref={containerRef}>
-      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+      <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
         {label}
       </label>
       <div
@@ -200,7 +200,7 @@ const CustomSelect = ({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+      <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
         {label}
       </label>
 
@@ -326,7 +326,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
 
   return (
     <div className="relative" ref={containerRef}>
-      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+      <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
         {label}
       </label>
       <div
@@ -584,12 +584,12 @@ export default function CasePage() {
 
         <form onSubmit={handleSaveClick} className="space-y-6">
           <div className="space-y-4 text-left">
-            <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2"> {/* ✅ Section Title Dark Mode */}
+            <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2"> {/* ✅ Section Title Dark Mode */}
               วันที่-เวลา
             </h2>
 
             <div className="space-y-4 ">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4  ">
                 <CustomDatePicker
                   label="วันที่เริ่ม Case"
                   value={formData.start_datetime}
@@ -617,7 +617,7 @@ export default function CasePage() {
 
               {/* ส่วนแสดง Duration */}
               <div className="mt-4">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+                <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                   ระยะเวลาที่ใช้ (Duration)
                 </label>
                 <div
@@ -627,9 +627,19 @@ export default function CasePage() {
                        ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
                        : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                    }
+                   
                   `}
+                  
                 >
-                  {currentDuration || "-"}
+               {/* ✅ แก้ตรงนี้ครับ */}
+                  {currentDuration === "0 นาที" ? (
+                    <span className="text-slate-400 dark:text-slate-500 opacity-70">
+                      ระบบคำนวณอัตโนมัติ
+                    </span>
+                  ) : (
+                    currentDuration
+                  )}
+                                    
                 </div>
               </div>
             </div>
@@ -638,11 +648,11 @@ export default function CasePage() {
           <hr className="border-slate-100 dark:border-slate-700" /> {/* ✅ HR Dark Mode */}
 
           <div className="space-y-4 text-left">
-            <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ข้อมูลเคส
             </h2>
 
-            <div className="grid grid-cols-2 gap-4 ">
+            <div className="grid grid-cols-2 gap-4 text-sm ">
               <CustomSelect
                 label="Game "
                 placeholder="เลือกเกม..."
@@ -674,7 +684,7 @@ export default function CasePage() {
             />
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+              <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 รายละเอียดเคส (Detail)
               </label>
               <textarea
@@ -697,12 +707,12 @@ export default function CasePage() {
           <hr className="border-slate-100 dark:border-slate-700" /> {/* ✅ HR Dark Mode */}
 
           <div className="space-y-4 text-left">
-            <h2 className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ผู้เกี่ยวข้อง
             </h2>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 ผู้ร้องขอ (Requester)
               </label>
               <div className="relative">
@@ -713,7 +723,7 @@ export default function CasePage() {
                   value={formData.requester_name}
                   maxLength={100}
                   onChange={handleChange}
-                  placeholder="กรอกชื่อผู้ร้องขอ"
+                  placeholder="ระบุชื่อผู้ร้องขอ"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
@@ -722,8 +732,8 @@ export default function CasePage() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
-                วิธีแก้ไข
+              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+                วิธีการแก้ไข (solution)
               </label>
               <div className="relative">
                 <Wrench className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
@@ -742,7 +752,7 @@ export default function CasePage() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 ผู้ดำเนินการแก้ไข (Operator)
               </label>
               <div className="relative">
@@ -753,7 +763,7 @@ export default function CasePage() {
                   value={formData.solver}
                   onChange={handleChange}
                   maxLength={100}
-                  placeholder="กรอกชื่อผู้ดำเนินการแก้ไข"
+                  placeholder="ระบุชื่อผู้ดำเนินการเเก้ไข"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"

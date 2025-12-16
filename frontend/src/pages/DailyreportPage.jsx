@@ -24,6 +24,8 @@ import {
   PieChart as PieChartIcon,
   Home,
   FileDown,
+  Mail,
+  ClipboardList
 } from "lucide-react";
 
 import {
@@ -52,6 +54,8 @@ import ButtonSend from "../components/ButtonSend";
 import ButtonHome from "../components/ButtonHome";
 import { STATUS_CONFIG } from "../constants/status";
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
+import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
+import DarkModeToggle from "../components/DarkModeToggle.jsx";
 
 // --- CONSTANTS ---
 
@@ -293,7 +297,8 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="#f1f5f9"
+                  stroke="#d1d5db"
+                  
                   strokeOpacity={0.1}
                 />
                 <XAxis
@@ -306,10 +311,11 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                     angle : -45,
                     textAnchor:"end"
                   }}
-                  dy={10}
-                  height={60} //ไม่ให้ตัวชื่อเกมตกลงไป
+                  dy={1}
+                  height={75} //ไม่ให้ตัวชื่อเกมตกลงไป
                 />
                 <YAxis
+                   domain={[0, dataMax => dataMax + 1]} // เริ่มที่ 0, จบที่ Max+1 (กันกราฟชนเพดาน)
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
@@ -324,7 +330,7 @@ const ReportDashboard = ({ cases = [], selectedDate }) => {
                   label={{
                     position: "top",
                     fill: "gray",
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: "bold",
                   }}
                 ></Bar>
@@ -1071,10 +1077,11 @@ export default function DailyReport() {
       {/* Header Bar */}
       <div className="sticky top-0 z-40 shadow-sm
         bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"> {/*  Header Bar Dark Mode */}
+        
         <div className="w-full px-1 sm:px-8 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             {/* Logo & Title */}
-            <div className="flex items-center gap-3 w-full md:w-auto px-48">
+            <div className="flex items-center gap-3 w-full md:w-auto px-48"> 
               <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
                 <button
                   className=" p-2 rounded-full
@@ -1089,14 +1096,14 @@ export default function DailyReport() {
                 <ButtonHome onClick={() => navigate("/menu")} />
               </div>
               <div className="flex items-center gap-3">
-                <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
-                  <FileText className="w-5 h-5 text-white " />
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-600">
+                  <ClipboardList className="w-6 h-6 text-blue-400 " />
                 </div>
                 <div>
                   <h1 className="text-xl font-medium text-slate-800 dark:text-white leading-tight">
                     Daily Report
                   </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">ระบบรายงานประจำวัน</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 text-start">รายงานประจำวัน</p>
                 </div>
               </div>
             </div>
@@ -1508,8 +1515,8 @@ export default function DailyReport() {
             
             <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
               <h3 className="font-medium text-xl text-slate-800 dark:text-white flex items-center gap-2">
-                <Send size={20} className="text-indigo-600 dark:text-indigo-400" />
-                Send Daily Report
+                <Send size={25} className="text-indigo-600 dark:text-indigo-400" />
+                Send Email
               </h3>
               <button
                 onClick={() => setIsEmailModalOpen(false)}
@@ -1520,7 +1527,7 @@ export default function DailyReport() {
             </div>
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
               <div>
-                <label className=" text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                <label className=" text-sm font-normal text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <User size={16} /> Select Recipients
                 </label>
                 <div className="relative">
@@ -1624,25 +1631,25 @@ export default function DailyReport() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
+                  <label className="block text-xs font-medium uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
                     Subject
                   </label>
                   <input
                     value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                    className="w-full px-3 py-2 border rounded-lg text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
                       bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
+                  <label className="block text-xs font-medium uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
                     Message
                   </label>
                   <textarea
                     value={emailBody}
                     onChange={(e) => setEmailBody(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none
+                    className="w-full font-normal px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none
                       bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
@@ -1722,10 +1729,19 @@ export default function DailyReport() {
               >
                 Cancel
               </button>
+
+                <ButtonConfirmsend 
+               onClick={handleSendEmail} 
+                isLoading={isLoading}
+                > Confirm Send
+                </ButtonConfirmsend> 
+
+                
+{/* 
               <button
                 onClick={handleSendEmail}
                 disabled={isLoading}
-                className="px-6 py-2.5 rounded-lg font-bold text-sm shadow-md shadow-indigo-200 dark:shadow-indigo-900/50 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed
+                className="px-6 py-2.5 rounded-lg font-medium text-sm shadow-md shadow-indigo-200 dark:shadow-indigo-900/50 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed
                   bg-indigo-600 text-white hover:bg-indigo-700"
               >
                 {isLoading ? (
@@ -1734,7 +1750,7 @@ export default function DailyReport() {
                   <Send size={16} />
                 )}{" "}
                 Confirm Send
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

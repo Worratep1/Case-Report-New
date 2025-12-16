@@ -15,7 +15,7 @@ const MenuButton = ({ icon, label, onClick, description }) => (
     </div>
     
     <div className="ml-4 text-left flex-1">
-      <h3 className="font-semibold text-slate-700 dark:text-slate-100 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-300">
+      <h3 className="font-medium text-slate-700 dark:text-slate-100 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-300">
         {label}
       </h3>
       {description && (
