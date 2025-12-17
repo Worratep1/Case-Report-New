@@ -1,182 +1,200 @@
 // -------------------------------------------------------------
 // 1) IMPORT LIBRARIES ที่ต้องใช้
 // -------------------------------------------------------------
-
-// ใช้สำหรับคุยกับฐานข้อมูล PostgreSQL ผ่าน pool
 const pool = require("../config/db");
-
-// ใช้สร้างไฟล์ Excel (.xlsx)
 const ExcelJS = require("exceljs");
 
-// -------------------------------------------------------------
-// 2) ตั้งค่าขนาดของกราฟที่จะสร้าง (หน่วย: พิกเซล)
-// -------------------------------------------------------------
-
 // =============================================================
-// 3) CONTROLLER: EXPORT DAILY REPORT
-//    เส้นทางเรียก: GET /api/exportreport?date=YYYY-MM-DD
+// 3) CONTROLLER: EXPORT REPORT
 // =============================================================
 exports.exportReport = async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, mode } = req.query;
 
-    // ถ้าไม่ส่ง date มา ให้ตอบ 400 ทันที
     if (!date) {
       return res.status(400).json({
         message: "กรุณาระบุวันที่ เช่น ?date=2025-12-09",
       });
     }
 
+    // --- กำหนดเงื่อนไข WHERE (Daily / Monthly / MTD) ---
+    const dateCondition =
+      mode === "monthly"
+        ? "start_datetime::date >= date_trunc('month', $1::date)::date AND start_datetime::date <= $1::date"
+        : "start_datetime::date = $1";
+
+    const dateConditionWithAlias =
+      mode === "monthly"
+        ? "c.start_datetime::date >= date_trunc('month', $1::date)::date AND c.start_datetime::date <= $1::date"
+        : "c.start_datetime::date = $1";
+
     // ---------------------------------------------------------
-    // 3.1 ดึง "จำนวนเคสทั้งหมด" ของวันนั้น
+    // 3.1 ดึง "จำนวนเคสทั้งหมด"
     // ---------------------------------------------------------
     const totalResult = await pool.query(
-      `
-      SELECT COUNT(*) AS total_cases
-      FROM cases
-      WHERE start_datetime::date = $1
-      `,
+      `SELECT COUNT(*) AS total_cases FROM cases WHERE ${dateCondition}`,
       [date]
     );
-
-    // แปลงค่าให้อยู่ในรูป number (ถ้าไม่มีเคสให้เป็น 0)
-    const totalCases =
-      totalResult?.rows?.length > 0
-        ? Number(totalResult.rows[0].total_cases)
-        : 0;
+    const totalCases = totalResult?.rows?.length > 0 ? Number(totalResult.rows[0].total_cases) : 0;
 
     // ---------------------------------------------------------
-    // 3.2 ดึง "Game Issues Breakdown"
-    //     จำนวนเคสแยกตาม product / game
+    // 3.2 [CORRECTED SQL] ดึง Game Breakdown แยก Status
     // ---------------------------------------------------------
     const gameResult = await pool.query(
       `
       SELECT 
         p.product_name AS game_name,
-        COUNT(*) AS case_count
+        s.status_name AS status,  -- เลือก Status มาโชว์
+        COUNT(*) AS case_count,
+        COALESCE(SUM(EXTRACT(EPOCH FROM (c.end_datetime - c.start_datetime)) / 60), 0) AS total_minutes
       FROM cases c
       JOIN products p ON c.product_Id = p.product_id
-      WHERE c.start_datetime::date = $1
-      GROUP BY p.product_name
-      ORDER BY case_count DESC, p.product_name
+      JOIN case_statuses s ON c.status_id = s.status_id -- [เพิ่ม] JOIN ตาราง Status
+      WHERE ${dateConditionWithAlias}
+      GROUP BY p.product_name, s.status_name -- [เพิ่ม] Group By Status ด้วย
+      ORDER BY total_minutes DESC, case_count DESC
       `,
       [date]
     );
-
-    // ถ้า query ได้ให้ใช้ rows ถ้าไม่มีก็ให้เป็น array ว่าง
     const gameRows = Array.isArray(gameResult?.rows) ? gameResult.rows : [];
 
     // ---------------------------------------------------------
     // 3.3 ดึง "Status Summary"
-    //     จำนวนเคสแยกตามสถานะ (Open / Onhold / Closed)
     // ---------------------------------------------------------
     const statusResult = await pool.query(
       `
-      SELECT 
-        s.status_name AS status,
-        COUNT(*) AS case_count
+      SELECT s.status_name AS status, COUNT(*) AS case_count
       FROM cases c
       JOIN case_statuses s ON c.status_id = s.status_id
-      WHERE c.start_datetime::date = $1
+      WHERE ${dateConditionWithAlias}
       GROUP BY s.status_name, s.status_id
-        ORDER BY s.status_id ASC
+      ORDER BY s.status_id ASC
       `,
       [date]
     );
-
     const statusRows = Array.isArray(statusResult?.rows) ? statusResult.rows : [];
-    
-    
-    // ---------------------------------------------------------
-    // 4. สร้างไฟล์ Excel และเพิ่มข้อมูลลงไปทีละส่วน
-    // ---------------------------------------------------------
 
-    // 4.1 สร้าง Workbook และ Worksheet ใหม่
+    // =========================================================
+    // 4. คำนวณ Summary Metrics (Total Downtime & Most Impacted)
+    // =========================================================
+    const gameStats = {};
+    let totalDowntimeMinutes = 0;
+
+    gameRows.forEach((row) => {
+      const mins = parseFloat(row.total_minutes);
+      const count = Number(row.case_count);
+      const name = row.game_name;
+
+      totalDowntimeMinutes += mins;
+
+      // รวมยอดแต่ละเกม (Aggregate) เพื่อหา Most Impacted
+      if (!gameStats[name]) {
+        gameStats[name] = { name: name, total_minutes: 0, case_count: 0 };
+      }
+      gameStats[name].total_minutes += mins;
+      gameStats[name].case_count += count;
+    });
+
+    const hours = Math.floor(totalDowntimeMinutes / 60);
+    const mins = Math.floor(totalDowntimeMinutes % 60);
+    const totalDowntimeStr = `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")} hrs`;
+
+    // หา Most Impacted
+    let mostImpacted = "-";
+    const aggregatedGames = Object.values(gameStats).sort((a, b) => {
+        const timeDiff = b.total_minutes - a.total_minutes;
+        if (timeDiff !== 0) return timeDiff;
+        return b.case_count - a.case_count;
+    });
+
+    if (aggregatedGames.length > 0) {
+      const topGame = aggregatedGames[0];
+      if (topGame.total_minutes > 0) {
+        const ties = aggregatedGames.filter(
+          (r) => r.total_minutes === topGame.total_minutes && r.case_count === topGame.case_count
+        );
+        if (ties.length > 1) {
+          mostImpacted = ties.map((t) => t.name).slice(0, 2).join(", ") + (ties.length > 2 ? "..." : "");
+        } else {
+          mostImpacted = topGame.name;
+        }
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 5. สร้างไฟล์ Excel
+    // ---------------------------------------------------------
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Daily Report");
+    const sheet = workbook.addWorksheet("Report");
 
-    // 4.2 เขียนหัวรายงานด้านบน
-    sheet.mergeCells("A1:B1"); // รวมเซลล์ A1 และ B1
+    // Header
+    sheet.mergeCells("A1:D1"); // ขยายเป็น 4 คอลัมน์เพราะตารางกว้างขึ้น
     const titleCell = sheet.getCell("A1");
-    titleCell.value = "Daily Case Report";
+    titleCell.value = mode === "monthly" ? `Monthly Case Report (MTD)` : `Daily Case Report`;
     titleCell.font = { bold: true, size: 16 };
-    titleCell.alignment = { vertical: "middle", horizontal: "left" };
-
+    
     sheet.getCell("A2").value = `Date: ${date}`;
     sheet.getCell("A3").value = `Total Cases: ${totalCases}`;
+    sheet.getCell("A4").value = `Total Downtime: ${totalDowntimeStr}`;
+    sheet.getCell("A5").value = `Most Impacted: ${mostImpacted}`;
 
-
-      // ---------------------------------------------------------
-    // 4.3 ส่วน Status Summary (แสดงเป็นข้อความล้วน) อยู่ด้านบน
-    // ---------------------------------------------------------
-
-    // เริ่มหัวข้อ Status Summary ที่บรรทัด 5
-    const startRowForStatus = 5;
-
-    sheet.getCell(`A${startRowForStatus}`).value = `Status Summary (${date})`;
+    // --- Status Summary ---
+    const startRowForStatus = 7;
+    sheet.getCell(`A${startRowForStatus}`).value = `Status Summary`;
     sheet.getCell(`A${startRowForStatus}`).font = { bold: true, size: 12 };
 
-    // แถวหัวตารางของ Status
-    const statusHeaderRowIndex = startRowForStatus + 2;
-    const statusHeaderRow = sheet.getRow(statusHeaderRowIndex);
+    const statusHeaderRow = sheet.getRow(startRowForStatus + 1);
     statusHeaderRow.values = ["Status", "Cases"];
     statusHeaderRow.font = { bold: true };
 
-    // เติมข้อมูลสถานะทีละแถว
-    let statusRowIndex = statusHeaderRowIndex + 1;
-
+    let statusRowIndex = startRowForStatus + 2;
     statusRows.forEach((row) => {
       sheet.getCell(`A${statusRowIndex}`).value = row.status;
       sheet.getCell(`B${statusRowIndex}`).value = Number(row.case_count);
       statusRowIndex++;
     });
 
-    // แถวถัดไปหลังจบตาราง Status จะถูกใช้เป็นจุดเริ่มของ Game
-    const nextRowAfterStatus = statusRowIndex;
-
-    // ---------------------------------------------------------
-    // 4.4 ส่วน Game Issues Breakdown อยู่ถัดจาก Status ลงมา
-    // ---------------------------------------------------------
-
-    // เว้นจาก Status ลงมาอีก 2 แถว
-    const startRowForGame = nextRowAfterStatus + 2;
-
-    sheet.getCell(`A${startRowForGame}`).value = `Game Issues Breakdown (${date})`;
+    // --- Game Issues Breakdown ---
+    const startRowForGame = statusRowIndex + 2;
+    sheet.getCell(`A${startRowForGame}`).value = `Game Issues Breakdown`;
     sheet.getCell(`A${startRowForGame}`).font = { bold: true, size: 12 };
 
-    // แถวหัวของตาราง Game
-    const headerRowIndex = startRowForGame + 2;
-    const headerRow = sheet.getRow(headerRowIndex);
-    headerRow.values = ["Game", "Cases"];
-    headerRow.font = { bold: true };
+    const gameHeaderRow = sheet.getRow(startRowForGame + 1);
+    // [แก้ไข] เพิ่มหัวข้อ Status เข้าไปให้ครบ 4 คอลัมน์
+    gameHeaderRow.values = ["Game", "Status", "Cases", "Downtime Duration"];
+    gameHeaderRow.font = { bold: true };
 
-    // เติมข้อมูลเกมทีละแถว
-    let rowIndex = headerRowIndex + 1;
-
+    let gameRowIndex = startRowForGame + 2;
     gameRows.forEach((row) => {
-      sheet.getCell(`A${rowIndex}`).value = row.game_name;
-      sheet.getCell(`B${rowIndex}`).value = Number(row.case_count);
-      rowIndex++;
+      sheet.getCell(`A${gameRowIndex}`).value = row.game_name;
+      sheet.getCell(`B${gameRowIndex}`).value = row.status; // ใส่ Status
+      sheet.getCell(`C${gameRowIndex}`).value = Number(row.case_count); // ใส่ Cases
+
+      // แปลงเวลา h m
+      const totalMins = Math.round(row.total_minutes);
+      const h = Math.floor(totalMins / 60);
+      const m = totalMins % 60;
+      let timeString = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      if (totalMins === 0) timeString = "0m";
+
+      sheet.getCell(`D${gameRowIndex}`).value = timeString; // ใส่ Duration
+      gameRowIndex++;
     });
 
-    // ปรับความกว้างคอลัมน์ให้พอดูได้ (ใช้ร่วมกันทั้ง Status + Game)
-    sheet.getColumn(1).width = 25;
-    sheet.getColumn(2).width = 12;
+    // จัดความกว้างคอลัมน์
+    sheet.getColumn(1).width = 25; // Game
+    sheet.getColumn(2).width = 15; // Status
+    sheet.getColumn(3).width = 10; // Cases
+    sheet.getColumn(4).width = 20; // Downtime
 
-    // ---------------------------------------------------------
-    // 5. ส่งไฟล์ Excel กลับไปให้ Browser ดาวน์โหลด
-    // ---------------------------------------------------------
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="daily-report-${date}.xlsx"`
-    );
+    // Response
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    const filename = mode === "monthly" ? `monthly-report-${date}.xlsx` : `daily-report-${date}.xlsx`;
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
     await workbook.xlsx.write(res);
     res.end();
+
   } catch (err) {
     console.error("Error exportReport:", err);
     return res.status(500).json({

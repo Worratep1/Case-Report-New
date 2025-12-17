@@ -146,7 +146,7 @@ export default function MemberSetting() {
       setFeedbackModal({
         isOpen: true,
         type: 'error',
-        title: 'ข้อมูลไม่ครบถ้วน',
+        title: 'ข้อมูลไม่ครบ',
         message: 'กรุณากรอกข้อมูลให้ครบถ้วน',
       });
       return;

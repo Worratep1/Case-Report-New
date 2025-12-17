@@ -113,16 +113,31 @@ exports.createCase = async (req, res) => {
 
 
 // ========================================
-// GET /api/cases  → ดึงเคสทั้งหมด หรือ ดึงเคสตามวันที่
+// GET /api/cases  → ดึงเคสทั้งหมด หรือ ดึงเคสตามวันที่  (รองรับรายเดือน)
 // ========================================
 exports.getCases = async (req, res) => {
   try {
-    const { date } = req.query; 
+    const { date  , mode } = req.query; 
 
     let result;
 
     if (date) {
-      // กรณีระบุวันที่
+      if(mode === "monthly"){
+
+        // ดึงข้อมูลตั้งแต่ "วันที่ 1 ของเดือนนั้น" จนถึง "วันที่เลือก"
+
+        result = await pool.query(
+         `
+          SELECT *
+          FROM cases
+          WHERE start_datetime::date >= date_trunc('month', $1::date)::date
+            AND start_datetime::date <= $1::date
+          ORDER BY start_datetime DESC
+          `,
+          [date]
+        );
+      } else {
+          // กรณีระบุวันที่ เเสดงของวันนั้นที่เลือก
       result = await pool.query(
         `
         SELECT *
@@ -132,8 +147,10 @@ exports.getCases = async (req, res) => {
         `, 
         [date]
       );
+      }
+    
     } else {
-      // กรณีดูทั้งหมด
+      // กรณีดูทั้งหมด (ไม่ใส่วันที่)
       result = await pool.query(
         `
         SELECT *

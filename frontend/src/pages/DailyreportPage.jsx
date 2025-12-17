@@ -20,26 +20,10 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  BarChart2,
-  PieChart as PieChartIcon,
-  Home,
-  FileDown,
-  Mail,
-  ClipboardList
+  ClipboardList,
+  Server,
+  Flame
 } from "lucide-react";
-
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  PieChart,
-  Pie,
-} from "recharts";
 
 import { getCases } from "../api/case";
 import { getProblems } from "../api/problems";
@@ -55,29 +39,31 @@ import ButtonHome from "../components/ButtonHome";
 import { STATUS_CONFIG } from "../constants/status";
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
-import DarkModeToggle from "../components/DarkModeToggle.jsx";
+import ViewModeToggle from "../components/ViewModeToggle";
+
+
+import StatCard from "../components/dashboard/StatCard";
+import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
+import StatusPieChart from "../components/dashboard/StatusPieChart";
 
 // --- CONSTANTS ---
-
-
 const CONFIG = {
   MAX_FILE_SIZE_MB: 5,
   MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
   ALLOWED_FILE_TYPES: [
-    "application/pdf", 
-    "image/jpeg", 
-    "image/png", 
-    "application/msword", 
-    "application/vnd.ms-excel", 
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "application/msword",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ],
 };
 
 const ITEMS_PER_PAGE = 5;
 
-// --- HELPER FUNCTIONS (TIMEZONE SAFE) ---
-
+// --- HELPER FUNCTIONS ---
 const getTodayString = () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -95,262 +81,137 @@ const formatDateToISO = (date) => {
 };
 
 const parseISODate = (dateStr) => {
-  if (!dateStr) return new Date(); 
+  if (!dateStr) return new Date();
   const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(year, month - 1, day, 12, 0, 0);
 };
 
-// --- INTERNAL DASHBOARD COMPONENTS (Updated for Dark Mode) ---
-
-const StatCard = ({ title, value, icon, color }) => (
-  <div
-    className={`bg-white dark:bg-slate-800 px-6 py-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col justify-center`}
-  >
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-0.5">{title}</p>
-        <h3 className="text-4xl font-bold text-slate-800 dark:text-white leading-none">
-          {value}
-        </h3>
-      </div>
-      <div className={`p-3 rounded-lg ${color} dark:bg-opacity-20`}>{icon}</div>
-    </div>
-  </div>
-);
-
-const StatusSummaryCard = ({ data }) => {
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-    index,
-    value,
-  }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (value === 0) return null;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor="middle"
-        dominantBaseline="central"
-        style={{
-          fontSize: "11px",
-          fontWeight: "bold",
-          textShadow: "0px 1px 2px rgba(0,0,0,0.25)",
-          pointerEvents: "none",
-        }}
-      >
-        {value}
-      </text>
-    );
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-full flex flex-col justify-center hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="text-xs font-medium text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
-          <PieChartIcon size={14} /> Status Summary
-        </h4>
-      </div>
-
-      <div className="flex flex-col sm:flex-row items-center gap-6 h-full">
-        {/* Donut Chart */}
-        <div className="w-full sm:w-1/2 h-[140px] relative">
-          {data && data.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={35}
-                  outerRadius={55}
-                  paddingAngle={5}
-                  dataKey="value"
-                  label={renderCustomizedLabel}
-                  labelLine={false}
-                >
-                  {data.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                      strokeWidth={0}
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
-              <PieChartIcon size={32} className="mb-1 opacity-50" />
-              <p className="text-xs">No Data</p>
-            </div>
-          )}
-        </div>
-
-        {/* Status List */}
-        <div className="w-full sm:w-1/2 grid grid-cols-1 gap-y-3">
-          {data && data.length > 0 ? (
-            data.map((entry, index) => (
-              <div key={index} className="flex items-center gap-2 min-w-0">
-                <div
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: entry.color }}
-                ></div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">
-                  {entry.name}
-                </span>
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  ({entry.value})
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center col-span-2">
-              No data available
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ReportDashboard = ({ cases = [], selectedDate }) => {
+// --- REPORT DASHBOARD CONTAINER (พ่อแม่) ---
+const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
   const dashboardData = useMemo(() => {
     const safeCases = Array.isArray(cases) ? cases : [];
-    const stats = { total: safeCases.length };
-    const counts = {};
-    const gameMap = {};
+    
+    // 1. คำนวณตัวเลขสรุป
+    let totalDownMinutes = 0;
+    const gameStats = {}; 
+    const counts = {}; 
 
     safeCases.forEach((c) => {
       if (!c) return;
+      
+      // Sum Downtime
+      const minutes = c.durationMins || 0;
+      totalDownMinutes += minutes;
+
+      // Group by Game for Bar Chart
+      const game = c.game || "Unknown";
+      if (!gameStats[game]) {
+        gameStats[game] = { minutes: 0, count: 0 };
+      }
+      gameStats[game].minutes += minutes;
+      gameStats[game].count += 1;
+
+      // Group by Status for Pie Chart
       const status = c.status || "others";
       counts[status] = (counts[status] || 0) + 1;
-      const game = c.game || "Unknown";
-      gameMap[game] = (gameMap[game] || 0) + 1;
     });
 
+    // 2. จัดการ Most Impacted (Tie-Breaker Logic)
+    const sortedGames = Object.keys(gameStats)
+        .map(key => ({ name: key, ...gameStats[key] }))
+        .sort((a, b) => {
+            const timeDiff = b.minutes - a.minutes;
+            if (timeDiff !== 0) return timeDiff;
+            return b.count - a.count;
+        });
+        
+    let mostImpacted = "-";
+    if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
+        const topGame = sortedGames[0];
+        const ties = sortedGames.filter(g => 
+            g.minutes === topGame.minutes && g.count === topGame.count
+        );
+
+        if (ties.length > 1) {
+            const names = ties.map(t => t.name);
+            mostImpacted = names.slice(0, 2).join(", "); 
+            if (ties.length > 2) mostImpacted += "...";
+        } else {
+            mostImpacted = topGame.name;
+        }
+    }
+
+    // 3. Format Total Downtime เป็น h:m
+    const downHours = Math.floor(totalDownMinutes / 60);
+    const downMins = totalDownMinutes % 60;
+    const totalDowntimeStr = `${String(downHours).padStart(2, '0')}:${String(downMins).padStart(2, '0')} hrs`;
+
+    // 4. เตรียมข้อมูลกราฟ
+    const barChartData = sortedGames.filter(item => item.minutes > 0);
+
     const pieData = Object.keys(STATUS_CONFIG)
-      .map((key) => {
-        const count = counts[key] || 0;
-        return {
-          name: STATUS_CONFIG[key].label,
-          value: count,
-          color: STATUS_CONFIG[key].color,
-        };
-      })
+      .map((key) => ({
+        name: STATUS_CONFIG[key].label,
+        value: counts[key] || 0,
+        color: STATUS_CONFIG[key].color,
+      }))
       .filter((item) => item.value > 0);
 
-    const chartData = Object.keys(gameMap)
-      .map((game) => ({
-        name: game,
-        count: gameMap[game],
-      }))
-      .sort((a, b) => b.count - a.count);
-
-    return { stats, pieData, chartData };
+    return {
+      stats: {
+        totalCases: safeCases.length,
+        totalDowntimeStr,
+        mostImpacted,
+      },
+      barChartData,
+      pieData
+    };
   }, [cases]);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 
-    duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* 1. Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
-          <StatCard
-            title="Total Cases"
-            value={dashboardData.stats.total}
-            icon={<AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
-            color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <StatusSummaryCard data={dashboardData.pieData} />
-        </div>
+        <StatCard
+          title="Total Downtime"
+          value={dashboardData.stats.totalDowntimeStr}
+          icon={<Clock className="w-6 h-6 text-red-600 dark:text-red-400" />}
+          color="bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-900/30"
+        />
+        <StatCard
+          title="Total Cases"
+          value={dashboardData.stats.totalCases}
+          icon={<AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />}
+          color="bg-orange-50 border-orange-100 dark:bg-orange-900/20 dark:border-orange-900/30"
+        />
+        <StatCard
+          title="Most Impacted"
+          value={dashboardData.stats.mostImpacted}
+          icon={<Flame className="w-6 h-6 text-red-600 dark:text-red-600" />}
+          color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
+        />
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex items-center gap-2 mb-6">
-          <Gamepad2 className="text-blue-500 dark:text-blue-400" size={24} />
-          <h3 className="text-lg font-medium text-slate-800 dark:text-white">
-            Game Issues Breakdown ({selectedDate})
-          </h3>
+      {/* 2. Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Downtime Bar Chart */}
+        <div className="lg:col-span-2">
+           <DowntimeBarChart data={dashboardData.barChartData} />
         </div>
 
-        <div className="h-64 w-full">
-          {dashboardData.chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dashboardData.chartData}
-                margin={{ top: 7, right: 80, left: -8, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="#d1d5db"
-                  
-                  strokeOpacity={0.1}
-                />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{  //ทำให้ชื่อเกมเอียง 45 องศา
-                    fill: "gray", // สีตัวอักษร
-                    fontSize: 12 ,
-                    angle : -45,
-                    textAnchor:"end"
-                  }}
-                  dy={1}
-                  height={75} //ไม่ให้ตัวชื่อเกมตกลงไป
-                />
-                <YAxis
-                   domain={[0, dataMax => dataMax + 1]} // เริ่มที่ 0, จบที่ Max+1 (กันกราฟชนเพดาน)
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
-                  allowDecimals={false}
-                />
-                <Bar
-                  dataKey="count"
-                  fill="#4f46e5"
-                  radius={[4, 4, 0, 0]}
-                  barSize={40}
-                  //  ใส่ label เพื่อโชว์เลขบนหัวกราฟ
-                  label={{
-                    position: "top",
-                    fill: "gray",
-                    fontSize: 13,
-                    fontWeight: "bold",
-                  }}
-                ></Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
-              <BarChart2 size={32} className="mb-2 opacity-50" />
-              <span className="text-sm">ยังไม่มีเคสในวันที่เลือก</span>
-            </div>
-          )}
+        {/* Status Pie Chart */}
+        <div className="lg:col-span-1">
+           <StatusPieChart data={dashboardData.pieData} />
         </div>
       </div>
     </div>
   );
 };
 
-// --- UI COMPONENTS ---
-
+// --- UI COMPONENTS (Keep Existing) ---
 const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
+  // ... (Code เดิม - ไม่มีการเปลี่ยนแปลง) ...
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(() => parseISODate(value));
   const containerRef = useRef(null);
@@ -575,6 +436,7 @@ const CustomSelect = ({
   placeholder,
   icon: Icon,
 }) => {
+  // ... (Code เดิม) ...
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -686,7 +548,7 @@ const StatusBadge = ({ status }) => {
 export default function DailyReport() {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
-  
+   
    const [feedbackModal,setFeedbackModal] =useState({
     isOpen: false,
     type: "success",
@@ -694,7 +556,7 @@ export default function DailyReport() {
     message : "",
     onConfirm : ()=>{}
    });
-  
+   
    const closeFeedbackModal = () => {
     setFeedbackModal(prev => ({ ...prev, isOpen: false }));
   };
@@ -702,6 +564,7 @@ export default function DailyReport() {
 
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
+  const [viewMode, setViewMode] = useState("daily"); // State สำหรับปุ่มสลับ view
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -783,16 +646,21 @@ export default function DailyReport() {
     fetchLookup();
   }, []);
 
-  // ดึงข้อมูล Cases เมื่อเปลี่ยนวันที่ (selectedDate)
-
+  // ดึงข้อมูล Cases เมื่อเปลี่ยนวันที่ (selectedDate) หรือ viewMode
   useEffect(() => {
     const fetchCases = async () => {
-      if (!selectedDate) return;
+      if (!selectedDate) {
+        setCases([]); // ล้างข้อมูลในตารางและ Dashboard
+        return;
+      }
 
       setLoadingData(true);
       try {
-        // เรียก API ส่ง query params ?date=YYYY-MM-DD
-        const res = await getCases({ date: selectedDate });
+        // เรียก API ส่ง query params ?date=YYYY-MM-DD&mode=daily
+        const res = await getCases({ 
+          date: selectedDate,
+           mode: viewMode });
+
         const rawCases = (res.cases || [])
           .slice()
           .sort(
@@ -802,13 +670,11 @@ export default function DailyReport() {
         const mappedCases = rawCases.map((c) => {
           // 1. หาชื่อจาก ID
           const productObj = lookupData.products.find(
-            (p) => p.product_id === c.product_id
-          );
+            (p) => p.product_id === c.product_id );
           const statusObj = lookupData.statuses.find(
-            (s) => s.status_id === c.status_id
-          );
+            (s) => s.status_id === c.status_id);
           const problemObj = lookupData.problems.find(
-            (p) => p.problem_id === c.problem_id
+          (p) => p.problem_id === c.problem_id
           );
 
           // 2. จัดการเรื่องเวลา (DB เป็น timestamp ต้องแปลงเป็น HH:mm)
@@ -823,9 +689,9 @@ export default function DailyReport() {
           const startTimeStr = formatTime(start);
           const endTimeStr = formatTime(end);
 
-          // คำนวณระยะเวลา (นาที)
+          // คำนวณระยะเวลา (นาที) - Logic ใหม่
           const diffMs = end - start;
-          const durationMins = Math.floor(diffMs / 60000);
+          const durationMins = Math.floor(diffMs / 60000); // เก็บนาทีดิบๆ ไว้คำนวณ
           const durationStr =
             durationMins > 60
               ? `${Math.floor(durationMins / 60)} ชม. ${durationMins % 60} นาที`
@@ -840,6 +706,7 @@ export default function DailyReport() {
             startTime: startTimeStr,
             endTime: endTimeStr,
             duration: durationStr,
+            durationMins: durationMins, // เพิ่มฟิลด์นี้มาใหม่
             problem: problemObj ? problemObj.problem_name : "Unknown Problem",
             game: productObj ? productObj.product_name : "Unknown Game",
             details: c.description,
@@ -847,7 +714,7 @@ export default function DailyReport() {
             reporter: c.requester_name,
             operator: c.solver,
             status: statusKey, // ต้องตรงกับ key ใน STATUS_CONFIG ด้านบน
-            date: selectedDate,
+            date: selectedDate, // วันที่จากเคสจริง (ถ้าดู monthly จะเห็นหลายวันที่)
 
             startMs: start.getTime(),
           };
@@ -866,7 +733,7 @@ export default function DailyReport() {
     if (lookupData.products.length > 0 || lookupData.statuses.length > 0) {
       fetchCases();
     }
-  }, [selectedDate, lookupData]);
+  }, [selectedDate, viewMode, lookupData]); // เพิ่ม viewMode ใน dependency
 
   // --- 3. LOGIC HANDLERS ---
   const handleCaseClick = (item) => {
@@ -889,12 +756,15 @@ export default function DailyReport() {
       prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id]
     );
   };
+
+  // ---  LOGIC Export file ---
+
   const handleExport = async () => {
     try {
       setIsExporting(true);
 
       // เรียก API ไปดึงไฟล์ Excel (แบบ blob)
-      const blob = await exportReport(selectedDate);
+      const blob = await exportReport(selectedDate, viewMode);
 
       if (!blob) {
         throw new Error("ไม่พบข้อมูลไฟล์จากเซิร์ฟเวอร์");
@@ -906,7 +776,11 @@ export default function DailyReport() {
       // สร้าง <a> ชั่วคราวเพื่อดาวน์โหลดไฟล์
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
-      downloadLink.download = `daily-report-${selectedDate}.xlsx`;
+
+      const filename = viewMode === 'monthly' 
+          ? `monthly-report-${selectedDate}.xlsx` 
+          : `daily-report-${selectedDate}.xlsx`;
+      downloadLink.download = filename;
       downloadLink.style.display = "none";
 
       document.body.appendChild(downloadLink);
@@ -992,10 +866,7 @@ export default function DailyReport() {
       .filter((r) => selectedRecipientIds.includes(r.recipient_id))
       .map((r) => r.email);
 
-    // if (toEmails.length === 0) {
-    //   alert("ไม่พบอีเมลของผู้รับที่เลือก");
-    //   return;
-    // }
+
 
     // 2) สร้าง FormData
     const formData = new FormData();
@@ -1011,9 +882,9 @@ export default function DailyReport() {
       });
 
     // const payload = {
-    //   toEmails, // <- array ตามที่ backend ต้องการ
-    //   subject: emailSubject, // string
-    //   body: emailBody, // string (ข้อความธรรมดา)
+    //    toEmails, // <- array ตามที่ backend ต้องการ
+    //    subject: emailSubject, // string
+    //    body: emailBody, // string (ข้อความธรรมดา)
     // };
 
     setIsLoading(true);
@@ -1046,7 +917,8 @@ export default function DailyReport() {
 
   // --- FILTER & PAGINATION LOGIC ---
   const filteredCases = cases.filter((c) => {
-    const isSameDate = c.date === selectedDate;
+    // เงื่อนไขวันที่: ถ้าเป็น monthly ไม่ต้องกรองวันที่ (หรือกรองตามเดือน) แต่ถ้า daily ต้องตรงกัน
+    const isSameDate = viewMode === 'daily' ? c.date === selectedDate : true; 
     const isSameStatus =
       filterStatus === "all" ? true : c.status === filterStatus;
     const searchLower = searchText.toLowerCase();
@@ -1065,7 +937,8 @@ export default function DailyReport() {
   );
 
   // Data for Dashboard Cards 
-  const casesOfSelectedDate = cases.filter((c) => c.date === selectedDate);
+  // ใน Monthly mode เราใช้ cases ทั้งหมดที่ fetch มาได้เลย เพราะ API กรองมาให้แล้ว
+  const casesOfSelectedDate = cases; 
 
 
   return (
@@ -1076,7 +949,7 @@ export default function DailyReport() {
       
       {/* Header Bar */}
       <div className="sticky top-0 z-40 shadow-sm
-        bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"> {/*  Header Bar Dark Mode */}
+        bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"> {/* Header Bar Dark Mode */}
         
         <div className="w-full px-1 sm:px-8 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
@@ -1085,8 +958,8 @@ export default function DailyReport() {
               <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
                 <button
                   className=" p-2 rounded-full
-                   text-slate-500 dark:text-slate-400 
-                   transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+                    text-slate-500 dark:text-slate-400 
+                    transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
                   onClick={() => window.history.back()}
                   aria-label="Go back"
                 >
@@ -1100,7 +973,7 @@ export default function DailyReport() {
                   <ClipboardList className="w-6 h-6 text-blue-400 " />
                 </div>
                 <div>
-                  <h1 className="text-xl font-medium text-slate-800 dark:text-white leading-tight">
+                  <h1 className="text-xl  font-medium text-slate-800 dark:text-white leading-tight">
                     Daily Report
                   </h1>
                   <p className="text-xs text-slate-500 dark:text-slate-400 text-start">รายงานประจำวัน</p>
@@ -1110,6 +983,11 @@ export default function DailyReport() {
 
             {/* Controls */}
             <div className="flex items-center gap-3 w-full md:w-auto justify-end px-36">
+              
+              {/* Toggle View Mode Buttons ปุ่มสลับเป็น รายวันกับรายเดือน*/}
+              
+              <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+            
               <div className="w-48 ">
                 <CustomDatePicker
                   value={selectedDate}
@@ -1134,16 +1012,18 @@ export default function DailyReport() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Date Header Display */}
+      {/* Date Header Display */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            ภาพรวมประจำวันที่{" "}
+            {/* เช็ค viewMode เพื่อเปลี่ยนคำพูด */}
+            {viewMode === 'daily' ? 'ภาพรวมประจำวันที่' : 'ภาพรวมประจำเดือน'}{" "}
             <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
-              {selectedDate}
+                {/* เป็น วันเดือนปี  */}
+               {selectedDate ? selectedDate.split('-').reverse().join('-') : ''}
             </span>
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 text-left">
-            สรุปข้อมูลการดำเนินงานประจำวัน
+            สรุปข้อมูลการดำเนินงาน{viewMode === 'daily' ? 'ประจำวัน' : 'ตลอดทั้งเดือน'}
           </p>
         </div>
 
@@ -1152,12 +1032,13 @@ export default function DailyReport() {
           <ReportDashboard
             cases={casesOfSelectedDate}
             selectedDate={selectedDate}
+            viewMode={viewMode}
           />
         </div>
 
         {/* Toolbar & Filters */}
         <div className="p-4 rounded-t-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4
-          bg-white dark:bg-slate-800"> {/*  Toolbar Dark Mode */}
+          bg-white dark:bg-slate-800">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
               รายการแจ้งปัญหา
@@ -1183,19 +1064,19 @@ export default function DailyReport() {
                 placeholder="ค้นหาปัญหา, เกม..."
                 className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64
                   bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
-              /> {/*  Search Input Dark Mode */}
+              /> {/* Search Input Dark Mode */}
             </div>
           </div>
         </div>
 
         {/* Main Table */}
         <div className="rounded-b-xl shadow-sm overflow-hidden min-h-[300px]
-          bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-700"> {/*  Table Container Dark Mode */}
+          bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-700"> 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-semibold tracking-wider
-                  bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"> {/*  Table Header Dark Mode */}
+                  bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"> 
                   <th className="px-6 py-4 w-16 text-center">ID</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Time / Duration</th>
@@ -1205,18 +1086,16 @@ export default function DailyReport() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                {/* 1. เช็คว่ากำลังโหลดข้อมูลอยู่หรือไม่ */}
+                
                 {loadingData ? (
                   <tr>
                     <td
                       colSpan="6"
-                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
-                    >
+                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col items-center gap-2">
                         <Loader2
                           size={32}
-                          className="animate-spin text-indigo-500"
-                        />
+                          className="animate-spin text-indigo-500"/>
                         <p>กำลังโหลดข้อมูล...</p>
                       </div>
                     </td>
@@ -1228,9 +1107,9 @@ export default function DailyReport() {
                       key={item.id}
                       onClick={() => handleCaseClick(item)}
                       className="transition-colors group cursor-pointer
-                      hover:bg-slate-50 dark:hover:bg-slate-700/50" /*  Row Hover Dark Mode */
-                      title="คลิกเพื่อดูรายละเอียด"
-                    >
+                      hover:bg-slate-50 dark:hover:bg-slate-700/50" /* Row Hover Dark Mode */
+                      title="คลิกเพื่อดูรายละเอียด">
+                    
                       <td className="px-6 py-4 whitespace-nowrap align-top text-center text-slate-400 font-medium">
                         {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                       </td>
@@ -1324,7 +1203,7 @@ export default function DailyReport() {
           </div>
 
           <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between
-            bg-white dark:bg-slate-800"> {/*  Pagination Footer Dark Mode */}
+            bg-white dark:bg-slate-800"> {/* Pagination Footer Dark Mode */}
             <span className="text-sm text-slate-500 dark:text-slate-400">
               หน้า {currentPage} จาก {totalPages} ({filteredCases.length}{" "}
               รายการ)
@@ -1372,10 +1251,10 @@ export default function DailyReport() {
       {isCaseDetailModalOpen && selectedCaseDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
-            bg-white dark:bg-slate-800"> {/*  Modal Container Dark Mode */}
+            bg-white dark:bg-slate-800"> {/* Modal Container Dark Mode */}
             
             <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center
-              bg-slate-50 dark:bg-slate-900"> {/*  Modal Header Dark Mode */}
+              bg-slate-50 dark:bg-slate-900"> {/* Modal Header Dark Mode */}
               <div>
                 <h3 className="font-semibold text-xl text-slate-800 dark:text-white">
                   Case Details
@@ -1511,7 +1390,7 @@ export default function DailyReport() {
       {isEmailModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
-            bg-white dark:bg-slate-800"> {/*  Modal Container Dark Mode */}
+            bg-white dark:bg-slate-800"> {/* Modal Container Dark Mode */}
             
             <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
               <h3 className="font-medium text-xl text-slate-800 dark:text-white flex items-center gap-2">
@@ -1735,22 +1614,6 @@ export default function DailyReport() {
                 isLoading={isLoading}
                 > Confirm Send
                 </ButtonConfirmsend> 
-
-                
-{/* 
-              <button
-                onClick={handleSendEmail}
-                disabled={isLoading}
-                className="px-6 py-2.5 rounded-lg font-medium text-sm shadow-md shadow-indigo-200 dark:shadow-indigo-900/50 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed
-                  bg-indigo-600 text-white hover:bg-indigo-700"
-              >
-                {isLoading ? (
-                  <Loader2 size={16} className="animate-spin " />
-                ) : (
-                  <Send size={16} />
-                )}{" "}
-                Confirm Send
-              </button> */}
             </div>
           </div>
         </div>

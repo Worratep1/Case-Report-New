@@ -16,7 +16,7 @@ import {
 
 import ButtonCancel from "../components/ButtonCancel";
 import ButtonSubmit from "../components/ButtonSubmit";
-import ActionFeedbackModal from "../components/ActionFeedbackModal"; // ✅ Import ถูกต้องแล้ว
+import ActionFeedbackModal from "../components/ActionFeedbackModal";
 
 import { createCase } from "../api/case";
 import { getproducts } from "../api/products";
@@ -413,6 +413,7 @@ export default function CasePage() {
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const loggedInUserId = storedUser?.user_id ?? null;
 
+  // State
   const [lookupData, setLookupData] = useState({
     products: [],
     statuses: [],
@@ -420,6 +421,18 @@ export default function CasePage() {
     users: [],
   });
   const [loadingLookup, setLoadingLookup] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null); // Keep for inline error if needed
+
+  // [UPDATED] Unified Modal State
+  const [feedbackModal, setFeedbackModal] = useState({
+    isOpen: false,
+    type: "success",
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+  const closeFeedbackModal = () => setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
 
   const initialFormState = () => {
     const now = new Date();
@@ -444,11 +457,6 @@ export default function CasePage() {
   };
 
   const [formData, setFormData] = useState(() => initialFormState());
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showWarningModal, setShowWarningModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
 
   const currentDuration = calculateDuration(
     formData.start_datetime,
@@ -461,7 +469,6 @@ export default function CasePage() {
     const fetchLookupData = async () => {
       setLoadingLookup(true);
       try {
-        // [NOTE]: ใช้ Mock API ที่สร้างไว้
         const [products, statuses, problems, members] = await Promise.all([
           getproducts(),
           getStatuses(),
@@ -492,19 +499,52 @@ export default function CasePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // [UPDATED] Save Click Logic with Validation
   const handleSaveClick = (e) => {
     e.preventDefault();
+
+    // 1. Check Empty Fields
     if (
       !formData.product_id ||
       !formData.problem_id ||
       !formData.status_id ||
       !formData.solver
     ) {
-      setShowWarningModal(true);
+      setFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "ข้อมูลไม่ครบ",
+        message: "กรุณากรอกข้อมูลให้ครบถ้วน ",
+      });
       return;
     }
+
+    // 2. Check Date/Time Logic (End < Start)
+    const startStr = `${formData.start_datetime}T${formData.timeStart}:00`;
+    const endStr = `${formData.end_datetime}T${formData.timeEnd}:00`;
+    
+    const startObj = new Date(startStr);
+    const endObj = new Date(endStr);
+
+    if (endObj < startObj) {
+        setFeedbackModal({
+            isOpen: true,
+            type: "error",
+            title: "ช่วงเวลาไม่ถูกต้อง",
+            message: "กรุณาเลือกช่วงเวลาที่ถูกต้อง"
+        });
+        return; // Stop here
+    }
+
+    // 3. Confirm
     setSubmitError(null);
-    setShowConfirmModal(true);
+    setFeedbackModal({
+        isOpen: true,
+        type: "confirm",
+        title: "ยืนยันการส่งข้อมูล?",
+        message: "กรุณาตรวจสอบความถูกต้องก่อนกดส่ง",
+        onConfirm: confirmSubmit
+    });
   };
 
   const confirmSubmit = async () => {
@@ -528,16 +568,32 @@ export default function CasePage() {
     };
 
     try {
-      await createCase(payload); // ใช้ Mock API
-      setShowConfirmModal(false);
-      setShowSuccessModal(true);
+      await createCase(payload);
+      
+      // [UPDATED] Success Modal
+      setFeedbackModal({
+        isOpen: true,
+        type: "success",
+        title: "ส่งข้อมูลสำเร็จ!",
+        message: "ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว",
+        showSecondaryButton: true,
+        cancelText: "กลับหน้าหลัก",
+        confirmText: "ดูรายการเคส",
+        onClose: () => navigate("/menu"),
+        onConfirm: () => {
+             setFeedbackModal(prev => ({...prev, isOpen: false}));
+             navigate("/dailyreport", { replace: true });
+        }
+      });
+      
       setFormData(initialFormState());
     } catch (error) {
       console.error("Error on submission:", error.response || error);
-      setSubmitError(
-        error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล"
-      );
-      setShowConfirmModal(false);
+      const errMsg = error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล";
+      setSubmitError(errMsg);
+      
+      // Close confirm modal implicitly by overwriting or explicitly closing
+      setFeedbackModal(prev => ({...prev, isOpen: false}));
     } finally {
       setIsSubmitting(false);
     }
@@ -787,48 +843,18 @@ export default function CasePage() {
         </form>
       </div>
 
-      {/* ✅ Action Feedback Modals (วางตรงนี้ถูกต้องแล้ว) */}
-
-      {/* 1. Modal เตือนข้อมูลไม่ครบ (Warning) */}
+      {/* ✅ Action Feedback Modal (เหลือตัวเดียว) */}
       <ActionFeedbackModal
-        isOpen={showWarningModal}
-        onClose={() => setShowWarningModal(false)}
-        type="error"
-        title="ข้อมูลไม่ครบถ้วน"
-        message="กรุณากรอกข้อมูล ให้ครบถ้วน"
-        confirmText="ตกลง"
-      />
-
-      {/* 2. Modal ยืนยันการส่ง (Confirm) */}
-      <ActionFeedbackModal
-        isOpen={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
-        type="confirm"
-        title="ยืนยันการส่งข้อมูล?"
-        message="กรุณาตรวจสอบความถูกต้องก่อนกดส่ง"
-        confirmText="ยืนยัน"
-        cancelText="ยกเลิก"
-        onConfirm={confirmSubmit}
-        isLoading={isSubmitting}
-      />
-
-      {/* 3. Modal สำเร็จ (Success) */}
-     <ActionFeedbackModal
-        isOpen={showSuccessModal}
-        type="success"
-        title="ส่งข้อมูลสำเร็จ!"
-        message="ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว"
-        
-        //  สั่งเปิด 2 ปุ่มเฉพาะตรงนี้
-        showSecondaryButton={true} 
-        
-        cancelText="กลับหน้าหลัก"
-        confirmText="ดูรายการเคส"
-        onClose={() => navigate("/menu")} 
-        onConfirm={() => {
-          setShowSuccessModal(false);
-          navigate("/dailyreport", { replace: true });
-        }}
+        isOpen={feedbackModal.isOpen}
+        type={feedbackModal.type}
+        title={feedbackModal.title}
+        message={feedbackModal.message}
+        onClose={feedbackModal.onClose || closeFeedbackModal}
+        onConfirm={feedbackModal.onConfirm}
+        confirmText={feedbackModal.confirmText}
+        cancelText={feedbackModal.cancelText}
+        showSecondaryButton={feedbackModal.showSecondaryButton}
+        isLoading={isSubmitting} // ส่ง loading state ไปด้วยตอนกด confirm
       />
     </div>
   );

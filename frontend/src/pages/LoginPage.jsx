@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import { login } from "../api/auth";
 
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
+import DarkmodeToggle from "../components/DarkModeToggle"
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,11 +15,9 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   
-  // ✅ แก้ชื่อตัวแปรให้เป็น CamelCase (S ตัวใหญ่) ให้ตรงกัน
   const [showErrorModal , setShowErrorModal] = useState(false);
   const [errorMessage , setErrorMessage] = useState("");
   
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -27,20 +26,19 @@ export default function LoginPage() {
     try {
       const data = await login(username, password);
       // 🎯 เก็บ token + user ไว้
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       setMessage("เข้าสู่ระบบสำเร็จ 🎉");
-      navigate("/menu");  // ไปหน้า MainPage (เฉพาะตอน Login ผ่านเท่านั้น)
+      navigate("/menu");  // ไปหน้า MainPage
     } catch (err) {
        console.error("Login Error", err);
 
        const msg = err.response?.data?.message || "Username หรือ Password ไม่ถูกต้อง";
        
        setErrorMessage(msg);
-       setShowErrorModal(true); // ✅ เรียกใช้ตัวแปรที่ถูก
+       setShowErrorModal(true); 
 
-      // setMessage(err.message); // อันนี้อาจจะไม่ต้องใช้แล้วก็ได้ถ้ามี Modal
+      // setMessage(err.message); 
     } finally {
       setLoading(false);
     }
@@ -48,13 +46,24 @@ export default function LoginPage() {
 
   return (
    <div className="fixed grid place-items-center inset-0 w-full h-full 
-  bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
-  overflow-y-auto z-0 pt-10">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6">
-        <h1 className="text-center text-xl font-bold text-slate-800 mb-1">
+    bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
+    dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900 
+    overflow-y-auto z-0 pt-10">
+      
+      <DarkmodeToggle></DarkmodeToggle>
+
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6
+        dark:bg-slate-800 dark:border dark:border-slate-700">
+        
+
+        <h1 className="text-center text-xl font-bold text-slate-800 mb-1
+          dark:text-white">
+          
           Daily Report System
         </h1>
-        <p className="text-center text-xs text-slate-500 mb-6">
+        <p className="text-center text-xs text-slate-500 mb-6
+          dark:text-slate-400">
+         
           Web Report & Case Management
         </p>
 
@@ -73,21 +82,17 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-         
+          
           <Button type="submit" disabled={loading}>
-            {loading ? "กำลังเข้าสู่ระบบ..." : "Login"}
+            {loading ? "กำลังเข้าสู่ระบบ..." : "LOGIN"}
           </Button>
         </form>
 
-        {/* ถ้าอยากซ่อนข้อความ text สีแดงเดิม ก็ลบส่วนนี้ออกได้ เพราะมี Modal แล้ว
-        {message && !showErrorModal && (
-          <p className="mt-4 text-center text-green-600 text-sm">{message}</p>
-        )} */}
       </div>
       
       <ActionFeedbackModal
         isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)} // ✅ ตอนนี้ชื่อตรงกันแล้ว
+        onClose={() => setShowErrorModal(false)}
         type="error" 
         title="เข้าสู่ระบบไม่สำเร็จ"
         message={errorMessage} 

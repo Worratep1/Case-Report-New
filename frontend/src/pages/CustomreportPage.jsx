@@ -3,47 +3,35 @@ import {
   Search, 
   Filter, 
   Clock, 
-  CheckCircle, 
   AlertCircle, 
-  Calendar as CalendarIcon,
-  User,
-  Gamepad2,
-  Send,
-  X,
-  FileText,
-  Paperclip,
-  CheckSquare,
-  Square,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
-  Loader2,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Pencil,
-  Trash2,
-  Save,
-  AlertTriangle,
-  Plus,
-  HelpCircle,
-  RotateCcw,
-  BarChart2,
-  PieChart as PieChartIcon,
-  FileCog
+  Calendar as CalendarIcon, 
+  User, 
+  Gamepad2, 
+  Send, 
+  X, 
+  FileText, 
+  Paperclip, 
+  CheckSquare, 
+  Square, 
+  ChevronDown, 
+  ChevronUp, 
+  CheckCircle2, 
+  Loader2, 
+  CalendarDays, 
+  ChevronLeft, 
+  ChevronRight, 
+  Pencil, 
+  Trash2, 
+  Save, 
+  AlertTriangle, 
+  Plus, 
+  HelpCircle, 
+  PieChart as PieChartIcon, 
+  FileCog,
+  Flame
 } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  Cell, 
-  PieChart, 
-  Pie 
-} from 'recharts';
+
+// ไม่ต้อง import Recharts ตรงนี้แล้ว เพราะใช้ใน Component ลูก
 import {getCases} from "../api/case"
 import {getProblems} from "../api/problems"
 import {getStatuses } from "../api/status"
@@ -63,6 +51,12 @@ import ButtonCancel from '../components/ButtonCancel';
 import ButtonSave from '../components/ButtonSave';
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
+import ViewModeToggle from "../components/ViewModeToggle";
+
+// --- IMPORT DASHBOARD COMPONENTS ---
+import StatCard from "../components/dashboard/StatCard";
+import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
+import StatusPieChart from "../components/dashboard/StatusPieChart";
 
 import { STATUS_CONFIG } from "../constants/status";
 
@@ -86,7 +80,7 @@ const ITEMS_PER_PAGE = 5;
 // Helper: Get Today's Date String YYYY-MM-DD
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
-// --- CUSTOM DATE PICKER COMPONENT (UPDATED for Dark Mode) ---
+// --- CUSTOM DATE PICKER COMPONENT ---
 const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(value ? new Date(value) : new Date());
@@ -241,7 +235,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
   );
 };
 
-// --- CUSTOM TIME PICKER COMPONENT (UPDATED for Dark Mode) ---
+// --- CUSTOM TIME PICKER COMPONENT ---
 const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
@@ -337,7 +331,7 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
   );
 };
 
-// --- CUSTOM SELECT COMPONENT (UPDATED for Dark Mode) ---
+// --- CUSTOM SELECT COMPONENT ---
 const CustomSelect = ({ options, value, onChange, placeholder, icon: Icon }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -414,7 +408,7 @@ const CustomSelect = ({ options, value, onChange, placeholder, icon: Icon }) => 
   );
 };
 
-// --- Status Badge Component (unchanged) ---
+// --- Status Badge Component ---
 const StatusBadge = ({ status }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.others;
   return (
@@ -425,108 +419,11 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// --- StatCard (UPDATED for Dark Mode) ---
-const StatCard = ({ title, value, icon, color }) => (
-  <div className={`bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow h-full`}>
-    <div>
-      <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{title}</p>
-      <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{value}</h3>
-    </div>
-    <div className={`p-3 rounded-lg ${color} dark:bg-opacity-20`}>
-      {icon}
-    </div>
-  </div>
-);
-
-// --- StatusSummaryCard (UPDATED for Dark Mode) ---
-const StatusSummaryCard = ({ data }) => {
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, value }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (value === 0) return null;
-
-    return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor="middle" 
-        dominantBaseline="central" 
-        style={{ fontSize: '11px', fontWeight: 'bold', textShadow: '0px 1px 2px rgba(0,0,0,0.25)', pointerEvents: 'none' }}
-      >
-        {value}
-      </text>
-    );
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm h-full flex flex-col justify-center  duration-500 
-                  hover:shadow-md">
-       <div className="flex justify-between items-center mb-2">
-          <h4 className="text-xs font-medium text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
-              <PieChartIcon size={14} /> Status Summary
-          </h4>
-       </div>
-       
-       <div className="flex flex-col sm:flex-row items-center gap-6 h-full">
-          {/* Donut Chart */}
-          <div className="w-full sm:w-1/2 h-[140px] relative">
-              {data.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                          <Pie
-                              data={data}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={35}
-                              outerRadius={55}
-                              paddingAngle={5}
-                              dataKey="value"
-                              label={renderCustomizedLabel} 
-                              labelLine={false}             
-                          >
-                              {data.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
-                              ))}
-                          </Pie>
-                      </PieChart>
-                  </ResponsiveContainer>
-              ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
-                      <PieChartIcon size={32} className="mb-1 opacity-50"/>
-                      <p className="text-xs">No Data</p>
-                  </div>
-              )}
-          </div>
-
-          {/* Status List */}
-          <div className="w-full sm:w-1/2 grid grid-cols-1 gap-y-3">
-              {data.length > 0 ? (
-                  data.map((entry, index) => (
-                      <div key={index} className="flex items-center gap-2 min-w-0">
-                          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }}></div>
-                          <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate">{entry.name}</span>
-                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">({entry.value})</span>
-                      </div>
-                  ))
-              ) : (
-                  <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center col-span-2">No data available</p>
-              )}
-          </div>
-       </div>
-    </div>
-  );
-};
-
-
 // --- MAIN COMPONENT ---
  export default function CustomReport (){
-  const fileInputRef = useRef(null);
 
   const navigate = useNavigate()
+  const [viewMode, setViewMode] = useState("daily");
 
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -543,7 +440,7 @@ const StatusSummaryCard = ({ data }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSaveConfirmModalOpen, setIsSaveConfirmModalOpen] = useState(false);
-  const [currentCase, setCurrentCase] = useState(null);   
+  const [currentCase, setCurrentCase] = useState(null);    
   
  const [feedbackModal,setFeedbackModal] =useState({
   isOpen: false,
@@ -578,7 +475,7 @@ const StatusSummaryCard = ({ data }) => {
   const [availableRecipients, setAvailableRecipients] = useState([]);
   const [isRecipientDropdownOpen, setIsRecipientDropdownOpen] = useState(false);
   const [selectedRecipientIds, setSelectedRecipientIds] = useState([]);
-  // ✅ ถูกต้อง: ประกาศ State 5 ช่อง
+  //  ประกาศ State 5 ช่อง
   const [attachedFiles, setAttachedFiles] = useState(Array(5).fill(null)); 
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
@@ -614,13 +511,15 @@ const StatusSummaryCard = ({ data }) => {
 
 // ✅ 2.2 โหลด Cases ตามวันที่
   const fetchCases = async () => {
-     if (!selectedDate) { // กดล้างค่าข้อมูลจะไม่มีขึ้นมา
+      if (!selectedDate) { // กดล้างค่าข้อมูลจะไม่มีขึ้นมา
           setCases([]); 
           return; 
       } 
       setLoadingData(true);
       try {
-          const res = await getCases({ date: selectedDate });
+          const res = await getCases({ 
+            date: selectedDate,
+             mode: viewMode });
           
           const rawCases = res.cases || [];
 
@@ -649,6 +548,7 @@ const StatusSummaryCard = ({ data }) => {
                   startTime: formatTime(start),
                   endTime: formatTime(end),
                   duration: durationStr,
+                  durationMins: durationMins, // [เพิ่ม] สำคัญสำหรับคำนวณกราฟ
                   problem: problemObj ? problemObj.problem_name : 'Unknown',
                   game: productObj ? productObj.product_name : 'Unknown',
                   details: c.description,
@@ -676,43 +576,94 @@ const StatusSummaryCard = ({ data }) => {
       if (lookupData.statuses.length > 0 || lookupData.products.length > 0) {
           fetchCases();
       }
-  }, [selectedDate, lookupData]);
+  }, [selectedDate, lookupData ,viewMode]);
   
-  // --- DASHBOARD DATA CALCULATION ---
+  // --- DASHBOARD DATA CALCULATION (UPDATED LOGIC) ---
   const casesOfSelectedDate = cases.filter(c => c.date === selectedDate);
 
   const dashboardData = useMemo(() => {
-      const stats = {
-        total: casesOfSelectedDate.length,
-      };
+    const safeCases = casesOfSelectedDate;
+    
+    // 1. คำนวณตัวเลขสรุป
+    let totalDownMinutes = 0;
+    const gameStats = {}; 
+    const counts = {}; 
+
+    safeCases.forEach((c) => {
+      if (!c) return;
       
-      const counts = {};
-      const gameMap = {};
+      // Sum Downtime
+      const minutes = c.durationMins || 0;
+      totalDownMinutes += minutes;
 
-      casesOfSelectedDate.forEach(c => {
-          counts[c.status] = (counts[c.status] || 0) + 1;
-          const game = c.game || "Unknown";
-          gameMap[game] = (gameMap[game] || 0) + 1;
-      });
+      // Group by Game for Bar Chart
+      const game = c.game || "Unknown";
+      if (!gameStats[game]) {
+        gameStats[game] = { minutes: 0, count: 0 };
+      }
+      gameStats[game].minutes += minutes;
+      gameStats[game].count += 1;
 
-      const pieData = Object.keys(STATUS_CONFIG).map(key => {
-          const count = counts[key] || 0;
-          return {
-             name: STATUS_CONFIG[key].label,
-             value: count,
-             color: STATUS_CONFIG[key].color
-          };
-      }).filter(item => item.value > 0);
+      // Group by Status for Pie Chart
+      const status = c.status || "others";
+      counts[status] = (counts[status] || 0) + 1;
+    });
 
-      const chartData = Object.keys(gameMap).map(game => ({
-          name: game,
-          count: gameMap[game]
-      })).sort((a, b) => b.count - a.count);
+    // 2. จัดการ Most Impacted (Tie-Breaker Logic)
+    const sortedGames = Object.keys(gameStats)
+        .map(key => ({ name: key, ...gameStats[key] }))
+        .sort((a, b) => {
+            const timeDiff = b.minutes - a.minutes;
+            if (timeDiff !== 0) return timeDiff;
+            return b.count - a.count;
+        });
+        
+    let mostImpacted = "-";
+    if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
+        const topGame = sortedGames[0];
+        const ties = sortedGames.filter(g => 
+            g.minutes === topGame.minutes && g.count === topGame.count
+        );
 
-      return { stats, pieData, chartData };
+        if (ties.length > 1) {
+            const names = ties.map(t => t.name);
+            mostImpacted = names.slice(0, 2).join(", "); 
+            if (ties.length > 2) mostImpacted += "...";
+        } else {
+            mostImpacted = topGame.name;
+        }
+    }
+
+
+
+    // 3. Format Total Downtime เป็น h:m
+    const downHours = Math.floor(totalDownMinutes / 60);
+    const downMins = totalDownMinutes % 60;
+    const totalDowntimeStr = `${String(downHours).padStart(2, '0')}:${String(downMins).padStart(2, '0')} hrs`;
+
+    // 4. เตรียมข้อมูลกราฟ
+    const barChartData = sortedGames.filter(item => item.minutes > 0);
+
+    const pieData = Object.keys(STATUS_CONFIG)
+      .map((key) => ({
+        name: STATUS_CONFIG[key].label,
+        value: counts[key] || 0,
+        color: STATUS_CONFIG[key].color,
+      }))
+      .filter((item) => item.value > 0);
+
+    return {
+      stats: {
+        totalCases: safeCases.length,
+        totalDowntimeStr,
+        mostImpacted,
+      },
+      barChartData,
+      pieData
+    };
   }, [casesOfSelectedDate]);
 
-  // --- HELPER: AUTO-CALCULATE DURATION (unchanged) ---
+  // --- HELPER: AUTO-CALCULATE DURATION ---
   const calculateDuration = (start, end) => {
     if (!start || !end) return "";
     
@@ -735,15 +686,63 @@ const StatusSummaryCard = ({ data }) => {
     return `${minutes} นาที`;
   };
 
+  useEffect(() => {
+    // ถ้า Modal ปิดอยู่ หรือยังไม่มีข้อมูล case ไม่ต้องทำอะไร
+    if (!isEditModalOpen || !currentCase) return;
+
+    const { date, endDate, startTime, endTime } = currentCase;
+
+    // ข้อมูลต้องครบถึงจะคำนวณ
+    if (!date || !startTime || !endTime) return;
+
+    // 1. รวมร่าง (Combine Date + Time) เป็น Timestamp
+    const startStr = `${date}T${startTime}:00`;
+    // ถ้า endDate ยังไม่มี (User ไม่ได้เลือก) ให้ถือว่าเป็นวันเดียวกับ date
+    const endStr = `${endDate || date}T${endTime}:00`;
+
+    const startObj = new Date(startStr);
+    const endObj = new Date(endStr);
+
+    // 2. คำนวณผลต่าง (Milliseconds)
+    const diffMs = endObj - startObj;
+
+    let newDuration = "";
+
+    if (diffMs < 0) {
+        // กรณีเวลาติดลบ (จบก่อนเริ่ม)
+        newDuration = "เวลาไม่ถูกต้อง ";
+    } else {
+        // กรณีเวลาถูกต้อง -> แปลงเป็น ชั่วโมง/นาที
+        const totalMinutes = Math.floor(diffMs / 60000);
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+
+        if (h > 0) {
+            newDuration = `${h} ชม. ${m > 0 ? m + ' นาที' : ''}`;
+        } else {
+            newDuration = `${totalMinutes} นาที`;
+        }
+    }
+
+    // 3. อัปเดต State (เช็คก่อนเพื่อกัน Infinite Loop)
+    if (currentCase.duration !== newDuration) {
+        setCurrentCase(prev => ({ ...prev, duration: newDuration }));
+    }
+
+  }, [
+    currentCase?.date,
+    currentCase?.endDate,
+    currentCase?.startTime,
+    currentCase?.endTime,
+    isEditModalOpen
+  ]);
+
+
   // --- 3. ACTIONS (ADD / EDIT / DELETE) ---
 
   const handleTimeChange = (field, value) => {
-    const updatedCase = { ...currentCase, [field]: value };
-    if (updatedCase.startTime && updatedCase.endTime) {
-        const duration = calculateDuration(updatedCase.startTime, updatedCase.endTime);
-        updatedCase.duration = duration;
-    }
-    setCurrentCase(updatedCase);
+    // อัปเดตแค่ค่า field นั้นๆ พอ (ไม่ต้องคำนวณ duration ที่นี่แล้ว)
+    setCurrentCase(prev => ({ ...prev, [field]: value }));
   };
 
 const openNewCaseModal = () => {
@@ -812,7 +811,23 @@ const openNewCaseModal = () => {
         return; // สำคัญ: ต้องหยุดโค้ดตรงนี้
     }
 
-  
+    const startStr = `${currentCase.date}T${currentCase.startTime}:00`;
+    const endStr = `${currentCase.endDate || currentCase.date}T${currentCase.endTime}:00`;
+  
+    const startTime = new Date(startStr);
+    const endTime = new Date(endStr);
+
+
+    if (endTime < startTime) {
+         setFeedbackModal({
+            isOpen: true,
+            type: 'error',
+            title: 'ช่วงเวลาไม่ถูกต้อง',
+            message: 'เวลาสิ้นสุด (End Time) ต้องเกิดขึ้นหลังจากเวลาเริ่มต้น (Start Time)'
+        });
+        return; // สั่งหยุดทันที ไม่ให้ไปต่อ
+    }
+
     setIsSaveConfirmModalOpen(true); 
   };
 
@@ -924,15 +939,20 @@ const openNewCaseModal = () => {
       setIsExporting(true);
 
       // เรียก API exportReport (ได้ blob กลับมา)
-      const blob = await exportReport(selectedDate);
+      const blob = await exportReport(selectedDate ,viewMode );
 
       // สร้าง URL ชั่วคราวจาก blob
       const url = window.URL.createObjectURL(blob);
 
       // สร้างแท็ก <a> ชั่วคราวสำหรับดาวน์โหลดไฟล์
+     
+      const filename = viewMode === 'monthly' 
+          ? `monthly-report-${selectedDate}.xlsx` 
+          : `daily-report-${selectedDate}.xlsx`;
+
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
-      downloadLink.download = `daily-report-${selectedDate}.xlsx`;
+      downloadLink.download = filename; // ใช้ชื่อไฟล์ที่ตั้งไว้
       // downloadLink.style.display = "none";
 
       // สั่งให้ลิงก์คลิกเอง
@@ -954,8 +974,6 @@ const openNewCaseModal = () => {
       setIsExporting(false);
     }
   };
-
-
 
 
 
@@ -1019,16 +1037,6 @@ const openNewCaseModal = () => {
       .filter((r) => selectedRecipientIds.includes(r.recipient_id))
       .map((r) => r.email);
   
-    // if (toEmails.length === 0) {
-    //   setFeedbackModal({
-    //     isOpen : true ,
-    //     type : "error",
-    //     title : "",
-    //   })
-    //   alert("ไม่พบอีเมลของผู้รับที่เลือก");
-    //   return;
-    // }
-  
   // 2) สร้าง FormData
     const formData = new FormData()
     formData.append("toEmails",JSON.stringify(toEmails))
@@ -1041,13 +1049,6 @@ const openNewCaseModal = () => {
       .forEach((file) => {
         formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
       });
-  
-  
-    // const payload = {
-    //   toEmails,               // <- array ตามที่ backend ต้องการ
-    //   subject: emailSubject,  // string
-    //   body: emailBody,        // string (ข้อความธรรมดา)
-    // };
   
     setIsLoading(true);
   
@@ -1095,7 +1096,7 @@ const openNewCaseModal = () => {
     const searchLower = searchText.toLowerCase();
     const isMatchSearch = 
         (c.game || '').toLowerCase().includes(searchLower) || 
-        (c.problem || '').toLowerCase().includes(searchLower) ||
+        (c.problem || '').toLowerCase().includes(searchLower) || 
         (c.details || '').toLowerCase().includes(searchLower);
     
     return isSameStatus && isMatchSearch;
@@ -1144,7 +1145,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900">
       
       {/* --- HEADER ---  */}
-         <div className="sticky top-0 z-40 shadow-sm
+          <div className="sticky top-0 z-40 shadow-sm
         bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"> {/* Header Bar Dark Mode */}
         <div className="w-full px-1 sm:px-8 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
@@ -1153,8 +1154,8 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
               <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
                 <button
                   className=" p-2 rounded-full
-                   text-slate-500 dark:text-slate-400 
-                   transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+                    text-slate-500 dark:text-slate-400 
+                    transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
                   onClick={() => window.history.back()}
                   aria-label="Go back"
                 >
@@ -1178,8 +1179,11 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
               </div>
             </div>
 
-            {/* Controls  ปุ่ม export , send email */}
+          
+            {/* Controls  ปุ่ม export , send email , ปุ่มสลับรายวันรายเดือน*/}
+
             <div className="flex items-center gap-3 w-full md:w-auto justify-end px-40">
+               <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
               <div className="w-48 ">
                 <CustomDatePicker
                   value={selectedDate}
@@ -1209,7 +1213,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
         <div className="mb-6 flex justify-between items-end">
             <div>
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    ภาพรวมประจำวันที่ <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">{selectedDate}</span>
+                    ภาพรวมประจำวันที่ <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">{selectedDate ? selectedDate.split('-').reverse().join('-') : ''}</span>
                 </h2>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 text-left">จัดการข้อมูล รายละเอียด และสถานะของเคส</p>
             </div>
@@ -1226,87 +1230,43 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
             </button>
         </div>
 
-        {/* --- DASHBOARD SECTION (Copied Logic from DailyReport) --- */}
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
-          {/* Total Cases Card */}
-          <div className="md:col-span-1 h-full">
-             <StatCard 
-                title="Total Cases" 
-                value={dashboardData.stats.total } 
-                icon={<AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />} 
-                color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
-             />
+        {/* --- DASHBOARD SECTION (UPDATED with reusable components) --- */}
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-8">
+          
+          {/* 1. Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard
+              title="Total Downtime"
+              value={dashboardData.stats.totalDowntimeStr}
+              icon={<Clock className="w-6 h-6 text-red-600 dark:text-red-400" />}
+              color="bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-900/30"
+            />
+            <StatCard
+              title="Total Cases"
+              value={dashboardData.stats.totalCases}
+              icon={<AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />}
+              color="bg-orange-50 border-orange-100 dark:bg-orange-900/20 dark:border-orange-900/30"
+            />
+            <StatCard
+              title="Most Impacted"
+              value={dashboardData.stats.mostImpacted}
+              icon={<Flame className="w-6 h-6 text-blue-600 dark:text-red-600" />}
+              color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
+            />
           </div>
 
-          {/* Status Summary Card */}
-          <div className="md:col-span-2">
-             <StatusSummaryCard data={dashboardData.pieData} />
+          {/* 2. Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Downtime Bar Chart */}
+            <div className="lg:col-span-2">
+               <DowntimeBarChart data={dashboardData.barChartData} />
+            </div>
+
+            {/* Status Pie Chart */}
+            <div className="lg:col-span-1">
+               <StatusPieChart data={dashboardData.pieData} />
+            </div>
           </div>
-        </div>
-
-        {/* Bar Chart Section */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-8 
-        duration-500 
-                  hover:shadow-md">
-            <div className="flex items-center gap-2 mb-6">
-                <Gamepad2 className="text-blue-500 dark:text-blue-400" size={24} />
-                <h3 className="text-lg font-medium text-slate-800 dark:text-white">Game Issues Breakdown ({selectedDate})</h3>
-            </div>
-            <div className="h-64 w-full">
-                {dashboardData.chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={dashboardData.chartData}
-                         margin={{ top: 7, right: 80, left: -8, bottom: 0 }}>
-                            <CartesianGrid 
-                              strokeDasharray="3 3" 
-                              vertical={false} 
-                              stroke="#f1f5f9" 
-                              strokeOpacity={0.1}
-                            />
-                             <XAxis
-                                              dataKey="name"
-                                              axisLine={false}
-                                              tickLine={false}
-                                              tick={{  //ทำให้ชื่อเกมเอียง 45 
-                                                fill: "gray", // สีตัวอักษร
-                                                fontSize: 12 ,
-                                                angle : -45,
-                                                textAnchor:"end"
-                                              }}
-                                              dy={1}
-                                              height={75} //ไม่ให้ตัวชื่อเกมตกลงไป
-                                            />
-                            <YAxis 
-                                domain={[0, dataMax => dataMax + 1]} // เริ่มที่ 0, จบที่ Max+1 (กันกราฟชนเพดาน)
-                                axisLine={false} 
-                                tickLine={false} 
-                                tick={{ fill: '#94a3b8', fontSize: 12 }} 
-                                allowDecimals={false}
-                            />
-                            {/* <Tooltip 
-                                cursor={{ fill: '#f8fafc' }}
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                            /> */}
-
-                            <Bar
-                            dataKey="count"
-                            fill="#4f46e5"  
-                            radius={[4, 4, 0, 0]}
-                            barSize={40}
-                            //  ใส่ label เพื่อโชว์เลขบนหัวกราฟ
-                            label={{ position: 'top', fill: 'gray', fontSize: 12, fontWeight: 'bold' }}>
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                ) : (
-                    <div className="h-full flex flex-col items-center justify-center 
-                      bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
-                        <BarChart2 size={32} className="mb-2 opacity-50"/>
-                        <span className="text-sm">ยังไม่มีเคสในวันที่เลือก</span>
-                    </div>
-                )}
-            </div>
         </div>
 
         {/* Toolbar */}
@@ -1607,7 +1567,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-left">
-                         <div>
+                          <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 ml-1">Game</label>
                             <CustomSelect 
                                 options={modalGameOptions}
@@ -1688,13 +1648,13 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                 </form>
                 <div className="p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-end gap-3">
 
-                    <ButtonCancel   
+                    <ButtonCancel    
                     onClick={()=>setIsEditModalOpen(false)}> Cancel </ButtonCancel>
 
 
                     <ButtonSave onClick={handleInitiateSave}  >
                       <Save size={20}/> {currentCase.id === null ? 'Create Case' : 'Save Changes'} 
-        
+       
                     </ButtonSave>
                 </div>
             </div>
@@ -1778,7 +1738,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                       ${isRecipientDropdownOpen
                         ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
                         : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-                    }`}
+                      }`}
                   >
                     <div className="flex flex-wrap gap-2 items-center w-full overflow-hidden">
                       {selectedRecipientIds.length === 0 ? (
@@ -1889,7 +1849,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                   />
                 </div>
               </div>
-             {/*  ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
+             {/* ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
               <div>
                 <label className=" text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <Paperclip size={16} /> Attachments (ไม่บังคับ, สูงสุด 5 ไฟล์)
@@ -1960,19 +1920,6 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                 isLoading={isLoading}
                 > 
                 </ButtonConfirmsend> 
-{/* 
-              <button
-                onClick={handleSendEmail}
-                disabled={isLoading}
-                className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold text-sm shadow-md shadow-indigo-200 dark:shadow-indigo-900/50 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Send size={16} />
-                )}{" "}
-                Confirm Send
-              </button> */}
             </div>
           </div>
         </div>
