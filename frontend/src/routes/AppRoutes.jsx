@@ -11,23 +11,23 @@ import MemberSetting from "../pages/MemberSetting";
 import RecipientSetting from "../pages/RecipientSetting";
 import DailyReportPage from "../pages/DailyreportPage";
 import CustomreportPage from "../pages/CustomreportPage";
-import DashPage from "../pages/DashPage";
+
 import RequierAuth from "../components/RequireAuth";
 
 export default function AppRoutes() {
   return (
     <Routes>
       
-      {/* หน้า Login */}
+      
       <Route path="/login" element={ <LoginPage/> } />
 
-      {/* หน้า เปล่าๆ */}
+      
       <Route path="/main" element={<RequierAuth> <MainPage /> </RequierAuth>} />
 
-      {/* หน้าเมนูหลังล็อกอิน */}
+     
       <Route path="/menu" element={  <RequierAuth> <MenuPage /> </RequierAuth>} />
 
-      {/* หน้า สร้างเคสใหม่ */}
+     
       <Route path="/case" element={ <RequierAuth> <CasePage /> </RequierAuth>} />
 
       <Route path="/report" element={<RequierAuth> <ReportPage /> </RequierAuth>} />
@@ -46,10 +46,6 @@ export default function AppRoutes() {
 
       <Route path="/customreport" element={ <RequierAuth> <CustomreportPage /> </RequierAuth>} />
 
-      <Route path="/dash" element={<DashPage />} />
-
-      {/* { <Route path="/report/daily" element={<DailyReportPage />} /> }
-      {<Route path="/report/custom" element={<CustomReportPage />} />} */}
 
       {/* ถ้าพิมพ์ path มั่ว ให้เด้งไป /login */}
       <Route path="*" element={<Navigate to="/login" replace />} />

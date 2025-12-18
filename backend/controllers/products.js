@@ -8,9 +8,9 @@ exports.addproducts  = async (req, res) => {
   if (!product_name || product_name.trim() === "") {
     return res.status(400).json({ message: "กรุณากรอกชื่อเกม" });
   }
-  if (product_name.length>100){
+  if (product_name.length>150){
     return res.status(400).json({
-      message:"ชื่อยาวเกินไป (ต้องไม่เกิน 100 ตัวอักษร)"
+      message:"ชื่อยาวเกินไป (ต้องไม่เกิน 150 ตัวอักษร)"
     })
   }
 

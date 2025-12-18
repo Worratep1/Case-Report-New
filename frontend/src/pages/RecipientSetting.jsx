@@ -133,6 +133,16 @@ export default function RecipientSetting() {
       return;
     }
 
+    if (!isValidEmail(email)) {
+       setFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "รูปแบบอีเมลไม่ถูกต้อง",
+        message: "กรุณากรอกอีเมลให้ถูกต้อง (เช่น user@example.com)",
+      });
+      return;
+    }
+
     const isEmailDuplicate = recipients.some(
       (r, i) => r.email === email && i !== editingIndex
     );
@@ -141,7 +151,7 @@ export default function RecipientSetting() {
         isOpen: true,
         type: "error",
         title: "Email ซ้ำ",
-        message: "Email นี้มีอยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น",
+        message: "Email นี้มีอยู่ในระบบแล้ว กรุณาใช้ Email อื่น",
       });
       return;
     }
@@ -246,7 +256,7 @@ export default function RecipientSetting() {
               Recipients Setting
             </h1>
             <p className="text-sm mt-1 text-left text-slate-500 dark:text-slate-400">
-              Manage email recipients for Daily Report
+              Manage email recipients 
             </p>
           </div>
           
@@ -380,7 +390,7 @@ export default function RecipientSetting() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      maxLength={100}
+                      maxLength={150}
                       placeholder="username"
                       className="w-full pl-10 pr-4 py-3 rounded-lg text-base focus:outline-none focus:ring-4 transition-all 
                         bg-white dark:bg-slate-900 

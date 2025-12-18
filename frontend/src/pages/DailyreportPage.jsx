@@ -973,7 +973,7 @@ export default function DailyReport() {
                   <ClipboardList className="w-6 h-6 text-blue-400 " />
                 </div>
                 <div>
-                  <h1 className="text-xl  font-medium text-slate-800 dark:text-white leading-tight">
+                  <h1 className="text-xl  font-medium text-slate-800 dark:text-white leading-tight ">
                     Daily Report
                   </h1>
                   <p className="text-xs text-slate-500 dark:text-slate-400 text-start">รายงานประจำวัน</p>
@@ -1030,7 +1030,7 @@ export default function DailyReport() {
         {/* Dashboard */}
         <div className="mb-8">
           <ReportDashboard
-            cases={casesOfSelectedDate}
+           cases={filteredCases}
             selectedDate={selectedDate}
             viewMode={viewMode}
           />
@@ -1515,6 +1515,7 @@ export default function DailyReport() {
                   </label>
                   <input
                     value={emailSubject}
+                    maxLength={200}
                     onChange={(e) => setEmailSubject(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
                       bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
@@ -1526,6 +1527,7 @@ export default function DailyReport() {
                   </label>
                   <textarea
                     value={emailBody}
+                    maxLength={500}
                     onChange={(e) => setEmailBody(e.target.value)}
                     rows={4}
                     className="w-full font-normal px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none

@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
         username: user.username,
         first_name: user.first_name,
         last_name: user.last_name,
-        email: user.email, // ถ้าไม่มีคอลัมน์นี้ใน DB ลบออกได้
+        email: user.email, 
       },
     });
   } catch (err) {

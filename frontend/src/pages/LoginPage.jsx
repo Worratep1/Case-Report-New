@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../api/auth";
+
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { login } from "../api/auth";
+import Logoplaypark1 from '../assets/Logoplaypark1.png';
+
 
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import DarkmodeToggle from "../components/DarkModeToggle"
@@ -25,7 +28,7 @@ export default function LoginPage() {
 
     try {
       const data = await login(username, password);
-      // 🎯 เก็บ token + user ไว้
+      
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       setMessage("เข้าสู่ระบบสำเร็จ 🎉");
@@ -50,21 +53,26 @@ export default function LoginPage() {
     dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900 
     overflow-y-auto z-0 pt-10">
       
-      <DarkmodeToggle></DarkmodeToggle>
+      <DarkmodeToggle/>
 
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6
         dark:bg-slate-800 dark:border dark:border-slate-700">
         
+         <img 
+                  src={Logoplaypark1} 
+                  alt="System Logo" 
+                  className="h-40 mx-auto mb-1 object-contain "/>
+
 
         <h1 className="text-center text-xl font-bold text-slate-800 mb-1
-          dark:text-white">
+          dark:text-white ">
           
-          Daily Report System
+         Welcome to NOC Reporting System
         </h1>
         <p className="text-center text-xs text-slate-500 mb-6
           dark:text-slate-400">
          
-          Web Report & Case Management
+          
         </p>
 
 
@@ -72,15 +80,17 @@ export default function LoginPage() {
           <Input
             label="Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+            maxLength={100}
+            onChange={(e) => setUsername(e.target.value)}/>
+          
 
           <Input
             label="Password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+            maxLength={64}
+            onChange={(e) => setPassword(e.target.value)}/>
+          
 
           
           <Button type="submit" disabled={loading}>

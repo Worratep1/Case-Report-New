@@ -581,8 +581,21 @@ const StatusBadge = ({ status }) => {
   // --- DASHBOARD DATA CALCULATION (UPDATED LOGIC) ---
   const casesOfSelectedDate = cases.filter(c => c.date === selectedDate);
 
+  const filteredCases = cases.filter(c=>{
+  const isSameStatus = filterStatus === 'all' ? true : c.status === filterStatus;
+
+    const searchLower = searchText.toLowerCase();
+    const isMatchSearch = 
+        (c.game || '').toLowerCase().includes(searchLower) || 
+        (c.problem || '').toLowerCase().includes(searchLower) || 
+        (c.details || '').toLowerCase().includes(searchLower);
+    
+    return isSameStatus && isMatchSearch;
+
+  })
+
   const dashboardData = useMemo(() => {
-    const safeCases = casesOfSelectedDate;
+    const safeCases = filteredCases; //ข้อมูลเปลี่ยนตามตัวกรอง 
     
     // 1. คำนวณตัวเลขสรุป
     let totalDownMinutes = 0;
@@ -1090,18 +1103,7 @@ const openNewCaseModal = () => {
     return [...defaultOpt, ...dbOpts];
   }, [lookupData.statuses]);
 
-  const filteredCases = cases.filter(c=>{
-  const isSameStatus = filterStatus === 'all' ? true : c.status === filterStatus;
 
-    const searchLower = searchText.toLowerCase();
-    const isMatchSearch = 
-        (c.game || '').toLowerCase().includes(searchLower) || 
-        (c.problem || '').toLowerCase().includes(searchLower) || 
-        (c.details || '').toLowerCase().includes(searchLower);
-    
-    return isSameStatus && isMatchSearch;
-
-  })
 
 // --- OPTIONS สำหรับ Modal (แปลงจาก lookupData) ---
 
@@ -1599,6 +1601,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-left ml-1">รายละเอียด (Details)</label>
                         <textarea 
                           rows={3} 
+                          maxLength={1000}
                           value={currentCase.details} 
                           onChange={(e) => setCurrentCase({...currentCase, details: e.target.value})} 
                           className="w-full border rounded-xl p-2.5 text-sm resize-none
@@ -1609,6 +1612,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-left ml-1">วิธีการแก้ไข (Solution)</label>
                         <textarea 
                           rows={3} 
+                          maxLength={1000}
                           value={currentCase.solution} 
                           onChange={(e) => setCurrentCase({...currentCase, solution: e.target.value})} 
                           className="w-full border rounded-xl p-2.5 text-sm resize-none
@@ -1628,6 +1632,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                               className="w-full border rounded-xl p-2.5 text-sm
                                  bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white" 
                               placeholder="ระบุชื่อผู้ร้องขอ" 
+                              maxLength={150}
                             />
                         </div>
                         <div>
@@ -1641,6 +1646,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                               className="w-full border rounded-xl p-2.5 text-sm
                                  bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white" 
                               placeholder="ระบุชื่อผู้ดำเนินการ" 
+                              maxLength={150}
                             />
                         </div>
                     </div>

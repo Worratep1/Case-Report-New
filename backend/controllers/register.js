@@ -13,7 +13,7 @@ exports.register = async (req, res) => {
     return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
   }
 
-  if (username.length > 50 ){
+  if (username.length > 100 ){
     return res.status(400).json({
       message:"Username ยาวเกินไป"
     })
@@ -129,14 +129,11 @@ exports.getUserById = async (req, res) => {
 
 // ----------------------------------------------------------
 // 4. แก้ไขข้อมูลสมาชิก (UPDATE)
-//    PUT /api/users/:id
-//   
-//     
+//    PUT /api/users/:id     
 // ----------------------------------------------------------
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
 
-  // รับ password ธรรมดาเข้ามา
   const { username, password, first_name, last_name, email, is_active } = req.body;
 
   try {

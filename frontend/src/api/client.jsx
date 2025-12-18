@@ -17,7 +17,7 @@ client.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// (ออฟชั่น) ถ้าเจอ 401 ให้เด้งไปหน้า login
+// ถ้าเจอ 401 ให้เด้งไปหน้า login
 
 client.interceptors.response.use(
   (response) => response,
@@ -37,21 +37,3 @@ client.interceptors.response.use(
 )
 export default client;
 
-// export async function getProfile() {
-
-//   try{
-//     const res = await client.get("/profile");
-//     return res.data
-
-
-//   }catch (error) {
-//   if(error.response?.status === 401 ){
-//      throw new Error("Unauthorized or token expired")
-//   }
-//     throw new Error(error.response?.data?.message || "Failed to fetch profile")
-
-
-  
-//   }
-  
-// }

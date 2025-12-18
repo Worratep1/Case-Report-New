@@ -1,5 +1,10 @@
 const pool = require("../config/db");
 
+const validateEmail = (email) => {
+  const validmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return validmail.test(email);
+};
+
 // ----------------------------------------------------------
 // 1. เพิ่มรายชื่อผู้รับ (CREATE)
 //    POST /api/recipients
@@ -11,11 +16,21 @@ exports.createRecipient = async (req, res) => {
   if (!email) {
     return res.status(400).json({ message: "กรุณากรอกอีเมล" });
   }
-  if (email.length > 255)
-    return res.status(400).json({ message: "Email ยาวเกินไป" });
 
-  if (name && name.length > 100)
-    return res.status(400).json({ message: "ชื่อยาวเกินไป" });
+  // เช็คว่าได้ใส่รูปเเบบเมล์ถูกต้องไหม
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: "รูปแบบอีเมลไม่ถูกต้อง" });
+  }
+
+  if (email.length > 255)
+    return res
+      .status(400)
+      .json({ message: "Email ยาวเกินไป (สูงสุด 150 ตัวอักษร)" });
+
+  if (name && name.length > 150)
+    return res
+      .status(400)
+      .json({ message: "ชื่อยาวเกินไป (สูงสุด 150 ตัวอักษร)" });
 
   try {
     // เช็คว่า email นี้มีอยู่แล้วหรือยัง
@@ -137,6 +152,10 @@ exports.updateRecipient = async (req, res) => {
           .status(400)
           .json({ message: "อีเมลนี้มีอยู่ในรายชื่อผู้รับแล้ว" });
       }
+    }
+
+    if (email && !validateEmail(email)) {
+      return res.status(400).json({ message: "รูปแบบอีเมลไม่ถูกต้อง" });
     }
 
     // 3) ใช้ค่าเดิมถ้าไม่ได้ส่งมา (partial update)

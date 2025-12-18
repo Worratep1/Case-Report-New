@@ -1,5 +1,6 @@
 const transporter = require("../config/mail");
 
+
 exports.sendDailyReport = async (req, res) => {
   try {
     let { toEmails, subject, body } = req.body;
@@ -17,12 +18,14 @@ exports.sendDailyReport = async (req, res) => {
       }
     }
 
-    // เช็คว่าได้ใส่เมล์มาไหม
+    // เช็คว่าได้ใส่เมลมาไหม
     if (!toEmails || !Array.isArray(toEmails) || toEmails.length === 0) {
       return res.status(400).json({
         message: "กรุณาใส่อีเมล์ผู้รับอย่างน้อย 1 คน",
       });
     }
+
+
 
     const files = req.files || [];
     const attachments = files.map((file) => ({
@@ -42,7 +45,7 @@ exports.sendDailyReport = async (req, res) => {
     await transporter.sendMail(mailOptions);
 
     return res.status(200).json({
-      message: "ส่งอีเมลสำเร็จแล้ว ✅",
+      message: "ส่งอีเมลสำเร็จแล้ว ",
     });
   } catch (err) {
     console.error("Error sending email :", err);

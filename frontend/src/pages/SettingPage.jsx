@@ -45,11 +45,11 @@ export default function SettingPage() {
             onClick={() => navigate("/recipient")}
           />
 
-          <div className="text-left p-1">
-            <ButtonBack onClick={() => navigate("/menu")}
-            
-              > Back </ButtonBack>
+          <div className="text-left px-1">
+            <ButtonBack onClick={() => navigate("/menu")} > Back </ButtonBack>
 
+            
+             
           </div>
         </div>
       </div>

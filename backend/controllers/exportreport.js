@@ -130,7 +130,7 @@ exports.exportReport = async (req, res) => {
     // Header
     sheet.mergeCells("A1:D1"); // ขยายเป็น 4 คอลัมน์เพราะตารางกว้างขึ้น
     const titleCell = sheet.getCell("A1");
-    titleCell.value = mode === "monthly" ? `Monthly Case Report (MTD)` : `Daily Case Report`;
+    titleCell.value = mode === "monthly" ? `Monthly Case Report ` : `Daily Case Report`;
     titleCell.font = { bold: true, size: 16 };
     
     sheet.getCell("A2").value = `Date: ${date}`;

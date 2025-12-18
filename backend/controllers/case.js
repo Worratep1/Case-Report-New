@@ -44,7 +44,7 @@ exports.createCase = async (req, res) => {
       })
 
     }
-    if (requester_name.length > 100 || solver.length > 100){
+    if (requester_name.length > 150 || solver.length > 150){
       return res.status(400).json({
         message:"ชื่อยาวเกินไป"
       })

@@ -396,7 +396,7 @@ export default function MemberSetting() {
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
-                    maxLength={50}
+                    maxLength={100}
                     placeholder="Enter username"
                     className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
                       bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
@@ -446,6 +446,7 @@ export default function MemberSetting() {
                   <input
                     name="email"
                     value={formData.email}
+                    maxLength={255}
                     onChange={handleChange}
                     placeholder="Enter email address"
                     className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500

@@ -777,7 +777,7 @@ export default function CasePage() {
                   type="text"
                   name="requester_name"
                   value={formData.requester_name}
-                  maxLength={100}
+                  maxLength={150}
                   onChange={handleChange}
                   placeholder="ระบุชื่อผู้ร้องขอ"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
@@ -818,7 +818,7 @@ export default function CasePage() {
                   name="solver"
                   value={formData.solver}
                   onChange={handleChange}
-                  maxLength={100}
+                  maxLength={150}
                   placeholder="ระบุชื่อผู้ดำเนินการเเก้ไข"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
