@@ -1,15 +1,26 @@
-// -------------------------------------------------------------
-// 1) IMPORT LIBRARIES ที่ต้องใช้
-// -------------------------------------------------------------
+
 const pool = require("../config/db");
 const ExcelJS = require("exceljs");
 
-// =============================================================
-// 3) CONTROLLER: EXPORT REPORT
-// =============================================================
+
+
+const formatThaiDate = (dateStr) => {
+  if (!dateStr) return "-";
+  const [year, month, day] = dateStr.split('-');
+  // วัน/เดือน/ปี ค.ศ. (เช่น 19/12/2025)
+  return `${day}/${month}/${year}`;
+};
+
+// โชว์ช่วงเวลาวันที่-วันที่เลือก
+const getReportRangeLabel = (dateStr, mode) => {
+  if (mode !== 'monthly') return formatThaiDate(dateStr);
+  const [year, month, day] = dateStr.split('-');
+  return `01/${month}/${year} - ${day}/${month}/${year}`;
+};
+
 exports.exportReport = async (req, res) => {
   try {
-    const { date, mode } = req.query;
+    const { date, mode, status, search } = req.query; // 1. รับค่าเพิ่ม
 
     if (!date) {
       return res.status(400).json({
@@ -17,44 +28,68 @@ exports.exportReport = async (req, res) => {
       });
     }
 
-    // --- กำหนดเงื่อนไข WHERE (Daily / Monthly / MTD) ---
-    const dateCondition =
-      mode === "monthly"
-        ? "start_datetime::date >= date_trunc('month', $1::date)::date AND start_datetime::date <= $1::date"
-        : "start_datetime::date = $1";
+    let conditions = [];
+    let values = [date]; // $1 คือ date เสมอ
 
-    const dateConditionWithAlias =
-      mode === "monthly"
-        ? "c.start_datetime::date >= date_trunc('month', $1::date)::date AND c.start_datetime::date <= $1::date"
-        : "c.start_datetime::date = $1";
+  
+    if (mode === "monthly") {
+      conditions.push("c.start_datetime::date >= date_trunc('month', $1::date)::date AND c.start_datetime::date <= $1::date");
+    } else {
+      conditions.push("c.start_datetime::date = $1");
+    }
+
+    // (ถ้าเลือก all หรือไม่ส่งมา จะไม่กรอง)
+    if (status && status !== "all") {
+      values.push(status);
+      conditions.push(`LOWER(s.status_name) = LOWER($${values.length})`);
+    }
+
+    //  เงื่อนไข Search (ค้นหาจากชื่อเกม)
+  if (search) {
+      values.push(`%${search}%`);
+      const idx = `$${values.length}`;
+      // ค้นหาใน: ชื่อเกม OR ชื่อปัญหา OR รายละเอียด
+      conditions.push(`(p.product_name ILIKE ${idx} OR pr.problem_name ILIKE ${idx})`);
+    }
+
+     
+
+
+    const finalWhereClause = conditions.join(" AND ");
 
     // ---------------------------------------------------------
-    // 3.1 ดึง "จำนวนเคสทั้งหมด"
+    // 3.1 ดึง "จำนวนเคสทั้งหมด" (ใส่ JOIN เพื่อให้กรอง Status/Game ได้)
     // ---------------------------------------------------------
     const totalResult = await pool.query(
-      `SELECT COUNT(*) AS total_cases FROM cases WHERE ${dateCondition}`,
-      [date]
+      `SELECT COUNT(*) AS total_cases 
+       FROM cases c
+       JOIN products p ON c.product_Id = p.product_id
+       JOIN case_statuses s ON c.status_id = s.status_id
+       LEFT JOIN case_problems pr ON c.problem_id = pr.problem_id
+       WHERE ${finalWhereClause}`,
+      values
     );
     const totalCases = totalResult?.rows?.length > 0 ? Number(totalResult.rows[0].total_cases) : 0;
 
     // ---------------------------------------------------------
-    // 3.2 [CORRECTED SQL] ดึง Game Breakdown แยก Status
+    // 3.2 ดึง Game Breakdown แยก Status
     // ---------------------------------------------------------
     const gameResult = await pool.query(
       `
       SELECT 
         p.product_name AS game_name,
-        s.status_name AS status,  -- เลือก Status มาโชว์
+        s.status_name AS status,
         COUNT(*) AS case_count,
         COALESCE(SUM(EXTRACT(EPOCH FROM (c.end_datetime - c.start_datetime)) / 60), 0) AS total_minutes
       FROM cases c
       JOIN products p ON c.product_Id = p.product_id
-      JOIN case_statuses s ON c.status_id = s.status_id -- [เพิ่ม] JOIN ตาราง Status
-      WHERE ${dateConditionWithAlias}
-      GROUP BY p.product_name, s.status_name -- [เพิ่ม] Group By Status ด้วย
+      JOIN case_statuses s ON c.status_id = s.status_id
+      LEFT JOIN case_problems pr ON c.problem_id = pr.problem_id
+      WHERE ${finalWhereClause}
+      GROUP BY p.product_name, s.status_name
       ORDER BY total_minutes DESC, case_count DESC
       `,
-      [date]
+      values
     );
     const gameRows = Array.isArray(gameResult?.rows) ? gameResult.rows : [];
 
@@ -66,14 +101,15 @@ exports.exportReport = async (req, res) => {
       SELECT s.status_name AS status, COUNT(*) AS case_count
       FROM cases c
       JOIN case_statuses s ON c.status_id = s.status_id
-      WHERE ${dateConditionWithAlias}
+      JOIN products p ON c.product_Id = p.product_id 
+      LEFT JOIN case_problems pr ON c.problem_id = pr.problem_id
+      WHERE ${finalWhereClause}
       GROUP BY s.status_name, s.status_id
       ORDER BY s.status_id ASC
       `,
-      [date]
+      values
     );
     const statusRows = Array.isArray(statusResult?.rows) ? statusResult.rows : [];
-
     // =========================================================
     // 4. คำนวณ Summary Metrics (Total Downtime & Most Impacted)
     // =========================================================
@@ -126,14 +162,22 @@ exports.exportReport = async (req, res) => {
     // ---------------------------------------------------------
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Report");
-
+    const displayDate = getReportRangeLabel(date, mode);
     // Header
     sheet.mergeCells("A1:D1"); // ขยายเป็น 4 คอลัมน์เพราะตารางกว้างขึ้น
     const titleCell = sheet.getCell("A1");
     titleCell.value = mode === "monthly" ? `Monthly Case Report ` : `Daily Case Report`;
     titleCell.font = { bold: true, size: 16 };
     
-    sheet.getCell("A2").value = `Date: ${date}`;
+    
+
+    sheet.getCell("A2").value = `Date: ${displayDate}`;
+
+    let filterInfo = `Status: ${status || 'All'}`;
+    if (search) filterInfo += ` | Search: "${search}"`;
+    sheet.getCell("A6").value = `Filter Applied: ${filterInfo}`; // ใส่ไว้ที่บรรทัด A6 ก่อนเริ่มตาราง
+    sheet.getCell("A6").font = { italic: true, color: { argb: 'FF555555' } };
+
     sheet.getCell("A3").value = `Total Cases: ${totalCases}`;
     sheet.getCell("A4").value = `Total Downtime: ${totalDowntimeStr}`;
     sheet.getCell("A5").value = `Most Impacted: ${mostImpacted}`;

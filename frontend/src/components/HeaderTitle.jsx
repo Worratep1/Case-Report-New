@@ -7,11 +7,11 @@ export default function HeaderTitle({ username }) {
         <img 
           src={Logoplaypark1} 
           alt="System Logo" 
-          className="h-40 mx-auto mb-1 object-contain "/>
+          className="h-24 md:h-32 lg:h-40 mx-auto mb-1 object-contain "/>
           
 
       
-      <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
+      <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-1">
         NOC Report System
       </h1>
       

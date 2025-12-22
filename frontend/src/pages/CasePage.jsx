@@ -17,6 +17,7 @@ import {
 import ButtonCancel from "../components/ButtonCancel";
 import ButtonSubmit from "../components/ButtonSubmit";
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
+import DarkModeToggle from "../components/DarkModeToggle";
 
 import { createCase } from "../api/case";
 import { getproducts } from "../api/products";
@@ -608,6 +609,9 @@ export default function CasePage() {
     <div className="fixed grid place-items-center inset-0 w-full h-full overflow-y-auto z-0 p-10
       bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"> {/* ✅ Background Dark Mode */}
+
+      {/* ปุ่ม Toggle Dark Mode */}
+            <DarkModeToggle />
       <div className="w-full max-w-2xl rounded-3xl shadow-2xl border p-8 sm:p-10 relative
         bg-white/90 backdrop-blur-xl border-white/50
         dark:bg-slate-800/90 dark:border-slate-700"> {/* ✅ Card Dark Mode */}
@@ -647,12 +651,12 @@ export default function CasePage() {
             <div className="space-y-4 ">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4  ">
                 <CustomDatePicker
-                  label="วันที่เริ่ม Case"
+                  label="วันที่เริ่ม (Start Date)"
                   value={formData.start_datetime}
                   onChange={(val) => handleCustomChange("start_datetime", val)}
                 />
                 <CustomDatePicker
-                  label="วันที่สิ้นสุด Case"
+                  label="วันที่สิ้นสุด (End Date)"
                   value={formData.end_datetime}
                   onChange={(val) => handleCustomChange("end_datetime", val)}
                 />
@@ -660,12 +664,12 @@ export default function CasePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <CustomTimePicker
-                  label="เวลาเริ่ม"
+                  label="เวลาเริ่ม (Start Time)"
                   value={formData.timeStart}
                   onChange={(val) => handleCustomChange("timeStart", val)}
                 />
                 <CustomTimePicker
-                  label="เวลาสิ้นสุด"
+                  label="เวลาสิ้นสุด (End Time)"
                   value={formData.timeEnd}
                   onChange={(val) => handleCustomChange("timeEnd", val)}
                 />

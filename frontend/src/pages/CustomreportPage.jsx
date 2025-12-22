@@ -674,7 +674,7 @@ const StatusBadge = ({ status }) => {
       barChartData,
       pieData
     };
-  }, [casesOfSelectedDate]);
+  }, [filteredCases]);//casesOfSelectedDate
 
   // --- HELPER: AUTO-CALCULATE DURATION ---
   const calculateDuration = (start, end) => {
@@ -952,7 +952,7 @@ const openNewCaseModal = () => {
       setIsExporting(true);
 
       // เรียก API exportReport (ได้ blob กลับมา)
-      const blob = await exportReport(selectedDate ,viewMode );
+      const blob = await exportReport(selectedDate ,viewMode , filterStatus, searchText);
 
       // สร้าง URL ชั่วคราวจาก blob
       const url = window.URL.createObjectURL(blob);
@@ -965,8 +965,7 @@ const openNewCaseModal = () => {
 
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
-      downloadLink.download = filename; // ใช้ชื่อไฟล์ที่ตั้งไว้
-      // downloadLink.style.display = "none";
+      downloadLink.download = filename; 
 
       // สั่งให้ลิงก์คลิกเอง
       document.body.appendChild(downloadLink);
@@ -1152,7 +1151,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
         <div className="w-full px-1 sm:px-8 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             {/* Logo & Title */}
-            <div className="flex items-center gap-3 w-full md:w-auto px-48">
+            <div className="flex items-center gap-3 w-full md:w-auto px-4 md:px-8">
               <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
                 <button
                   className=" p-2 rounded-full
@@ -1184,7 +1183,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
           
             {/* Controls  ปุ่ม export , send email , ปุ่มสลับรายวันรายเดือน*/}
 
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end px-40">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end px-4 md:px-8">
                <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
               <div className="w-48 ">
                 <CustomDatePicker
@@ -1516,7 +1515,7 @@ const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
                     {/* [UPDATED] Date & End Date Row */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-left ml-1">วันที่ (Date)</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-left ml-1">วันที่เริ่ม (Start Date)</label>
                             <CustomDatePicker 
                                 value={currentCase.date}
                                 onChange={(val) => setCurrentCase({...currentCase, date: val})}

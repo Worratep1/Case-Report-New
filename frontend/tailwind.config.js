@@ -5,8 +5,8 @@ export default {
   theme: {
     extend: {
        fontFamily:{
-         sans: ["Kanit", "sans-serif"],   // override font-sans ทั้งเว็บ
-        kanit: ["Kanit", "sans-serif"],  // ฟอนต์แบบกำหนดเองก็ได้
+         sans: ["Kanit", "sans-serif"],   
+        kanit: ["Kanit", "sans-serif"],  
        },
     },
   },

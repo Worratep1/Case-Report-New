@@ -12,6 +12,15 @@ import {
 import { BarChart2, Activity } from "lucide-react";
 
 const DowntimeBarChart = ({ data }) => {
+
+  
+  const maxMinutes = data && data.length > 0 ? Math.max(...data.map(d => d.minutes)) : 0;
+  const tickInterval = 180; // ล็อกไว้ที่ 3 ชม.
+  const generatedTicks = [];
+  
+  for (let i = 0; i <= maxMinutes + tickInterval; i += tickInterval) {
+    generatedTicks.push(i);
+  }
   
   // ฟังก์ชันแปลงนาที เป็น "Xh Ym"
   const formatTime = (minutes) => {
@@ -41,7 +50,14 @@ const DowntimeBarChart = ({ data }) => {
          {timeLabel} ({count} ครั้ง)
       </text>
     );
+
+
+  
+
+
   };
+
+  
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm h-full">
@@ -58,13 +74,23 @@ const DowntimeBarChart = ({ data }) => {
       <div className="h-64 w-full">
         {data && data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <BarChart 
               data={data}
-              margin={{ top: 0, right: 120, left: 0, bottom: 0 }} // เผื่อขอบขวาให้ข้อความ
+              margin={{ top: 0, right: 120, left: 0, bottom: 2 }} // เผื่อขอบขวาให้ข้อความ
               layout="vertical"
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.1} />
-              <XAxis type="number" hide />
+            <XAxis 
+                type="number" 
+                axisLine={{ stroke: "#94a3b8", strokeWidth: 1 }} 
+                tickLine={{ stroke: "#94a3b8" }} 
+                tick={{ fill: "#64748b", fontSize: 10 }}
+                tickFormatter={(val) => `${Math.floor(val / 60)}h`}
+                ticks={generatedTicks}
+                domain={[0, generatedTicks[generatedTicks.length - 1]]} 
+                
+                interval={0} // บังคับให้แสดงทุกตัวเลขถ้าพื้นที่พอ
+              />
               <YAxis 
                 dataKey="name" 
                 type="category" 

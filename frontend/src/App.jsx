@@ -32,9 +32,7 @@
 //   )
 //dsfsasfafa }
 
-// export default App 
 
-// src/App.jsx
 import AppRoutes from "./routes/AppRoutes.jsx";
 import "./App.css";
 import React, { useEffect } from "react";

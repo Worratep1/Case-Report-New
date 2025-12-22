@@ -4,6 +4,31 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  ::-webkit-scrollbar {
+    width: 8px; /* ความกว้างแถบเลื่อน */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent; /* พื้นหลังโปร่งใส */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* สีเทา slate-300 (Light Mode) */
+    border-radius: 10px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #475569; /* สีเทา slate-600 (Dark Mode) */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* สีตอนเอาเมาส์วาง */
+  }
+}
+
+
+
 
 #root {
   max-width: 1280px;

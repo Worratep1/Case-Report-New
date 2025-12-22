@@ -764,7 +764,7 @@ export default function DailyReport() {
       setIsExporting(true);
 
       // เรียก API ไปดึงไฟล์ Excel (แบบ blob)
-      const blob = await exportReport(selectedDate, viewMode);
+      const blob = await exportReport(selectedDate, viewMode , filterStatus, searchText);
 
       if (!blob) {
         throw new Error("ไม่พบข้อมูลไฟล์จากเซิร์ฟเวอร์");
@@ -954,7 +954,7 @@ export default function DailyReport() {
         <div className="w-full px-1 sm:px-8 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             {/* Logo & Title */}
-            <div className="flex items-center gap-3 w-full md:w-auto px-48"> 
+            <div className="flex items-center gap-3 w-full md:w-auto px-4 md:px-8"> 
               <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
                 <button
                   className=" p-2 rounded-full
@@ -982,7 +982,7 @@ export default function DailyReport() {
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end px-36">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end px-4 md:px-8">
               
               {/* Toggle View Mode Buttons ปุ่มสลับเป็น รายวันกับรายเดือน*/}
               
@@ -1073,7 +1073,7 @@ export default function DailyReport() {
         <div className="rounded-b-xl shadow-sm overflow-hidden min-h-[300px]
           bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-700"> 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table  className="min-w-[1000px] w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-semibold tracking-wider
                   bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"> 
@@ -1275,7 +1275,7 @@ export default function DailyReport() {
                     <div key={label} className="p-3 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
                         <label className="text-xs font-bold uppercase block mb-1 text-slate-500 dark:text-slate-400">{label}</label>
                         <p className="font-medium text-sm flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                            <Clock size={14} className="text-indigo-500" />
+                            <CalendarIcon size={14} className="text-indigo-500" />
                             {i === 0 ? `${selectedCaseDetail.startTime} - ${selectedCaseDetail.endTime}` : (i === 1 ? (selectedCaseDetail.startDate || selectedCaseDetail.date) : (selectedCaseDetail.endDate || selectedCaseDetail.date))}
                         </p>
                     </div>

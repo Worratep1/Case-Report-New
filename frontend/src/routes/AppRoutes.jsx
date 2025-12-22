@@ -11,6 +11,7 @@ import MemberSetting from "../pages/MemberSetting";
 import RecipientSetting from "../pages/RecipientSetting";
 import DailyReportPage from "../pages/DailyreportPage";
 import CustomreportPage from "../pages/CustomreportPage";
+import ManualPage from "../pages/ManualPage";
 
 import RequierAuth from "../components/RequireAuth";
 
@@ -21,13 +22,10 @@ export default function AppRoutes() {
       
       <Route path="/login" element={ <LoginPage/> } />
 
-      
       <Route path="/main" element={<RequierAuth> <MainPage /> </RequierAuth>} />
 
-     
       <Route path="/menu" element={  <RequierAuth> <MenuPage /> </RequierAuth>} />
 
-     
       <Route path="/case" element={ <RequierAuth> <CasePage /> </RequierAuth>} />
 
       <Route path="/report" element={<RequierAuth> <ReportPage /> </RequierAuth>} />
@@ -45,6 +43,10 @@ export default function AppRoutes() {
       <Route path="/dailyreport" element={ <RequierAuth> <DailyReportPage /> </RequierAuth> } />
 
       <Route path="/customreport" element={ <RequierAuth> <CustomreportPage /> </RequierAuth>} />
+
+      <Route path="/manual" element={<RequierAuth> <ManualPage/> </RequierAuth>}/>
+
+
 
 
       {/* ถ้าพิมพ์ path มั่ว ให้เด้งไป /login */}
