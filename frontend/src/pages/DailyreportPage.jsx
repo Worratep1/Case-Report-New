@@ -22,9 +22,10 @@ import {
   ChevronRight,
   ClipboardList,
   Server,
-  Flame
+  Flame,
 } from "lucide-react";
 
+import html2canvas from "html2canvas";
 import { getCases } from "../api/case";
 import { getProblems } from "../api/problems";
 import { getStatuses } from "../api/status";
@@ -41,10 +42,10 @@ import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
 import ViewModeToggle from "../components/ViewModeToggle";
 
-
 import StatCard from "../components/dashboard/StatCard";
 import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
 import StatusPieChart from "../components/dashboard/StatusPieChart";
+import { captureReportImage } from "../utils/reportCapture";
 
 // --- CONSTANTS ---
 const CONFIG = {
@@ -61,7 +62,7 @@ const CONFIG = {
   ],
 };
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 // --- HELPER FUNCTIONS ---
 const getTodayString = () => {
@@ -90,15 +91,15 @@ const parseISODate = (dateStr) => {
 const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
   const dashboardData = useMemo(() => {
     const safeCases = Array.isArray(cases) ? cases : [];
-    
+
     // 1. คำนวณตัวเลขสรุป
     let totalDownMinutes = 0;
-    const gameStats = {}; 
-    const counts = {}; 
+    const gameStats = {};
+    const counts = {};
 
     safeCases.forEach((c) => {
       if (!c) return;
-      
+
       // Sum Downtime
       const minutes = c.durationMins || 0;
       totalDownMinutes += minutes;
@@ -118,36 +119,38 @@ const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
 
     // 2. จัดการ Most Impacted (Tie-Breaker Logic)
     const sortedGames = Object.keys(gameStats)
-        .map(key => ({ name: key, ...gameStats[key] }))
-        .sort((a, b) => {
-            const timeDiff = b.minutes - a.minutes;
-            if (timeDiff !== 0) return timeDiff;
-            return b.count - a.count;
-        });
-        
+      .map((key) => ({ name: key, ...gameStats[key] }))
+      .sort((a, b) => {
+        const timeDiff = b.minutes - a.minutes;
+        if (timeDiff !== 0) return timeDiff;
+        return b.count - a.count;
+      });
+
     let mostImpacted = "-";
     if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
-        const topGame = sortedGames[0];
-        const ties = sortedGames.filter(g => 
-            g.minutes === topGame.minutes && g.count === topGame.count
-        );
+      const topGame = sortedGames[0];
+      const ties = sortedGames.filter(
+        (g) => g.minutes === topGame.minutes && g.count === topGame.count
+      );
 
-        if (ties.length > 1) {
-            const names = ties.map(t => t.name);
-            mostImpacted = names.slice(0, 2).join(", "); 
-            if (ties.length > 2) mostImpacted += "...";
-        } else {
-            mostImpacted = topGame.name;
-        }
+      if (ties.length > 1) {
+        const names = ties.map((t) => t.name);
+        mostImpacted = names.slice(0, 2).join(", ");
+        if (ties.length > 2) mostImpacted += "...";
+      } else {
+        mostImpacted = topGame.name;
+      }
     }
 
     // 3. Format Total Downtime เป็น h:m
     const downHours = Math.floor(totalDownMinutes / 60);
     const downMins = totalDownMinutes % 60;
-    const totalDowntimeStr = `${String(downHours).padStart(2, '0')}:${String(downMins).padStart(2, '0')} hrs`;
+    const totalDowntimeStr = `${String(downHours).padStart(2, "0")}:${String(
+      downMins
+    ).padStart(2, "0")} hrs`;
 
     // 4. เตรียมข้อมูลกราฟ
-    const barChartData = sortedGames.filter(item => item.minutes > 0);
+    const barChartData = sortedGames.filter((item) => item.minutes > 0);
 
     const pieData = Object.keys(STATUS_CONFIG)
       .map((key) => ({
@@ -164,13 +167,12 @@ const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
         mostImpacted,
       },
       barChartData,
-      pieData
+      pieData,
     };
   }, [cases]);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
       {/* 1. Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
@@ -182,7 +184,9 @@ const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
         <StatCard
           title="Total Cases"
           value={dashboardData.stats.totalCases}
-          icon={<AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />}
+          icon={
+            <AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+          }
           color="bg-orange-50 border-orange-100 dark:bg-orange-900/20 dark:border-orange-900/30"
         />
         <StatCard
@@ -197,12 +201,12 @@ const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Downtime Bar Chart */}
         <div className="lg:col-span-2">
-           <DowntimeBarChart data={dashboardData.barChartData} />
+          <DowntimeBarChart data={dashboardData.barChartData} />
         </div>
 
         {/* Status Pie Chart */}
         <div className="lg:col-span-1">
-           <StatusPieChart data={dashboardData.pieData} />
+          <StatusPieChart data={dashboardData.pieData} />
         </div>
       </div>
     </div>
@@ -369,7 +373,9 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
           <CalendarDays size={18} className="text-indigo-500" />
           <span
             className={`${
-              value ? "text-slate-700 dark:text-slate-200 font-medium" : "text-slate-400"
+              value
+                ? "text-slate-700 dark:text-slate-200 font-medium"
+                : "text-slate-400"
             }`}
           >
             {value ? formatDateDisplay(value) : placeholder}
@@ -378,8 +384,10 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 p-4 rounded-2xl shadow-xl w-[300px] animate-in fade-in zoom-in-95 duration-200 left-0 sm:left-auto right-0 sm:right-0
-          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+        <div
+          className="absolute z-50 mt-2 p-4 rounded-2xl shadow-xl w-[300px] animate-in fade-in zoom-in-95 duration-200 left-0 sm:left-auto right-0 sm:right-0
+          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
+        >
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-slate-700 dark:text-slate-200">
               {thaiMonths[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
@@ -485,7 +493,9 @@ const CustomSelect = ({
           {Icon && <Icon size={16} className="text-slate-400 shrink-0" />}
           <span
             className={`truncate ${
-              !value ? "text-slate-400" : "text-slate-700 dark:text-slate-200 font-medium"
+              !value
+                ? "text-slate-400"
+                : "text-slate-700 dark:text-slate-200 font-medium"
             }`}
           >
             {getDisplayLabel()}
@@ -500,8 +510,10 @@ const CustomSelect = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1.5 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1.5 animate-in fade-in zoom-in-95 duration-100
-          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+        <div
+          className="absolute z-50 w-full mt-1.5 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1.5 animate-in fade-in zoom-in-95 duration-100
+          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
+        >
           {options.map((option, index) => {
             const optValue = typeof option === "object" ? option.value : option;
             const optLabel = typeof option === "object" ? option.label : option;
@@ -548,19 +560,18 @@ const StatusBadge = ({ status }) => {
 export default function DailyReport() {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
-   
-   const [feedbackModal,setFeedbackModal] =useState({
+
+  const [feedbackModal, setFeedbackModal] = useState({
     isOpen: false,
     type: "success",
     title: "",
-    message : "",
-    onConfirm : ()=>{}
-   });
-   
-   const closeFeedbackModal = () => {
-    setFeedbackModal(prev => ({ ...prev, isOpen: false }));
-  };
+    message: "",
+    onConfirm: () => {},
+  });
 
+  const closeFeedbackModal = () => {
+    setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
+  };
 
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
@@ -581,8 +592,6 @@ export default function DailyReport() {
 
   // UI States
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const [isCaseDetailModalOpen, setIsCaseDetailModalOpen] = useState(false);
   const [selectedCaseDetail, setSelectedCaseDetail] = useState(null);
@@ -657,9 +666,10 @@ export default function DailyReport() {
       setLoadingData(true);
       try {
         // เรียก API ส่ง query params ?date=YYYY-MM-DD&mode=daily
-        const res = await getCases({ 
+        const res = await getCases({
           date: selectedDate,
-           mode: viewMode });
+          mode: viewMode,
+        });
 
         const rawCases = (res.cases || [])
           .slice()
@@ -670,11 +680,13 @@ export default function DailyReport() {
         const mappedCases = rawCases.map((c) => {
           // 1. หาชื่อจาก ID
           const productObj = lookupData.products.find(
-            (p) => p.product_id === c.product_id );
+            (p) => p.product_id === c.product_id
+          );
           const statusObj = lookupData.statuses.find(
-            (s) => s.status_id === c.status_id);
+            (s) => s.status_id === c.status_id
+          );
           const problemObj = lookupData.problems.find(
-          (p) => p.problem_id === c.problem_id
+            (p) => p.problem_id === c.problem_id
           );
 
           // 2. จัดการเรื่องเวลา (DB เป็น timestamp ต้องแปลงเป็น HH:mm)
@@ -686,8 +698,19 @@ export default function DailyReport() {
               hour: "2-digit",
               minute: "2-digit",
             });
+
+          const formatDate = (date) => {
+            if (!date || isNaN(date)) return "-";
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${day}/${month}/${year}`;
+          };
+
           const startTimeStr = formatTime(start);
           const endTimeStr = formatTime(end);
+          const startDateStr = formatDate(start);
+          const endDateStr = formatDate(end);
 
           // คำนวณระยะเวลา (นาที) - Logic ใหม่
           const diffMs = end - start;
@@ -704,6 +727,8 @@ export default function DailyReport() {
           return {
             id: c.case_id,
             startTime: startTimeStr,
+            startDate: startDateStr,
+            endDate: endDateStr,
             endTime: endTimeStr,
             duration: durationStr,
             durationMins: durationMins, // เพิ่มฟิลด์นี้มาใหม่
@@ -764,7 +789,12 @@ export default function DailyReport() {
       setIsExporting(true);
 
       // เรียก API ไปดึงไฟล์ Excel (แบบ blob)
-      const blob = await exportReport(selectedDate, viewMode , filterStatus, searchText);
+      const blob = await exportReport(
+        selectedDate,
+        viewMode,
+        filterStatus,
+        searchText
+      );
 
       if (!blob) {
         throw new Error("ไม่พบข้อมูลไฟล์จากเซิร์ฟเวอร์");
@@ -777,8 +807,9 @@ export default function DailyReport() {
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
 
-      const filename = viewMode === 'monthly' 
-          ? `monthly-report-${selectedDate}.xlsx` 
+      const filename =
+        viewMode === "monthly"
+          ? `monthly-report-${selectedDate}.xlsx`
           : `daily-report-${selectedDate}.xlsx`;
       downloadLink.download = filename;
       downloadLink.style.display = "none";
@@ -792,14 +823,12 @@ export default function DailyReport() {
     } catch (error) {
       console.error("Export error:", error);
 
-    setFeedbackModal({
-      isOpen: true,
-      type: 'error',
-      title: 'Export ไม่สำเร็จ',
-      message: 'เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์ กรุณาลองใหม่อีกครั้ง'
-    });
-
-
+      setFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "Export ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์ กรุณาลองใหม่อีกครั้ง",
+      });
     } finally {
       setIsExporting(false);
     }
@@ -827,10 +856,10 @@ export default function DailyReport() {
     if (errors.length > 0) {
       setFeedbackModal({
         isOpen: true,
-        type: 'error',
-        title: 'ไม่สามารถอัปโหลดไฟล์นี้ได้',
-        message: errors.join('\n') 
-    });
+        type: "error",
+        title: "ไม่สามารถอัปโหลดไฟล์นี้ได้",
+        message: errors.join("\n"),
+      });
       // alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join("\n- ")}`);
       e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
       return;
@@ -852,63 +881,61 @@ export default function DailyReport() {
   };
   const handleSendEmail = async () => {
     if (selectedRecipientIds.length === 0) {
-       setFeedbackModal({
-        isOpen: true, 
-        type: 'error', 
-        title: 'เลือกผู้รับ',
-        message: 'กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน'
+      setFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "เลือกผู้รับ",
+        message: "กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน",
       });
       return;
     }
 
-    // 1) ดึง email จาก recipients ที่เลือก
-    const toEmails = availableRecipients
-      .filter((r) => selectedRecipientIds.includes(r.recipient_id))
-      .map((r) => r.email);
-
-
-
-    // 2) สร้าง FormData
-    const formData = new FormData();
-    formData.append("toEmails", JSON.stringify(toEmails));
-    formData.append("subject", emailSubject);
-    formData.append("body", emailBody);
-
-    // 3) แนบไฟล์ (จาก state attachedFiles ที่ฟอร์ดทำไว้แล้ว)
-    attachedFiles
-      .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
-      .forEach((file) => {
-        formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
-      });
-
-    // const payload = {
-    //    toEmails, // <- array ตามที่ backend ต้องการ
-    //    subject: emailSubject, // string
-    //    body: emailBody, // string (ข้อความธรรมดา)
-    // };
-
     setIsLoading(true);
 
     try {
+
+      // เมื่อส่งเมล์จะเเคปภาพหน้า Dailyrerport ไปด้วย
+      const imageBlob = await captureReportImage("report-content");
+      
+      // 1) ดึง email จาก recipients ที่เลือก
+      const toEmails = availableRecipients
+        .filter((r) => selectedRecipientIds.includes(r.recipient_id))
+        .map((r) => r.email);
+
+      // 2) สร้าง FormData
+      const formData = new FormData();
+      formData.append("toEmails", JSON.stringify(toEmails));
+      formData.append("subject", emailSubject);
+      formData.append("body", emailBody);
+
+      // --- ส่วนที่เพิ่มใหม่: แนบรูป Screenshot ไปด้วย ---
+      formData.append("reportImage", imageBlob, "report-screenshot.png");
+
+      // 3) แนบไฟล์
+      attachedFiles
+        .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
+        .forEach((file) => {
+          formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
+        });
+
       await sendDailyReport(formData); //  เรียก API ที่เราแก้ในข้อ 1
       setIsEmailModalOpen(false);
-      // setIsSuccessModalOpen(true);
       setFeedbackModal({
         isOpen: true,
-        type: 'success',
-        title: 'ส่งรายงานเรียบร้อย',
-        message: 'ระบบได้ทำการส่งอีเมลรายงานให้ผู้รับเรียบร้อยแล้ว'
+        type: "success",
+        title: "ส่งรายงานเรียบร้อย",
+        message: "ระบบได้ทำการส่งอีเมลรายงานให้ผู้รับเรียบร้อยแล้ว",
       });
 
       // reset ฟอร์ม
       setSelectedRecipientIds([]);
     } catch (error) {
       console.error("Error sending email:", error);
-       setFeedbackModal({
+      setFeedbackModal({
         isOpen: true,
-         type: 'error',
-          title: 'ส่งเมลไม่สำเร็จ',
-           message: error.message
+        type: "error",
+        title: "ส่งเมลไม่สำเร็จ",
+        message: error.message,
       });
     } finally {
       setIsLoading(false);
@@ -918,7 +945,7 @@ export default function DailyReport() {
   // --- FILTER & PAGINATION LOGIC ---
   const filteredCases = cases.filter((c) => {
     // เงื่อนไขวันที่: ถ้าเป็น monthly ไม่ต้องกรองวันที่ (หรือกรองตามเดือน) แต่ถ้า daily ต้องตรงกัน
-    const isSameDate = viewMode === 'daily' ? c.date === selectedDate : true; 
+    const isSameDate = viewMode === "daily" ? c.date === selectedDate : true;
     const isSameStatus =
       filterStatus === "all" ? true : c.status === filterStatus;
     const searchLower = searchText.toLowerCase();
@@ -936,25 +963,29 @@ export default function DailyReport() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Data for Dashboard Cards 
+  // Data for Dashboard Cards
   // ใน Monthly mode เราใช้ cases ทั้งหมดที่ fetch มาได้เลย เพราะ API กรองมาให้แล้ว
-  const casesOfSelectedDate = cases; 
-
+  const casesOfSelectedDate = cases;
 
   return (
-    
-    <div className="fixed inset-0 w-full h-full overflow-y-auto font-sans text-slate-900 pb-20 
+    <div
+      className="fixed inset-0 w-full h-full overflow-y-auto font-sans text-slate-900 pb-20 
       bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
-      dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"> {/* contanier  Background Dark Mode */}
-      
+      dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
+    >
+      {" "}
+      {/* contanier  Background Dark Mode */}
       {/* Header Bar */}
-      <div className="sticky top-0 z-40 shadow-sm
-        bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"> {/* Header Bar Dark Mode */}
-        
+      <div
+        className="sticky top-0 z-40 shadow-sm
+        bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
+      >
+        {" "}
+        {/* Header Bar Dark Mode */}
         <div className="w-full px-1 sm:px-8 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
             {/* Logo & Title */}
-            <div className="flex items-center gap-3 w-full md:w-auto px-4 md:px-8"> 
+            <div className="flex items-center gap-3 w-full md:w-auto px-4 md:px-8">
               <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
                 <button
                   className=" p-2 rounded-full
@@ -976,18 +1007,19 @@ export default function DailyReport() {
                   <h1 className="text-xl  font-medium text-slate-800 dark:text-white leading-tight ">
                     Daily Report
                   </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 text-start">รายงานประจำวัน</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 text-start">
+                    รายงานประจำวัน
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Controls */}
             <div className="flex items-center gap-3 w-full md:w-auto justify-end px-4 md:px-8">
-              
               {/* Toggle View Mode Buttons ปุ่มสลับเป็น รายวันกับรายเดือน*/}
-              
+
               <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-            
+
               <div className="w-48 ">
                 <CustomDatePicker
                   value={selectedDate}
@@ -1010,35 +1042,42 @@ export default function DailyReport() {
           </div>
         </div>
       </div>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Date Header Display */}
+      <main
+        id="report-content"
+        className="max-w-[70%] mx-auto px-4 sm:px-6 lg:px-1 py-8"
+      >
+        {/* Date Header Display */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
             {/* เช็ค viewMode เพื่อเปลี่ยนคำพูด */}
-            {viewMode === 'daily' ? 'ภาพรวมประจำวันที่' : 'ภาพรวมประจำเดือน'}{" "}
+            {viewMode === "daily"
+              ? "ภาพรวมประจำวันที่"
+              : "ภาพรวมประจำเดือน"}{" "}
             <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
-                {/* เป็น วันเดือนปี  */}
-               {selectedDate ? selectedDate.split('-').reverse().join('-') : ''}
+              {/* เป็น วันเดือนปี  */}
+              {selectedDate ? selectedDate.split("-").reverse().join("-") : ""}
             </span>
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 text-left">
-            สรุปข้อมูลการดำเนินงาน{viewMode === 'daily' ? 'ประจำวัน' : 'ตลอดทั้งเดือน'}
+            สรุปข้อมูลการดำเนินงาน
+            {viewMode === "daily" ? "ประจำวัน" : "ตลอดทั้งเดือน"}
           </p>
         </div>
 
         {/* Dashboard */}
         <div className="mb-8">
           <ReportDashboard
-           cases={filteredCases}
+            cases={filteredCases}
             selectedDate={selectedDate}
             viewMode={viewMode}
           />
         </div>
 
         {/* Toolbar & Filters */}
-        <div className="p-4 rounded-t-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4
-          bg-white dark:bg-slate-800">
+        <div
+          className="p-4 rounded-t-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4
+          bg-white dark:bg-slate-800"
+        >
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
               รายการแจ้งปัญหา
@@ -1064,38 +1103,48 @@ export default function DailyReport() {
                 placeholder="ค้นหาปัญหา, เกม..."
                 className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64
                   bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
-              /> {/* Search Input Dark Mode */}
+              />{" "}
+              {/* Search Input Dark Mode */}
             </div>
           </div>
         </div>
 
         {/* Main Table */}
-        <div className="rounded-b-xl shadow-sm overflow-hidden min-h-[300px]
-          bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-700"> 
+        <div
+          className="rounded-b-xl shadow-sm overflow-hidden min-h-[300px]
+          bg-white dark:bg-slate-800 border-x border-b border-slate-200 dark:border-slate-700"
+        >
           <div className="overflow-x-auto">
-            <table  className="min-w-[1000px] w-full text-left border-collapse">
+            <table className="min-w-[1100px] w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-semibold tracking-wider
-                  bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"> 
-                  <th className="px-6 py-4 w-16 text-center">ID</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Time / Duration</th>
-                  <th className="px-6 py-4">Game / Problem</th>
-                  <th className="px-6 py-4">Details / Solution</th>
-                  <th className="px-6 py-4">Requester / Operator</th>
+                <tr
+                  className="border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-semibold tracking-wider
+                  bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400   "
+                >
+                  <th className="px-6 py-4 w-16 text-center whitespace-nowrap">
+                    ID
+                  </th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Status</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Start Date</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">End Date</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Time/Duration</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Game/Problem</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Details/Solution</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Requester/Operator</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                
                 {loadingData ? (
                   <tr>
                     <td
                       colSpan="6"
-                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
+                    >
                       <div className="flex flex-col items-center gap-2">
                         <Loader2
                           size={32}
-                          className="animate-spin text-indigo-500"/>
+                          className="animate-spin text-indigo-500"
+                        />
                         <p>กำลังโหลดข้อมูล...</p>
                       </div>
                     </td>
@@ -1108,22 +1157,39 @@ export default function DailyReport() {
                       onClick={() => handleCaseClick(item)}
                       className="transition-colors group cursor-pointer
                       hover:bg-slate-50 dark:hover:bg-slate-700/50" /* Row Hover Dark Mode */
-                      title="คลิกเพื่อดูรายละเอียด">
-                    
+                      title="คลิกเพื่อดูรายละเอียด"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap align-top text-center text-slate-400 font-medium">
                         {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap align-top">
                         <StatusBadge status={item.status} />
                       </td>
+
+                      {/* --- คอลัมน์ วันที่เริ่ม --- */}
+                      <td className="px-6 py-4 whitespace-nowrap align-top">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-200 font-medium">
+                          <span>{item.startDate}</span>
+                        </div>
+                      </td>
+                      {/* --- คอลัมน์ วันที่สิ้นสุด --- */}
+                      <td className="px-6 py-4 whitespace-nowrap align-top">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-200 font-medium">
+                          <span>{item.endDate}</span>
+                        </div>
+                      </td>
+
+                      {/* Time Duration */}
                       <td className="px-6 py-4 whitespace-nowrap align-top">
                         <div className="flex flex-col gap-1.5">
                           <div className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                             <Clock size={14} className="text-slate-400" />
                             {item.startTime} - {item.endTime}
                           </div>
-                          <span className="text-xs px-2 py-0.5 rounded w-fit
-                            bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                          <span
+                            className="text-xs px-2 py-0.5 rounded w-fit
+                            bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                          >
                             ใช้เวลา: {item.duration}
                           </span>
                         </div>
@@ -1131,27 +1197,32 @@ export default function DailyReport() {
                       <td className="px-6 py-4 align-top">
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1.5">
-                            <Gamepad2 size={14} className="text-indigo-500 dark:text-indigo-400" />
+                            <Gamepad2
+                              size={14}
+                              className="text-indigo-500 dark:text-indigo-400"
+                            />
                             <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 uppercase tracking-wide">
                               {item.game}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 line-clamp-1">
+                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 ">
                             {item.problem}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 align-top max-w-xs">
                         <div className="space-y-2">
-                          <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+                          <p className="text-sm text-slate-600 dark:text-slate-300 ">
                             <span className="font-medium text-slate-900 dark:text-white">
                               รายละเอียด:
                             </span>{" "}
                             {item.details}
                           </p>
                           {item.solution && (
-                            <div className="text-xs px-3 py-2 rounded-lg line-clamp-2
-                              bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30">
+                            <div
+                              className="text-xs px-3 py-2 rounded-lg 
+                              bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30"
+                            >
                               <span className="font-medium text-emerald-700 dark:text-emerald-400">
                                 แก้ไข:
                               </span>{" "}
@@ -1163,8 +1234,10 @@ export default function DailyReport() {
                       <td className="px-6 py-4 align-top">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                              bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                              bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                            >
                               R
                             </div>
                             <span className="text-sm font-normal text-slate-700 dark:text-slate-300">
@@ -1172,8 +1245,10 @@ export default function DailyReport() {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                              bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
+                              bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                            >
                               O
                             </div>
                             <span className="text-sm font-normal text-slate-700 dark:text-slate-300">
@@ -1192,7 +1267,10 @@ export default function DailyReport() {
                       className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2">
-                        <Search size={32} className="text-slate-300 dark:text-slate-600" />
+                        <Search
+                          size={32}
+                          className="text-slate-300 dark:text-slate-600"
+                        />
                         <p>ไม่พบข้อมูลในวันที่เลือก</p>
                       </div>
                     </td>
@@ -1202,8 +1280,12 @@ export default function DailyReport() {
             </table>
           </div>
 
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between
-            bg-white dark:bg-slate-800"> {/* Pagination Footer Dark Mode */}
+          <div
+            className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between
+            bg-white dark:bg-slate-800"
+          >
+            {" "}
+            {/* Pagination Footer Dark Mode */}
             <span className="text-sm text-slate-500 dark:text-slate-400">
               หน้า {currentPage} จาก {totalPages} ({filteredCases.length}{" "}
               รายการ)
@@ -1246,15 +1328,21 @@ export default function DailyReport() {
           </div>
         </div>
       </main>
-
       {/* --- CASE DETAIL MODAL --- */}
       {isCaseDetailModalOpen && selectedCaseDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
-            bg-white dark:bg-slate-800"> {/* Modal Container Dark Mode */}
-            
-            <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center
-              bg-slate-50 dark:bg-slate-900"> {/* Modal Header Dark Mode */}
+          <div
+            className="rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
+            bg-white dark:bg-slate-800"
+          >
+            {" "}
+            {/* Modal Container Dark Mode */}
+            <div
+              className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center
+              bg-slate-50 dark:bg-slate-900"
+            >
+              {" "}
+              {/* Modal Header Dark Mode */}
               <div>
                 <h3 className="font-semibold text-xl text-slate-800 dark:text-white">
                   Case Details
@@ -1267,18 +1355,27 @@ export default function DailyReport() {
                 <X size={24} />
               </button>
             </div>
-
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-5 text-left">
               {/* ROW 1: Time and Dates (3 Columns) */}
               <div className="grid grid-cols-3 gap-4">
-                {['Time Period', 'Start Date', 'End Date'].map((label, i) => (
-                    <div key={label} className="p-3 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                        <label className="text-xs font-bold uppercase block mb-1 text-slate-500 dark:text-slate-400">{label}</label>
-                        <p className="font-medium text-sm flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                            <CalendarIcon size={14} className="text-indigo-500" />
-                            {i === 0 ? `${selectedCaseDetail.startTime} - ${selectedCaseDetail.endTime}` : (i === 1 ? (selectedCaseDetail.startDate || selectedCaseDetail.date) : (selectedCaseDetail.endDate || selectedCaseDetail.date))}
-                        </p>
-                    </div>
+                {["Time Period", "Start Date", "End Date"].map((label, i) => (
+                  <div
+                    key={label}
+                    className="p-3 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
+                  >
+                    <label className="text-xs font-bold uppercase block mb-1 text-slate-500 dark:text-slate-400">
+                      {label}
+                    </label>
+                    <p className="font-medium text-sm flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+                      <CalendarIcon size={14} className="text-indigo-500" />
+                      {i === 0
+                        ? `${selectedCaseDetail.startTime} - ${selectedCaseDetail.endTime}`
+                        : i === 1
+                        ? selectedCaseDetail.startDate ||
+                          selectedCaseDetail.date
+                        : selectedCaseDetail.endDate || selectedCaseDetail.date}
+                    </p>
+                  </div>
                 ))}
               </div>
 
@@ -1305,12 +1402,12 @@ export default function DailyReport() {
                 </div>
               </div>
 
-               <div>
+              <div>
                 <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
-                 ระยะเวลา (Duration)
+                  ระยะเวลา (Duration)
                 </label>
                 <div className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-sm ">
-                    {selectedCaseDetail.duration}
+                  {selectedCaseDetail.duration}
                 </div>
               </div>
 
@@ -1372,7 +1469,6 @@ export default function DailyReport() {
                 </div>
               </div>
             </div>
-
             <div className="p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-end">
               <button
                 onClick={() => setIsCaseDetailModalOpen(false)}
@@ -1385,16 +1481,21 @@ export default function DailyReport() {
           </div>
         </div>
       )}
-
       {/* Email Modal */}
       {isEmailModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
-            bg-white dark:bg-slate-800"> {/* Modal Container Dark Mode */}
-            
+          <div
+            className="rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
+            bg-white dark:bg-slate-800"
+          >
+            {" "}
+            {/* Modal Container Dark Mode */}
             <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
               <h3 className="font-medium text-xl text-slate-800 dark:text-white flex items-center gap-2">
-                <Send size={25} className="text-indigo-600 dark:text-indigo-400" />
+                <Send
+                  size={25}
+                  className="text-indigo-600 dark:text-indigo-400"
+                />
                 Send Email
               </h3>
               <button
@@ -1445,20 +1546,16 @@ export default function DailyReport() {
                       )}
                     </div>
                     {isRecipientDropdownOpen ? (
-                      <ChevronUp
-                        size={20}
-                        className="text-slate-400"
-                      />
+                      <ChevronUp size={20} className="text-slate-400" />
                     ) : (
-                      <ChevronDown
-                        size={20}
-                        className="text-slate-400"
-                      />
+                      <ChevronDown size={20} className="text-slate-400" />
                     )}
                   </button>
                   {isRecipientDropdownOpen && (
-                    <div className="absolute z-20 left-0 right-0 mt-2 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 animate-in fade-in zoom-in-95 duration-100
-                      bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <div
+                      className="absolute z-20 left-0 right-0 mt-2 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 animate-in fade-in zoom-in-95 duration-100
+                      bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    >
                       {availableRecipients.length > 0 ? (
                         availableRecipients.map((user) => {
                           const isSelected = selectedRecipientIds.includes(
@@ -1611,16 +1708,17 @@ export default function DailyReport() {
                 Cancel
               </button>
 
-                <ButtonConfirmsend 
-               onClick={handleSendEmail} 
+              <ButtonConfirmsend
+                onClick={handleSendEmail}
                 isLoading={isLoading}
-                > Confirm Send
-                </ButtonConfirmsend> 
+              >
+                {" "}
+                Confirm Send
+              </ButtonConfirmsend>
             </div>
           </div>
         </div>
       )}
-
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
         type={feedbackModal.type}
@@ -1629,7 +1727,6 @@ export default function DailyReport() {
         onClose={closeFeedbackModal}
         onConfirm={feedbackModal.onConfirm}
       />
-      
     </div>
   );
 }

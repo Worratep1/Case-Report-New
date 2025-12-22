@@ -13,7 +13,6 @@ import { BarChart2, Activity } from "lucide-react";
 
 const DowntimeBarChart = ({ data }) => {
 
-  
   const maxMinutes = data && data.length > 0 ? Math.max(...data.map(d => d.minutes)) : 0;
   const tickInterval = 180; // ล็อกไว้ที่ 3 ชม.
   const generatedTicks = [];
@@ -50,15 +49,7 @@ const DowntimeBarChart = ({ data }) => {
          {timeLabel} ({count} ครั้ง)
       </text>
     );
-
-
-  
-
-
   };
-
-  
-
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm h-full">
       <div className="flex items-center gap-2 mb-6">
@@ -84,7 +75,7 @@ const DowntimeBarChart = ({ data }) => {
                 type="number" 
                 axisLine={{ stroke: "#94a3b8", strokeWidth: 1 }} 
                 tickLine={{ stroke: "#94a3b8" }} 
-                tick={{ fill: "#64748b", fontSize: 10 }}
+                tick={{ fill: "#64748b", fontSize: 12.5 }}
                 tickFormatter={(val) => `${Math.floor(val / 60)}h`}
                 ticks={generatedTicks}
                 domain={[0, generatedTicks[generatedTicks.length - 1]]} 
@@ -128,6 +119,8 @@ const DowntimeBarChart = ({ data }) => {
                 radius={[0, 4, 4, 0]}
                 barSize={24}
                 label={renderCustomBarLabel}
+                isAnimationActive={false}
+                
               >
                 {/* ใช้สีเดียว (Indigo) ทั้งหมด */}
                 {data.map((entry, index) => (

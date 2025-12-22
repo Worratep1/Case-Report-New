@@ -61,16 +61,14 @@ router.get("/problems", getproblems); // เส้นทางสำหรับ
 
 // router.post("/sendmail",sendDailyReport)
 // 💡 แก้ไข: เพิ่ม middleware ของ Multer (upload.array('files')) เข้าไป
-router.post("/sendmail",upload.array("attachments", 5),sendDailyReport);
+// router.post("/sendmail",upload.array("attachments", 5),sendDailyReport);
+
+router.post('/sendmail', upload.fields([
+    { name: 'attachments', maxCount: 5 },  // รับไฟล์แนบสูงสุด 5 ไฟล์
+    { name: 'reportImage', maxCount: 1 }   // รับรูป Screenshot 1 รูป
+]), sendDailyReport);
 
 router.get("/exportreport",exportReport.exportReport)
-
-
-
-
-
-
-
 
 
 module.exports = router;
