@@ -6,13 +6,38 @@ const ButtonHome = ({ onClick, className = "" }) => {
     <button
       type="button"
       onClick={onClick}
-      // 1. กำหนดสีและ Transition ที่ปุ่มแม่ (SVG จะเปลี่ยนสีตาม text-color p-2 hover:bg-slate-100 hover:text-blue-600 rounded-full text-slate-500 transition-colors)
-      // 2. เพิ่ม p-1.5 หรือ p-2 เพื่อให้มีพื้นที่รอบๆ ไอคอน กดง่ายขึ้น
-      className={`text-color p-2 hover:bg-slate-100 hover:text-blue-600 rounded-full text-slate-500 transition-colors ${className}`}
-      aria-label="Back to Menu"
-    >
-      {/* ใส่ขนาด w-6 h-6 และ strokeWidth ตามที่คุณต้องการ */}
-      <Home  size={24}  />
+      className={`
+        /* Layout: จัดตำแหน่งกึ่งกลางและรักษาขนาดปุ่มให้คงที่ */
+        flex items-center justify-center p-2.5 rounded-full transition-all duration-200
+        
+        /* Default State: เริ่มต้นแบบโปร่งใส ไม่มีกรอบ */
+        bg-transparent
+        text-slate-500 dark:text-slate-400
+        border border-transparent
+        
+        /* Hover State: แสดงกรอบและพื้นหลังเมื่อเอาเมาส์ไปชี้ */
+        hover:bg-slate-100 dark:hover:bg-slate-800
+         dark:hover:border-blue-400/50
+        hover:text-blue-600 dark:hover:text-blue-400
+        hover:shadow-sm
+        
+        /* Active State: แสดงเอฟเฟกต์เมื่อกด */
+        active:scale-90
+        active:bg-slate-200 dark:active:bg-slate-700
+        
+        /* Focus State: สำหรับการเข้าถึงผ่านคีย์บอร์ด */
+        focus:outline-none focus:ring-2 focus:ring-blue-500/40
+        
+        /* Custom Classes */
+        ${className}`}
+      
+      aria-label="Home Menu" >
+   
+      <Home 
+        size={22} 
+        strokeWidth={2} 
+        className="transition-transform duration-200"
+      />
     </button>
   );
 };

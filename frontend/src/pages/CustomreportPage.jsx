@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 // ไม่ต้อง import Recharts ตรงนี้แล้ว เพราะใช้ใน Component ลูก
+import PageHeader from "../components/PageHeader.jsx";
 import { getCases } from "../api/case";
 import { getProblems } from "../api/problems";
 import { getStatuses } from "../api/status";
@@ -45,6 +46,7 @@ import { sendDailyReport } from "../api/report";
 import { exportReport } from "../api/export";
 import { useNavigate } from "react-router-dom";
 import { captureReportImage } from "../utils/reportCapture";
+
 import ExportButton from "../components/ButtonExport";
 import ButtonHome from "../components/ButtonHome";
 import ButtonSend from "../components/ButtonSend";
@@ -76,7 +78,7 @@ const CONFIG = {
   ],
 };
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 // Helper: Get Today's Date String YYYY-MM-DD
 const getTodayString = () => new Date().toISOString().split("T")[0];
@@ -612,7 +614,6 @@ export default function CustomReport() {
   const [emailBody, setEmailBody] = useState("");
 
   // --- 2. EFFECTS (API CALLS) ---
-
   useEffect(() => {
     const fetchLookup = async () => {
       try {
@@ -640,7 +641,7 @@ export default function CustomReport() {
     fetchLookup();
   }, []);
 
-  // ✅ 2.2 โหลด Cases ตามวันที่
+  // 2.2 โหลด Cases ตามวันที่
   const fetchCases = async () => {
     if (!selectedDate) {
       // กดล้างค่าข้อมูลจะไม่มีขึ้นมา
@@ -701,9 +702,9 @@ export default function CustomReport() {
           startTime: formatTime(start),
           endTime: formatTime(end),
           startDate: startDateStr,
-          raw_start_date: c.start_datetime.split('T')[0], // เพิ่มอันนี้: เก็บ "2025-12-22"
-         raw_end_date: c.end_datetime.split('T')[0],   // เพิ่มอันนี้: เก็บ "2025-12-22"
-          endDate: endDateStr, 
+          raw_start_date: c.start_datetime.split("T")[0], // เพิ่มอันนี้: เก็บ "2025-12-22"
+          raw_end_date: c.end_datetime.split("T")[0], // เพิ่มอันนี้: เก็บ "2025-12-22"
+          endDate: endDateStr,
           duration: durationStr,
           durationMins: durationMins, // [เพิ่ม] สำคัญสำหรับคำนวณกราฟ
           problem: problemObj ? problemObj.problem_name : "Unknown",
@@ -1007,10 +1008,11 @@ export default function CustomReport() {
   const confirmSave = async () => {
     setIsLoading(true);
     try {
-
-      const cleanDate = currentCase.date.replaceAll('/', '-');
-      const cleanEndDate = (currentCase.endDate || currentCase.date).replaceAll('/', '-');
-
+      const cleanDate = currentCase.date.replaceAll("/", "-");
+      const cleanEndDate = (currentCase.endDate || currentCase.date).replaceAll(
+        "/",
+        "-"
+      );
 
       const startDateTime = `${cleanDate}T${currentCase.startTime}:00.000`;
       const endDateTime = `${cleanEndDate}T${currentCase.endTime}:00.000`;
@@ -1091,7 +1093,7 @@ export default function CustomReport() {
 
   // --- 4. OTHER HANDLERS ---
   const handleOpenEmailModal = () => {
-    setAttachedFiles(Array(5).fill(null)); // ✅ Reset attachedFiles เป็น 5 ช่องว่าง // reset ฟอร์ม
+    setAttachedFiles(Array(5).fill(null)); // Reset attachedFiles เป็น 5 ช่องว่าง
     setSelectedRecipientIds([]);
     setIsRecipientDropdownOpen(false);
     setIsEmailModalOpen(true);
@@ -1209,29 +1211,32 @@ export default function CustomReport() {
       return;
     }
 
-    
-    // 1) ดึง email จาก recipients ที่เลือก
-    const toEmails = availableRecipients
-      .filter((r) => selectedRecipientIds.includes(r.recipient_id))
-      .map((r) => r.email);
-
-    // 2) สร้าง FormData
-    const formData = new FormData();
-    formData.append("toEmails", JSON.stringify(toEmails));
-    formData.append("subject", emailSubject);
-    formData.append("body", emailBody);
-
-    // 3) แนบไฟล์ (จาก state attachedFiles ที่ฟอร์ดทำไว้แล้ว)
-    attachedFiles
-      .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
-      .forEach((file) => {
-        formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
-      });
-
-    setIsLoading(true);
-
     try {
-      await sendDailyReport(formData); //  เรียก API ที่เราแก้ในข้อ 1
+      const imageBlob = await captureReportImage("custom-report-content");
+
+      // 1) ดึง email จาก recipients ที่เลือก
+      const toEmails = availableRecipients
+        .filter((r) => selectedRecipientIds.includes(r.recipient_id))
+        .map((r) => r.email);
+
+      // 2) สร้าง FormData
+      const formData = new FormData();
+      formData.append("toEmails", JSON.stringify(toEmails));
+      formData.append("subject", emailSubject);
+      formData.append("body", emailBody);
+
+      formData.append("reportImage", imageBlob, "report-screenshot.png");
+
+      // 3) แนบไฟล์ (จาก state attachedFiles ที่ฟอร์ดทำไว้แล้ว)
+      attachedFiles
+        .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
+        .forEach((file) => {
+          formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
+        });
+
+      setIsLoading(true);
+
+      await sendDailyReport(formData);
       setIsEmailModalOpen(false);
 
       setFeedbackModal({
@@ -1310,77 +1315,62 @@ export default function CustomReport() {
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
     >
       {/* --- HEADER ---  */}
-      <div
-        className="sticky top-0 z-40 shadow-sm
-        bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
+      {/* Header Bar */}
+      <PageHeader
+        title="Custom Report"
+        subtitle="เพิ่มข้อมูลย้อนหลัง/แก้ไข/ลบข้อมูล"
+        icon={<FileCog size={24} />}
+        left={
+          <>
+            <button
+              className="p-2 rounded-full text-slate-500 dark:text-slate-400
+        hover:bg-slate-100 dark:hover:bg-slate-700"
+              onClick={() => window.history.back()}
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            <ButtonHome onClick={() => navigate("/menu")} />
+          </>
+        }
+        right={
+          <>
+            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+
+            <div className="w-48">
+              <CustomDatePicker
+                value={selectedDate}
+                onChange={setSelectedDate}
+                placeholder="เลือกวันที่"
+              />
+            </div>
+
+            <ExportButton
+              onClick={handleExport}
+              isExporting={isExporting}
+              disabled={casesOfSelectedDate.length === 0}
+            />
+
+            <ButtonSend
+              onClick={handleOpenEmailModal}
+              disabled={casesOfSelectedDate.length === 0}
+            />
+          </>
+        }
+      />
+
+      <main
+        id="custom-report-content"
+        className="max-w-[75%] mx-auto px-4 sm:px-6 lg:px-1 py-8"
       >
-        {" "}
-        {/* Header Bar Dark Mode */}
-        <div className="w-full px-1 sm:px-8 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
-            {/* Logo & Title */}
-            <div className="flex items-center gap-3 w-full md:w-auto px-4 md:px-8">
-              <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
-                <button
-                  className=" p-2 rounded-full
-                    text-slate-500 dark:text-slate-400 
-                    transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
-                  onClick={() => window.history.back()}
-                  aria-label="Go back"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-
-                <ButtonHome onClick={() => navigate("/menu")} />
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-600">
-                  <FileCog className="w-6 h-6 text-yellow-500 " />
-                </div>
-                <div>
-                  <h1 className="text-xl font-medium text-slate-800 dark:text-white leading-tight text-left">
-                    Custom Report
-                  </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 text-start">
-                    เพิ่มข้อมูลย้อนหลัง/แก้ไข/ลบข้อมูล{" "}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Controls  ปุ่ม export , send email , ปุ่มสลับรายวันรายเดือน*/}
-
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end px-4 md:px-8">
-              <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-              <div className="w-48 ">
-                <CustomDatePicker
-                  value={selectedDate}
-                  onChange={setSelectedDate}
-                  placeholder="เลือกวันที่"
-                />
-              </div>
-
-              <ExportButton
-                onClick={handleExport}
-                isExporting={isExporting}
-                disabled={casesOfSelectedDate.length === 0}
-              />
-
-              <ButtonSend
-                onClick={handleOpenEmailModal}
-                disabled={casesOfSelectedDate.length === 0}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <main className="max-w-[75%] mx-auto px-4 sm:px-6 lg:px-1 py-8">
-        {/* Date Header & Title */}
+        {/* Date Header & Title - ปรับปรุงให้รองรับ View Mode */}
         <div className="mb-6 flex justify-between items-end">
           <div>
             <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              ภาพรวมประจำวันที่{" "}
+              {/* ตรวจสอบ viewMode เพื่อเปลี่ยนหัวข้อ */}
+              {viewMode === "daily"
+                ? "ภาพรวมประจำวันที่"
+                : "ภาพรวมประจำเดือน"}{" "}
               <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
                 {selectedDate
                   ? selectedDate.split("-").reverse().join("-")
@@ -1388,17 +1378,16 @@ export default function CustomReport() {
               </span>
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 text-left">
-              จัดการข้อมูล รายละเอียด และสถานะของเคส
+              {/* ตรวจสอบ viewMode เพื่อเปลี่ยนคำอธิบาย */}
+              สรุปข้อมูลการดำเนินงาน
+              {viewMode === "daily" ? "ประจำวัน" : "ตลอดทั้งเดือน"}
             </p>
           </div>
 
-          {/* --- NEW CASE BUTTON --- */}
+          {/* --- NEW CASE BUTTON (คงเดิมไว้) --- */}
           <button
             onClick={openNewCaseModal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-normal shadow-md hover:bg-emerald-700 transition-all active:scale-95
-                 duration-500 
-                    hover:-translate-y-1 
-                  hover:shadow-md"
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-normal shadow-md hover:bg-emerald-700 transition-all active:scale-95 duration-500 hover:-translate-y-1 hover:shadow-md"
           >
             <Plus size={18} /> New Case
           </button>
@@ -1598,7 +1587,7 @@ export default function CustomReport() {
                           {item.solution && (
                             <div
                               className="text-xs px-3 py-2 rounded-lg line-clamp-2
-                bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30"
+                              bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30"
                             >
                               <span className="font-bold text-emerald-700 dark:text-emerald-400">
                                 แก้ไข:
@@ -2172,7 +2161,7 @@ export default function CustomReport() {
                   <input
                     value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                    className="w-full px-3 py-2 border rounded-lg text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
                       bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>

@@ -55,7 +55,7 @@ exports.sendDailyReport = async (req, res) => {
       
       // เพิ่มรูป Screenshot ลงในรายการไฟล์แนบพร้อมระบุ CID
       attachmentsList.push({
-        filename: 'report-screenshot.png',
+        filename: 'report.png',
         content: reportImageFile.buffer,
         cid: screenshotCid // ต้องตรงกับ cid ในแท็ก <img>
       });

@@ -46,6 +46,7 @@ import StatCard from "../components/dashboard/StatCard";
 import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
 import StatusPieChart from "../components/dashboard/StatusPieChart";
 import { captureReportImage } from "../utils/reportCapture";
+import PageHeader from "../components/PageHeader.jsx";
 
 // --- CONSTANTS ---
 const CONFIG = {
@@ -975,77 +976,56 @@ export default function DailyReport() {
     >
       {" "}
       {/* contanier  Background Dark Mode */}
+
       {/* Header Bar */}
-      <div
-        className="sticky top-0 z-40 shadow-sm
-        bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
+      <PageHeader
+        title="Daily Report"
+        subtitle="รายงานประจำวัน"
+        icon={<ClipboardList size={24}  />}
+        left={
+    <>
+      <button
+        className="p-2 rounded-full text-slate-500 dark:text-slate-400
+        hover:bg-slate-100 dark:hover:bg-slate-700"
+        onClick={() => window.history.back()}
       >
-        {" "}
-        {/* Header Bar Dark Mode */}
-        <div className="w-full px-1 sm:px-8 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center h-auto md:h-16 py-3 md:py-0 gap-3 md:gap-0">
-            {/* Logo & Title */}
-            <div className="flex items-center gap-3 w-full md:w-auto px-4 md:px-8">
-              <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
-                <button
-                  className=" p-2 rounded-full
-                    text-slate-500 dark:text-slate-400 
-                    transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
-                  onClick={() => window.history.back()}
-                  aria-label="Go back"
-                >
-                  <ChevronLeft size={24} />
-                </button>
+        <ChevronLeft size={24} />
+      </button>
 
-                <ButtonHome onClick={() => navigate("/menu")} />
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-600">
-                  <ClipboardList className="w-6 h-6 text-blue-400 " />
-                </div>
-                <div>
-                  <h1 className="text-xl  font-medium text-slate-800 dark:text-white leading-tight ">
-                    Daily Report
-                  </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 text-start">
-                    รายงานประจำวัน
-                  </p>
-                </div>
-              </div>
-            </div>
+      <ButtonHome onClick={() => navigate("/menu")} />
+    </>
+  }
+  right={
+    <>
+      <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
 
-            {/* Controls */}
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end px-4 md:px-8">
-              {/* Toggle View Mode Buttons ปุ่มสลับเป็น รายวันกับรายเดือน*/}
-
-              <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-
-              <div className="w-48 ">
-                <CustomDatePicker
-                  value={selectedDate}
-                  onChange={setSelectedDate}
-                  placeholder="เลือกวันที่"
-                />
-              </div>
-
-              <ExportButton
-                onClick={handleExport}
-                isExporting={isExporting}
-                disabled={casesOfSelectedDate.length === 0}
-              />
-
-              <ButtonSend
-                onClick={handleOpenEmailModal}
-                disabled={casesOfSelectedDate.length === 0}
-              />
-            </div>
-          </div>
-        </div>
+      <div className="w-48">
+        <CustomDatePicker
+          value={selectedDate}
+          onChange={setSelectedDate}
+          placeholder="เลือกวันที่"
+        />
       </div>
+
+      <ExportButton
+        onClick={handleExport}
+        isExporting={isExporting}
+        disabled={casesOfSelectedDate.length === 0}
+      />
+
+      <ButtonSend
+        onClick={handleOpenEmailModal}
+        disabled={casesOfSelectedDate.length === 0}
+      />
+    </>
+  }
+/>
+
+
       <main
         id="report-content"
-        className="max-w-[70%] mx-auto px-4 sm:px-6 lg:px-1 py-8"
-      >
+        className="max-w-[70%] mx-auto px-4 sm:px-6 lg:px-1 py-8" >
+
         {/* Date Header Display */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">

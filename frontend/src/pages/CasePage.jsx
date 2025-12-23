@@ -743,6 +743,26 @@ export default function CasePage() {
               valueKey="problem_id"
             />
 
+             <div>
+              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+                วิธีการแก้ไข (Solution)
+              </label>
+              <div className="relative">
+                <Wrench className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                <textarea
+                  name="solution"
+                  rows="2"
+                  maxLength={1000}
+                  value={formData.solution}
+                  onChange={handleChange}
+                  placeholder="อธิบายวิธีแก้ไข..."
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-3 text-sm transition-all resize-none
+                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                /> {/*  Textarea Dark Mode */}
+              </div>
+            </div>
+
             <div>
               <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
                 รายละเอียดเคส (Detail)
@@ -773,7 +793,7 @@ export default function CasePage() {
 
             <div>
               <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
-                ผู้ร้องขอ (Requester)
+                ผู้ร้องขอ (Requester) 
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500 w-4 h-4" />
@@ -791,25 +811,7 @@ export default function CasePage() {
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
-                วิธีการแก้ไข (solution)
-              </label>
-              <div className="relative">
-                <Wrench className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
-                <textarea
-                  name="solution"
-                  rows="2"
-                  maxLength={1000}
-                  value={formData.solution}
-                  onChange={handleChange}
-                  placeholder="อธิบายวิธีแก้ไข"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-3 text-sm transition-all resize-none
-                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                /> {/* ✅ Textarea Dark Mode */}
-              </div>
-            </div>
+           
 
             <div>
               <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
