@@ -1240,18 +1240,18 @@ export default function DailyReport() {
                     </tr>
                   ))
                 ) : (
-                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง Empty State
+                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูลในวันที่เลือก 
                   <tr>
                     <td
-                      colSpan="6"
-                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
+                      colSpan="8"   //คอลัมน์
+                      className="px-6 py-12 text-center  text-slate-500 dark:text-slate-400"
                     >
-                      <div className="flex flex-col items-center gap-2">
+                      <div className="flex flex-col items-center gap-2 ">
                         <Search
                           size={32}
                           className="text-slate-300 dark:text-slate-600"
                         />
-                        <p>ไม่พบข้อมูลในวันที่เลือก</p>
+                        <p>ไม่พบข้อมูล</p>
                       </div>
                     </td>
                   </tr>

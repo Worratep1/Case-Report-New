@@ -43,15 +43,15 @@ const StatusPieChart = ({ data }) => {
                   dataKey="value"
                   label={renderCustomizedLabel}
                   labelLine={false}
-                  isAnimationActive={false}
-                >
+                  isAnimationActive={false}>
+                
                   {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
                   ))}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-          ) : (
+              ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
               <PieChartIcon size={32} className="mb-1 opacity-50" />
               <p className="text-xs">No Data</p>

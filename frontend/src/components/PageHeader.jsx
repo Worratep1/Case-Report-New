@@ -7,6 +7,7 @@ export default function PageHeader({
   left,
   right,
   showDivider = true,
+  iconColor = "text-blue-400"
 }) {
   return (
     <header
@@ -29,7 +30,7 @@ export default function PageHeader({
             {/* ICON + TITLE */}
             <div className="flex items-center gap-3 mr-auto">
               {icon && (
-                <div className="p-2 rounded-lg  text-blue-400  group-hover:bg-white dark:group-hover:bg-slate-600">
+               <div className={`p-2 rounded-lg ${iconColor} group-hover:bg-white dark:group-hover:bg-slate-600`}>
                   {icon}
                 </div>
               )}

@@ -142,7 +142,7 @@ export default function LoginPage() {
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>กำลังประมวลผล...</span>
+                    <span>กำลังเข้าสู่ระบบ...</span>
                   </div>
                 ) : "LOGIN"}
               </Button>

@@ -5,7 +5,7 @@ const ExportButton = ({
   onClick, 
   isExporting = false, 
   disabled = false, 
-  label = "Export Report",
+  label = "Export File",
   loadingLabel = "กำลัง Export..."
 }) => {
   return (

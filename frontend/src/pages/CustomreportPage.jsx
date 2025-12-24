@@ -1320,6 +1320,7 @@ export default function CustomReport() {
         title="Custom Report"
         subtitle="เพิ่มข้อมูลย้อนหลัง/แก้ไข/ลบข้อมูล"
         icon={<FileCog size={24} />}
+        iconColor="text-yellow-400"
         left={
           <>
             <button
@@ -1417,7 +1418,7 @@ export default function CustomReport() {
               title="Most Impacted"
               value={dashboardData.stats.mostImpacted}
               icon={
-                <Flame className="w-6 h-6 text-blue-600 dark:text-red-600" />
+                < Flame className="w-6 h-6 text-red-600 dark:text-red-600"  />
               }
               color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
             />
@@ -1648,10 +1649,10 @@ export default function CustomReport() {
                     </tr>
                   ))
                 ) : (
-                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง Empty State
+                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูล
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2">

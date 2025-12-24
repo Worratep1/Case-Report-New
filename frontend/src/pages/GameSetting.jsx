@@ -326,7 +326,7 @@ export default function GameSetting() { // เปลี่ยนชื่อ Com
               <div className="p-4 rounded-xl border 
                 bg-blue-50/60 border-blue-100 
                 dark:bg-blue-900/20 dark:border-blue-800/50">
-                <label className="block text-xs font-medium uppercase mb-2 text-left
+                <label className="block text-xs font-medium  mb-2 text-left
                   text-blue-800 dark:text-blue-300">
                   Game Name
                 </label>
@@ -334,7 +334,7 @@ export default function GameSetting() { // เปลี่ยนชื่อ Com
                   type="text"
                   value={formData.productName}
                   onChange={handleChange}
-                  placeholder="Enter product name"
+                  placeholder="Enter Game Name"
                   maxLength={150}
                   className="w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
                     bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
