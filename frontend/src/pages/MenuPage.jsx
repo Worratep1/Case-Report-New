@@ -5,7 +5,8 @@ import {
   Settings,  
   BookOpen,
   FileChartColumn,
-  LogOut
+  LogOut,
+  PlusCircle
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
@@ -61,16 +62,16 @@ export default function MenuPage() {
 
         <div className="space-y-4">    
           <MenuButton
-            icon={<AlertTriangle className="text-red-500 dark:text-red-400" />}
+            icon={<PlusCircle className="text-emerald-500 dark:text-emerald-400" />}
             label="แจ้ง Case"
-            description="รายงานปัญหา"
+            description="รายงานบันทึกเหตุการณ์และปัญหาประจำวัน"
             onClick={() => navigate("/case")}
           />
 
           <MenuButton
             icon={<FileChartColumn className="text-purple-600 dark:text-purple-400" />}
             label="Report"
-            description="ดูรายงานผล"
+            description="รายงาน"
             onClick={() => navigate("/report")}
           />
 

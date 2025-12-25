@@ -1,302 +1,463 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { 
-  PlusCircle, FileSpreadsheet, ChevronLeft, ChevronRight, 
-  User, ChevronUp, ShieldCheck, Settings
+import React, { useState } from "react";
+import {
+  BookOpen,
+  LogIn,
+  LayoutDashboard,
+  PlusCircle,
+  FileText,
+  Settings,
+  Users,
+  Mail,
+  Info,
+  LogOut,
+  ChevronRight,
+  ArrowLeft,
+  ShieldCheck,
+  FileSpreadsheet,
+  Monitor,
+  Edit2,
+  Trash2,
+  Gamepad2,
+  X
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ButtonHome from "../components/ButtonHome";
- 
-//    ,
-          
-const MANUAL_DATA = [
-  {
-    id: 1,
-    title: "1. การเข้าสู่ระบบ (Admin Login)",
-    icon: <User className="text-blue-500" />,
-    slides: [
-      {
-        description:
-          "ผู้ใช้งานระดับผู้ดูแลระบบ (Admin) ต้องระบุ Username และ Password เพื่อเข้าสู่ระบบ หากยังไม่มีบัญชีผู้ใช้งาน สามารถติดต่อผู้ดูแลระบบเพื่อขอสร้างบัญชีได้",
-        image: "src/assets/manual/login1.png",
-      },
-      {
-        description:
-          "เมื่อเข้าสู่ระบบสำเร็จ ระบบจะแสดงหน้าเมนูหลักสำหรับการใช้งานฟังก์ชันต่าง ๆ ภายในระบบ",
-        image: "src/assets/manual/menupage.png",
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "2. การแจ้งเคสใหม่ (Add Case)",
-    icon: <PlusCircle className="text-emerald-500" />,
-    slides: [
-      {
-        description:
-          "ผู้ใช้งานสามารถเลือกเมนู 'แจ้ง Case' จากหน้าเมนูหลัก เพื่อบันทึกรายละเอียดปัญหาเมื่อมีเหตุการณ์หรือเคสใหม่เกิดขึ้น",
-        image: "src/assets/manual/menupage3.png",
-      },
-      {
-        description:
-          "เมื่อเลือกเมนู 'แจ้ง Case' ระบบจะแสดงหน้าฟอร์มสำหรับบันทึกข้อมูลเคส ผู้ใช้งานต้องกรอกข้อมูลให้ครบถ้วนและถูกต้องทุกช่อง เนื่องจากข้อมูลดังกล่าวจะถูกนำไปประมวลผลเพื่อจัดทำรายงาน (Report) ในภายหลัง เมื่อกรอกข้อมูลเรียบร้อยแล้วให้กดปุ่ม Submit Case เพื่อบันทึกข้อมูลลงระบบ",
-        image: "src/assets/manual/Casepage2.png"
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: "3. การจัดทำรายงาน (Report)",
-    icon: <FileSpreadsheet className="text-blue-500" />,
-    slides: [
-      {
-        description:
-          "ผู้ใช้งานระดับผู้ดูแลระบบ (Admin) สามารถจัดทำรายงานได้โดยเลือกเมนู 'Report' จากหน้าเมนูหลัก",
-        image: "src/assets/manual/Menu2.png",
-      },
-      {
-        description: "ประเภทของรายงานภายในระบบ",
-        items: [
-          "Daily Report: ใช้สำหรับสรุปรายงานข้อมูลประจำวัน",
-          "Custom Report: ใช้สำหรับปรับแก้หรือกำหนดรูปแบบรายงานด้วยตนเอง"
-        ],
-        image: "src/assets/manual/MenuReport.png"
-      },
-      {
-        description:
-          "เมื่อเลือกเมนู 'Daily Report' ระบบจะแสดงหน้ารายงานประจำวัน โดยแสดงรายการเคสทั้งหมดที่ถูกบันทึกไว้ พร้อมสรุปข้อมูลสำคัญในรูปแบบ Dashboard เพื่อให้สามารถตรวจสอบภาพรวมของข้อมูลได้อย่างรวดเร็ว",
-        image: "src/assets/manual/Dailyreport2.png",
-      },
-      {
-        description: "การจัดการและส่งออกข้อมูลรายงาน",
-        items: [
-          "ปุ่ม Export File: ใช้สำหรับดาวน์โหลดข้อมูลรายงานทั้งหมดออกมาในรูปแบบไฟล์ Excel",
-          "ปุ่ม Send Email: ใช้สำหรับส่งสรุปรายงานประจำวันไปยังผู้รับอีเมลที่ถูกกำหนดไว้ในระบบ"
-        ],
-        image: "src/assets/manual/Dailyreport2.png"
-      },
-      {
-        description: "รายละเอียดการส่งรายงานผ่านอีเมล (Send Email)", // เมื่อกดปุ่ม Send Email จะเเสดง Pop-up ตามเเบบฟอร์มให้ -เลือกรายชื่อผู้รับอีเมลสามารถเลือกได้มากกว่า 1 ชื่อ -สามารถกำหนดหัวข้อและข้อความอธิบายรายงานเพิ่มเติม  -
-        items: [
-          "Select Recipients: เลือกรายชื่อผู้รับอีเมลได้มากกว่า 1 รายชื่อ",
-          "Subject & Message: กำหนดหัวข้อและข้อความอธิบายรายงานเพิ่มเติม",
-          "Attachments: แนบไฟล์ได้สูงสุด 5 ไฟล์ โดยแต่ละไฟล์ต้องมีขนาดไม่เกิน 5 MB",
-          "Confirm Send: ยืนยันการส่งรายงานไปยังผู้รับอีเมล"
-        ],
-        image: "src/assets/manual/SendEmail.png"
-      },
-      {
-         description:"เมื่อเลือกเมนู 'Custom Report' ระบบจะแสดงหน้ารายงานที่มีลักษณะการแสดงผลแบบ Dashboard เช่นเดียวกับหน้า Daily Report",
-
-        image: "src/assets/manual/Customreport.png"
-      },
-      {
-        description: "การจัดการข้อมูลในหน้า Custom Report",
-        items: [
-          "แก้ไขและลบข้อมูล: ปรับปรุงรายละเอียดเคสหรือลบข้อมูลที่ไม่ถูกต้องออกจากระบบ",
-          "เพิ่มเคสใหม่หรือบันทึกย้อนหลัง: สามารถระบุวันและเวลาย้อนหลังได้",
-          "Export File และ Send Email: การทำงานเหมือนกับหน้า Daily Report"
-        ],
-        image: "src/assets/manual/Customreport.png"
-      }
-    ]
-  },
-  {
-    id: 4,
-    title: "4. การตั้งค่าระบบ (Setting)",
-    icon: <Settings className="text-slate-700 dark:text-slate-200" />,
-    slides: [
-      {
-        description:
-          "ผู้ใช้งานระดับผู้ดูแลระบบ (Admin) สามารถเข้าถึงเมนูการตั้งค่าระบบได้โดยเลือกเมนู 'Setting' จากหน้าเมนูหลัก",
-        image: "src/assets/manual/menupagesetting.png",
-      },
-      {
-        description:
-          "เมื่อเข้าสู่เมนู 'Setting' ระบบจะแสดงเมนูการตั้งค่าหลัก 3 ส่วน ได้แก่ Game Setting, Member Setting และ Recipient Setting",
-        image: "src/assets/manual/Settingpage.png"
-      },
-      {
-        description:
-          "เมื่อเลือกเมนู 'Game Setting' ระบบจะแสดงหน้ารายชื่อเกม ผู้ใช้งานสามารถเพิ่ม แก้ไข หรือ ลบข้อมูลเกมได้ โดยใช้ปุ่ม + Add Game, ไอคอนดินสอ (Edit) และไอคอนถังขยะ (Delete)",
-        image: "src/assets/manual/Gamesetting.png"
-      },
-      {
-        description:
-          "เมื่อกดปุ่ม + Add Game ระบบจะแสดงหน้าต่าง Pop-up สำหรับกรอกชื่อเกมใหม่ เมื่อกรอกข้อมูลเรียบร้อยแล้วให้กดปุ่ม Save Game เพื่อบันทึกข้อมูล",
-        image: "src/assets/manual/Addgame.png"
-      },
-      {
-        description:
-          "เมื่อเลือกเมนู 'Member Setting' ระบบจะแสดงรายชื่อสมาชิก ผู้ใช้งานสามารถเพิ่ม แก้ไข หรือ ลบข้อมูลสมาชิกได้",
-        image: "src/assets/manual/membersetting.png"
-      },
-      {
-        description:
-          "เมื่อกดปุ่ม + Add Member ระบบจะแสดงหน้าต่าง Pop-up สำหรับกรอกข้อมูลสมาชิกใหม่ตามฟอร์มที่กำหนด เมื่อกรอกข้อมูลครบถ้วนแล้วให้กดปุ่ม Save Member เพื่อบันทึกข้อมูล",
-        image: "src/assets/manual/addmember1.png"
-      },
-      {
-        description:
-          "เมื่อเลือกเมนู 'Recipient Setting' ระบบจะแสดงรายชื่อผู้รับอีเมล ผู้ใช้งานสามารถเพิ่ม แก้ไข หรือ ลบข้อมูลผู้รับอีเมลได้",
-        image: "src/assets/manual/recipientSetting.png"
-      },
-      {
-        description:
-          "เมื่อกดปุ่ม + Add Recipient ระบบจะแสดงหน้าต่าง Pop-up สำหรับกรอกข้อมูลผู้รับอีเมลใหม่ตามฟอร์มที่กำหนด จากนั้นกดปุ่ม Save Recipient เพื่อบันทึกข้อมูลลงระบบ",
-        image: "src/assets/manual/addRecipient.png"
-      }
-    ]
-  }
-];
+import ButtonBack from "../components/ButtonBack";
+import loginImg from "../assets/manual/login1.png";
+import menuImg from "../assets/manual/menupage.png";
+import casepageImg from "../assets/manual/Casepage2.png";
+import dailyReportImg from "../assets/manual/Dailyreport2.png";
+import sendEmailImg from "../assets/manual/sendmail1.png";
+import addGame from "../assets/manual/Addgame.png";
+import addMember from "../assets/manual/Addmember.png";
+import AddRecipient from "../assets/manual/AddRecipient.png"
+import customReportImg from "../assets/manual/Customreport.png";
+import gamesettingImg from "../assets/manual/Gamesetting.png";
+import membersettingImg from "../assets/manual/Membersetting.png";
+import recipientsettingImg from "../assets/manual/recipientSetting.png";
 
 
-// --- 2. คอมโพเนนต์ Card ปรับปรุงเรื่องความเท่ากันและ Alignment ---
-const InteractiveCard = ({ step }) => {
-  const [activeSub, setActiveSub] = useState(0);
-
-  const nextSub = () => setActiveSub((prev) => (prev + 1) % step.slides.length);
-  const prevSub = () => setActiveSub((prev) => (prev - 1 + step.slides.length) % step.slides.length);
+// Component สำหรับแสดงปุ่มจำลองในเนื้อหาคู่มือ 
+const UIHint = ({ icon: Icon, label, variant = "primary" }) => {
+  const styles = {
+    primary: "bg-blue-600 text-white border-blue-700 hover:bg-blue-700",
+    add: "bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700",
+    success: "bg-blue-600 text-white border-blue-700 hover:bg-blue-700",
+    danger: "rounded-lg transition-colors text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30",
+    Edit: " rounded-xs transition-colors text-slate-400 hover:text-yellow-600 hover:bg-yellow-50  dark:hover:text-yellow-400 dark:hover:bg-yellow-900/30 ",
+    Send: "bg-indigo-600 text-white border-indigo-700 hover:bg-indigo-700"
+  };
 
   return (
-    <div className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden transition-all">
-      
-      {/* Header ของ Card - คงขนาดและรูปแบบเดิม */}
-      <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-        <div className="flex items-center gap-5">
-          <div className="p-3 bg-white dark:bg-slate-700 rounded-2xl shadow-sm">
-            {step.icon}
-          </div>
-          <h3 className="text-2xl font-bold text-slate-800 dark:text-white">{step.title}</h3>
-        </div>
-        <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-black">
-          {activeSub + 1} / {step.slides.length}
-        </span>
-      </div>
+    <span
+      className={`
+      inline-flex items-center gap-1.5 px-2.5 py-1 mx-1 
+      rounded-lg font-bold text-xs border shadow-sm 
+      transition-colors cursor-default select-none
+      ${styles[variant] || styles.primary}
+    `}
+    >
+      {Icon && <Icon size={14} strokeWidth={3} />}
+      {label}
+    </span>
+  );
+};
 
-      <div className="px-8 pb-8 pt-6 space-y-6 relative overflow-hidden">
-        {/* Navigation Arrows */}
-        {step.slides.length > 1 && (
-          <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between z-20 pointer-events-none">
-            <button onClick={prevSub} className="p-3 bg-white/90 dark:bg-slate-800 rounded-full shadow-lg pointer-events-auto hover:scale-110 active:scale-95 transition-all border border-slate-200 dark:border-slate-700">
-              <ChevronLeft size={24} />
-            </button>
-            <button onClick={nextSub} className="p-3 bg-white/90 dark:bg-slate-800 rounded-full shadow-lg pointer-events-auto hover:scale-110 active:scale-95 transition-all border border-slate-200 dark:border-slate-700">
-              <ChevronRight size={24} />
-            </button>
-          </div>
-        )}
+// 2.1 Card Item Component (สำหรับหน้า Overview)
+const ManualCard = ({ item, onClick }) => (
+  <div
+    onClick={() => onClick(item)}
+    className="group relative bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full"
+  >
+    <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl w-fit group-hover:scale-110 transition-transform duration-300">
+      {item.icon}
+    </div>
+    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+      {item.title}
+    </h3>
+    <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 flex-grow">
+      {item.description}
+    </p>
+    <div className="flex items-center text-sm font-semibold text-indigo-500 dark:text-indigo-400 mt-auto">
+      ดูรายละเอียด{" "}
+      <ChevronRight
+        size={16}
+        className="ml-1 group-hover:translate-x-1 transition-transform"
+      />
+    </div>
+  </div>
+);
 
-        <div 
-          className="flex transition-transform duration-500 ease-in-out" 
-          style={{ transform: `translateX(-${activeSub * 100}%)` }}
-        >
-          {step.slides.map((slide, idx) => (
-            <div key={idx} className="w-full flex-shrink-0 space-y-6 px-2">
-              
-              {/* ส่วนเนื้อหาข้อความ: ปรับ Font Size และ Alignment ให้เท่ากันทุกหน้า */}
-              <div className="min-h-0 flex flex-col justify-start space-y-3">
-                {/* แสดง Slide Title (ถ้ามี) */}
-                {slide.title && (
-                  <p className="text-xl text-left text-slate-800 dark:text-white font-bold leading-tight">
-                    {slide.title}
-                  </p>
-                )}
+// 2.2 Detail View Component (หน้าเนื้อหา)
+//  รับ setPreviewImage ผ่าน Props เพื่อนำไปใช้กับปุ่มใน MANUAL_DATA
+const ManualDetail = ({ item, onBack }) => {
+  if (!item) return null;
 
-                {/* แสดง Slide Description (ถ้ามี) */}
-                {slide.description && (
-                  <p className="text-lg text-left whitespace-pre-line text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                    {slide.description}
-                  </p>
-                )}
+  return (
+    <div className="animate-in fade-in slide-in-from-right-8 duration-500">
+      {/* <button
+        onClick={onBack}
+        className="mb-6 py-3 flex items-center gap-3 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors font-medium"
+      >
+        <ArrowLeft size={20} /> กลับสู่คู่มือหลัก
+      </button> */}
 
-                {/* แสดง Slide Items (ถ้ามี) */}
-                {slide.items && (
-                  <ul className="space-y-2">
-                    {slide.items.map((item, i) => (
-                      <li key={i} className="flex items-start gap-3 text-lg text-slate-600 dark:text-slate-300">
-                        <span className="mt-3 w-4 h-[2px] bg-indigo-500 flex-shrink-0" />
-                        <span className="text-left leading-relaxed">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              {/* ส่วนรูปภาพ - ปรับกึ่งกลางและกรอบรูป */}
-              <div className="flex justify-center w-full">
-                <div className="relative rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shadow-2xl">
-                  <img 
-                    src={slide.image} 
-                    className="w-full h-auto max-h-[500px] object-contain mx-auto block" 
-                    alt="Step Detail"
-                  />
-                </div>
-              </div>
+      <div className="bg-white dark:bg-slate-900 m-6 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg">
+        <div className="p-8 border-b   border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-white dark:bg-slate-700 rounded-2xl shadow-sm">
+              {item.icon}
             </div>
-          ))}
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+              {item.title}
+            </h2>
+          </div>
+          <p className="text-lg text-slate-600 dark:text-slate-300">
+            {item.description}
+          </p>
         </div>
 
-        {/* Dots Navigator */}
-        <div className="flex justify-center gap-2 mt-4">
-          {step.slides.map((_, idx) => (
-            <button 
-              key={idx} 
-              onClick={() => setActiveSub(idx)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeSub ? 'w-8 bg-indigo-500' : 'w-2 bg-slate-300 dark:bg-slate-700'}`} 
-            />
-          ))}
+        <div className="p-8 space-y-10">
+          {item.content.steps && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <span className="w-1 h-6 bg-indigo-500 rounded-full"></span>
+                {item.content.stepTitle || "ขั้นตอนการใช้งาน"}
+              </h3>
+              <ul className="space-y-3 pl-2">
+                {item.content.steps.map((step, index) => (
+                  <li
+                    key={index}
+                    className="flex items-start gap-3 text-slate-600 dark:text-slate-300 text-lg"
+                  >
+                    <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                      {"-"}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {item.content.features && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                ความสามารถหลัก
+              </h3>
+              <ul className="space-y-2 pl-4">
+                {item.content.features.map((feature, idx) => (
+                  <li
+                    key={idx}
+                    className="flex items-start gap-2 text-slate-600 dark:text-slate-300"
+                  >
+                    <span className=" text-emerald-500">-</span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white">
+              ตัวอย่างหน้าจอ
+            </h3>
+            <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shadow-inner">
+              {item.content.image ? (
+                <img
+                  src={item.content.image}
+                  alt={item.title}
+                  className="w-full h-auto block transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+              ) : (
+                <div className="h-80 border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center text-slate-400">
+                  <div className="p-4 bg-white dark:bg-slate-800 rounded-full mb-3 shadow-sm">
+                    {item.icon}
+                  </div>
+                  <span className="font-medium">ยังไม่มีรูปภาพประกอบ</span>
+                </div>
+              )}
+            </div>
+            {item.content.imageCaption && (
+              <p className="text-center text-sm text-slate-500 dark:text-slate-400 italic">
+                {item.content.imageCaption}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
+// --- 3. MAIN PAGE COMPONENT ---
 export default function ManualPage() {
   const navigate = useNavigate();
-  const [showBackTop, setShowBackTop] = useState(false);
+  const [activeItem, setActiveItem] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
-  useEffect(() => {
-    const handleScroll = () => setShowBackTop(window.scrollY > 400);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const handleNavbarBack = () => {
+    if (activeItem) {
+      setActiveItem(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      navigate("/menu");
+    }
+  };
+
+  const handleBackToOverview = () => {
+    setActiveItem(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  //  2. ย้าย MANUAL_DATA มาไว้ข้างในฟังก์ชันเพื่อให้รู้จัก setPreviewImage
+  const MANUAL_DATA = [
+    {
+      id: "group-start",
+      groupTitle: "เริ่มต้นใช้งาน",
+      items: [
+        {
+          id: "login",
+          title: "การเข้าสู่ระบบ (Login)",
+          icon: <LogIn className="w-6 h-6 text-blue-500" />,
+          description: "การเข้าสู่ระบบ จำเป็นต้องมี Account หากยังไม่มี Account สามารถขอสมัครกับผู้ใช้งานระดับ Admin ได้ ",
+          content: {
+            steps: [
+              "กรอก Username ",
+              "กรอก Password ",
+              <>คลิกที่ปุ่ม <UIHint label="LOGIN" /> เพื่อเข้าสู่ระบบ</>,
+            ],
+            image: loginImg,
+            imageCaption: "รูปที่ 1 หน้าเข้าสู่ระบบ",
+          },
+        },
+        {
+          id: "main-menu",
+          title: "หน้าเมนูหลัก (Main Menu)",
+          icon: <LayoutDashboard className="w-6 h-6 text-indigo-500" />,
+          description: "ศูนย์รวมเมนูและฟังก์ชันทั้งหมดของระบบ",
+          content: {
+            stepTitle: "รายละเอียดเมนูหลัก",
+            steps: [
+              "แจ้ง Case: รายงานบันทึกเหตุการณ์และปัญหาประจำวัน ",
+              "Report: รายงาน",
+              "Setting: ตั้งค่าระบบ",
+              "Manual: คู่มือการใช้งาน",
+              "About: เกี่ยวกับ",
+              "Logout: ออกจากระบบ",
+            ],
+            image: menuImg,
+            imageCaption: "รูปที่ 2 หน้าเมนูหลักของระบบ",
+          },
+        },
+      ],
+    },
+    {
+      id: "group-case",
+      groupTitle: "เเจ้ง Case",
+      items: [
+        {
+          id: "add-case",
+          title: "การแจ้ง Case",
+          icon: <PlusCircle className="w-6 h-6 text-emerald-500" />,
+          description: "บันทึกเหตุการณ์และปัญหาประจำวัน",
+          content: {
+            steps: [
+              "เลือกวันที่เริ่มต้น–สิ้นสุด และเวลาเริ่มต้น–สิ้นสุดของเหตุการณ์ (ระบบจะคำนวณระยะเวลาให้อัตโนมัติ)",
+              "เลือก Game ที่เกิดปัญหา และเลือก Status ",
+              "เลือกประเภทปัญหา (Problem) ให้ตรงกับเหตุการณ์ที่เกิดขึ้น",
+              "กรอกรายละเอียดของเคส (Detail) เพื่ออธิบายเหตุการณ์หรือปัญหาที่เกิดขึ้น",
+              "ระบุวิธีการแก้ไข (Solution) ที่ดำเนินการหรือแนวทางการแก้ไข",
+              "ระบุผู้ร้องขอ (Requester) และผู้ดำเนินการแก้ไข (Operator)",
+              <>เมื่อกรอกข้อมูลครบ แล้วกดปุ่ม <UIHint label="Submit Case" variant="success" /> เพื่อบันทึกข้อมูลลงในระบบ</>,
+            ],
+            image: casepageImg,
+            imageCaption: "รูปที่ 3 แบบฟอร์มการแจ้งเคสใหม่",
+          },
+        },
+      ],
+    },
+    {
+      id: "group-report",
+      groupTitle: "รายงาน (Reports)",
+      items: [
+        {
+          id: "daily-report",
+          title: "Daily Report",
+          icon: <FileText className="w-6 h-6 text-blue-500" />,
+          description: "รายงานสรุปข้อมูลเคสประจำวัน",
+          content: {
+            features: [
+              "แสดงรายการเคสทั้งหมดของวันปัจจุบัน",
+              "เลือกดูข้อมูลย้อนหลังในเเต่ละวันได้",
+              "เลือกสลับโหมดเป็นรายวันหรือ รายเดือนได้",
+              "Dashboard กราฟสรุปสถานะและสถิติของข้อมูล",
+              <>ปุ่ม <UIHint label="Export File " variant="add" /> ดาวน์โหลดข้อมูลเป็น Excel</>,
+              <>ปุ่ม <UIHint label="Send Email" variant="Send" /> ส่งอีเมลรายงาน (เลือกผู้รับอีเมล์,พิมพ์หัวข้อ/ข้อความ,เเนบไฟล์ได้ไม่เกิน 5 ไฟล์ในเเต่ละช่อง) <button onClick={() => setPreviewImage(sendEmailImg)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
+            ],
+            image: dailyReportImg,
+            imageCaption: "รูปที่ 4 หน้าจอ Daily Report",
+          },
+        },
+        {
+          id: "custom-report",
+          title: "Custom Report",
+          icon: <FileSpreadsheet className="w-6 h-6 text-yellow-500" />,
+          description: "จัดการข้อมูลเคสย้อนหลังและแก้ไขข้อมูล",
+          content: {
+            features: [
+              "แสดงรายการเคสทั้งหมดของวันปัจจุบัน",
+              "เลือกดูข้อมูลย้อนหลังและสลับโหมดรายวัน/รายเดือน",
+              "Dashboard กราฟสรุปสถานะและสถิติของข้อมูล",
+              <>หากต้องการแก้ไขข้อมูล ให้เลือกไอคอน <UIHint icon={Edit2} variant="Edit" /> ที่ท้ายแถว</>,
+              <>หากต้องการลบข้อมูล ให้เลือกไอคอน <UIHint icon={Trash2} variant="danger" /> ที่ท้ายแถว</>,
+              <>คลิกที่ปุ่ม <UIHint label="+ New case" variant="add" /> เพื่อเพิ่มเคสย้อนหลัง</>,
+              <>ปุ่ม <UIHint label="Export File " variant="add" /> ดาวน์โหลดข้อมูลเป็น Excel</>,
+              <>ปุ่ม <UIHint label="Send Email" variant="Send" /> ส่งอีเมลรายงาน (เลือกผู้รับอีเมล์,พิมพ์หัวข้อ/ข้อความ,เเนบไฟล์ได้ไม่เกิน 5 ไฟล์ในเเต่ละช่อง) <button onClick={() => setPreviewImage(sendEmailImg)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
+            ],
+            image: customReportImg,
+            imageCaption: "รูปที่ 5 หน้าจอ Custom Report สำหรับจัดการข้อมูล",
+          },
+        },
+      ],
+    },
+    {
+      id: "group-setting",
+      groupTitle: "การตั้งค่า (Setting)",
+      items: [
+        {
+          id: "Game-setting",
+          title: "Game Setting",
+          icon: <Gamepad2 className="w-6 h-6 text-cyan-600" />,
+          description: "จัดการรายชื่อเกม",
+          content: {
+            steps: [
+              <>คลิกที่ปุ่ม <UIHint label="+ Add Game" /> เพื่อเพิ่มเกมใหม่</>,
+              <>จะปรากฎหน้า Pop-up กรอกชื่อ แล้วกดปุ่ม เพื่อบันทึกข้อมูลลงระบบ <UIHint label="Save game" variant="success" /><button onClick={() => setPreviewImage(addGame)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button> </>,
+              <>หากต้องการแก้ไข ให้เลือกไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
+              <>หากต้องการลบ ให้เลือกไอคอน <UIHint icon={Trash2} variant="danger" /></>,
+            ],
+            image: gamesettingImg,
+            imageCaption: "รูปที่ 6 gamesetting สำหรับจัดการข้อมูลเกม",
+          },
+        },
+        {
+          id: "member-setting",
+          title: "Member Setting",
+          icon: <Users className="w-6 h-6 text-yellow-600" />, //Addmember
+          description: "จัดการรายชื่อสมาชิก",
+          content: {
+            steps: [
+              <>คลิกที่ปุ่ม <UIHint label="+ Add Member" /> เพื่อเพิ่มสมาชิกใหม่</>,
+              <>จะปรากฎหน้า Pop-up กรอกข้อมูลให้ครบตามที่กำหนดไว้ แล้วกดปุ่ม <UIHint label="Save Member" variant="success" /> เพื่อบันทึกข้อมูลลงระบบ <button onClick={() => setPreviewImage(addMember)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button> </>,
+              <>แก้ไขข้อมูลสมาชิกด้วยไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
+              <>ลบสมาชิกด้วยไอคอน <UIHint icon={Trash2} variant="danger" /></>,
+            ],
+            image: membersettingImg,
+            imageCaption: "รูปที่ 7 Member setting สำหรับจัดการข้อมูลสมาชิก",
+          },
+        },
+        {
+          id: "recipient-setting",
+          title: "Recipients Setting",
+          icon: <Mail className="w-6 h-6 text-indigo-500" />,
+          description: "จัดการรายชื่ออีเมลผู้รับ",
+          content: {
+            steps: [
+              <>คลิกที่ปุ่ม <UIHint label="+ Add Recipient" /> เพื่อเพิ่มอีเมลผู้รับใหม่</>,
+              <>จะปรากฎหน้า Pop-up กรอกข้อมูลให้ครบตามที่กำหนดไว้ แล้วกดปุ่ม <UIHint label="Save Recipient" variant="success" /> เพื่อบันทึกข้อมูลลงระบบ <button onClick={() => setPreviewImage(AddRecipient)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
+              <>แก้ไขรายชื่อด้วยไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
+              <>ลบรายชื่อด้วยไอคอน <UIHint icon={Trash2} variant="danger" /></>,
+            ],
+            image: recipientsettingImg,
+            imageCaption: "รูปที่ 8 Recipients Setting สำหรับจัดการรายชื่ออีเมลผู้รับ",
+          },
+        },
+      ],
+    },
+  ];
 
   return (
-    <div className="fixed inset-0 w-full h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 font-sans pb-20 transition-colors duration-500">
-      
-      {/* Header Bar - คงไว้แบบเดิม ไม่เปลี่ยนขนาด */}
-      <header className="sticky top-0 z-40 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 h-20 flex items-center">
-        <div className="max-w-screen-2xl mx-auto px-6 w-full flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <button onClick={() => navigate("/menu")} className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
-              <ChevronLeft size={24} className="text-slate-500" />
+    <div className="fixed inset-0 w-full bg-slate-50 dark:bg-slate-950 overflow-y-auto transition-colors duration-500">
+      {/*  Navbar Header  */}
+      <header className="fixed top-0 left-0 right-0 z-50 w-full h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 flex items-center shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            
+            <button onClick={handleNavbarBack} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full  transition-colors">
+              <ArrowLeft size={24} className="text-slate-600 dark:text-slate-300" />
             </button>
-            <h1 className="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight">Manual</h1>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold text-slate-800 dark:text-white leading-none">NOC Manual</h1>
+              <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">คู่มือการใช้งานระบบ</span>
+            </div>
           </div>
           <ButtonHome onClick={() => navigate("/menu")} />
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-16">
-        <div className="mb-20 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-black mb-6 uppercase border border-indigo-100 dark:border-indigo-800">
-            <ShieldCheck size={16} /> Interactive Manual
-          </div>
-          <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-4 leading-tight">NOC Operations Guide</h2>
-          <p className="text-lg text-slate-500 dark:text-slate-400">คู่มือการใช้งานระบบสำหรับผู้ดูแลระบบ (Admin Only)</p>
-        </div>
+      <main className="pt-20 px-6 py-10">
+        <div className="max-w-7xl mx-auto">
+          {!activeItem ? (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12">
+              <div className="text-center max-w-3xl mx-auto mb-16 p-3">
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold mb-6 uppercase tracking-wider">
+                  Documentation
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">
+                  คู่มือการใช้งาน <span className="text-indigo-600 dark:text-indigo-400">NOC Report System</span>
+                </h2>
+                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+                  ระบบสำหรับบันทึกเหตุการณ์ (Case), ติดตามสถานะ และจัดทำรายงานประจำวัน/ย้อนหลัง ออกแบบมาเพื่อเพิ่มประสิทธิภาพการทำงานร่วมกันของทีม NOC
+                </p>
+              </div>
 
-        <div className="space-y-24">
-          {MANUAL_DATA.map((step) => (
-            <InteractiveCard key={step.id} step={step} />
-          ))}
+              <div className="space-y-12">
+                {MANUAL_DATA.map((group) => (
+                  <div key={group.id} className="scroll-mt-24">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 border-l-4 border-indigo-500 pl-4 text-left">
+                      {group.groupTitle}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {group.items.map((item) => (
+                        <ManualCard key={item.id} item={item} onClick={setActiveItem} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <ManualDetail item={activeItem} onBack={handleBackToOverview} />
+          )}
         </div>
       </main>
 
-      {showBackTop && (
-        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="fixed bottom-10 right-10 p-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl shadow-2xl active:scale-95 transition-all">
-          <ChevronUp size={24} />
-        </button>
+      {/* ✅ 3. Popup Modal (วางไว้นอกสุดเพื่อให้แสดงทับทุกส่วน) */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            className="relative max-w-5xl w-full animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setPreviewImage(null)}
+              className="absolute -top-12 right-0 text-white flex items-center gap-2 font-bold hover:text-indigo-400 transition-colors"
+            >
+              CLOSE <X size={24} />
+            </button>
+            <img 
+              src={previewImage} 
+              alt="Preview" 
+              className="max-w-full max-h-[75vh] w-auto h-auto mx-auto rounded-lg object-contain shadow-md"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

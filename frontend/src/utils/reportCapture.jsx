@@ -14,7 +14,7 @@ export const captureReportImage = async (elementId) => {
     useCORS: true,
     backgroundColor: captureBgColor,
     logging: false,
-    windowWidth: 2000 , // กว้างเผื่อไว้เลย
+    windowWidth: 2000 , // กว้าง
     onclone: (clonedDoc) => {
       const clonedElement = clonedDoc.getElementById(elementId);
       if (clonedElement) {
