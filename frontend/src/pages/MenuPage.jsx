@@ -56,7 +56,7 @@ export default function MenuPage() {
       <DarkModeToggle />
 
       {/* Main Card: ไม่ต้องใส่ mx-4 เพราะเรามี p-4/p-10 ที่ตัวแม่คุมไว้แล้ว */}
-      <div className="w-full max-w-md bg-white/80 dark:bg-slate-800/90 backdrop-blur-xl rounded-3xl shadow-2xl dark:shadow-black/50 p-10 border border-white/20 dark:border-slate-700 transition-colors duration-500 relative z-10">
+      <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl dark:shadow-black/50 p-10 border dark:border-slate-700/50 transition-colors duration-500 relative z-10">
 
         <HeaderTitle username={username} /> 
 

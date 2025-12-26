@@ -25,7 +25,7 @@ import {
   Flame,
 } from "lucide-react";
 
-import html2canvas from "html2canvas";
+
 import { getCases } from "../api/case";
 import { getProblems } from "../api/problems";
 import { getStatuses } from "../api/status";
@@ -34,21 +34,25 @@ import { getRecipients } from "../api/recipients";
 import { sendDailyReport } from "../api/report";
 import { exportReport } from "../api/export";
 import { useNavigate } from "react-router-dom";
+import { STATUS_CONFIG } from "../constants/status";
+import { captureReportImage } from "../utils/reportCapture";
+
+
 import ExportButton from "../components/ButtonExport";
 import ButtonSend from "../components/ButtonSend";
 import ButtonHome from "../components/ButtonHome";
-import { STATUS_CONFIG } from "../constants/status";
-import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
+import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ViewModeToggle from "../components/ViewModeToggle";
 
+
+import PageHeader from "../components/PageHeader.jsx";
 import StatCard from "../components/dashboard/StatCard";
 import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
 import StatusPieChart from "../components/dashboard/StatusPieChart";
-import { captureReportImage } from "../utils/reportCapture";
-import PageHeader from "../components/PageHeader.jsx";
 
-// --- CONSTANTS ---
+
+
 const CONFIG = {
   MAX_FILE_SIZE_MB: 5,
   MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
@@ -88,7 +92,7 @@ const parseISODate = (dateStr) => {
   return new Date(year, month - 1, day, 12, 0, 0);
 };
 
-// --- REPORT DASHBOARD CONTAINER (พ่อแม่) ---
+// --- REPORT DASHBOARD CONTAINER ---
 const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
   const dashboardData = useMemo(() => {
     const safeCases = Array.isArray(cases) ? cases : [];
@@ -324,12 +328,12 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
           className={`h-8 w-8 rounded-full text-sm font-medium transition-colors
             ${
               isSelected
-                ? "bg-indigo-600 text-white"
-                : "hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-300"
+                ? "bg-blue-600 text-white"
+                : "hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300"
             }
             ${
               isToday && !isSelected
-                ? "border border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400"
+                ? "border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
                 : ""
             }
           `}
@@ -365,13 +369,13 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
           bg-white dark:bg-slate-900
           ${
             isOpen
-              ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-              : "border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+              : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }
         `}
       >
         <div className="flex items-center gap-2">
-          <CalendarDays size={18} className="text-indigo-500" />
+          <CalendarDays size={18} className="text-blue-500" />
           <span
             className={`${
               value
@@ -427,7 +431,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
             </button>
             <button
               onClick={setToday}
-              className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold px-2 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-bold px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
             >
               วันนี้
             </button>
@@ -445,7 +449,7 @@ const CustomSelect = ({
   placeholder,
   icon: Icon,
 }) => {
-  // ... (Code เดิม) ...
+
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -485,8 +489,8 @@ const CustomSelect = ({
           bg-white dark:bg-slate-900
           ${
             isOpen
-              ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-              : "border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+              : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }
         `}
       >
@@ -505,7 +509,7 @@ const CustomSelect = ({
         <ChevronDown
           size={18}
           className={`text-slate-400 transition-transform duration-200 shrink-0 ml-2 ${
-            isOpen ? "rotate-180 text-indigo-500" : ""
+            isOpen ? "rotate-180 text-blue-500" : ""
           }`}
         />
       </button>
@@ -527,7 +531,7 @@ const CustomSelect = ({
                 className={`px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors mb-0.5 last:mb-0
                   ${
                     isSelected
-                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-semibold"
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
                       : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
                   }
                 `}
@@ -721,8 +725,7 @@ export default function DailyReport() {
               ? `${Math.floor(durationMins / 60)} ชม. ${durationMins % 60} นาที`
               : `${durationMins} นาที`;
 
-          // 3. แปลง Status ให้ตรงกับ key ใน STATUS_CONFIG (ต้องเป็นตัวพิมพ์เล็กภาษาอังกฤษ)
-          // สมมติใน DB เก็บชื่อ status_name เป็น "open"
+         
           const statusKey = statusObj?.status_name?.toLowerCase() || "others";
 
           return {
@@ -732,15 +735,15 @@ export default function DailyReport() {
             endDate: endDateStr,
             endTime: endTimeStr,
             duration: durationStr,
-            durationMins: durationMins, // เพิ่มฟิลด์นี้มาใหม่
+            durationMins: durationMins, 
             problem: problemObj ? problemObj.problem_name : "Unknown Problem",
             game: productObj ? productObj.product_name : "Unknown Game",
             details: c.description,
             solution: c.solution,
             reporter: c.requester_name,
             operator: c.solver,
-            status: statusKey, // ต้องตรงกับ key ใน STATUS_CONFIG ด้านบน
-            date: selectedDate, // วันที่จากเคสจริง (ถ้าดู monthly จะเห็นหลายวันที่)
+            status: statusKey, 
+            date: selectedDate, 
 
             startMs: start.getTime(),
           };
@@ -798,7 +801,7 @@ export default function DailyReport() {
       );
 
       if (!blob) {
-        throw new Error("ไม่พบข้อมูลไฟล์จากเซิร์ฟเวอร์");
+        throw new Error("ไม่พบข้อมูลไฟล์");
       }
 
       // สร้าง URL ชั่วคราวจาก blob
@@ -861,12 +864,12 @@ export default function DailyReport() {
         title: "ไม่สามารถอัปโหลดไฟล์นี้ได้",
         message: errors.join("\n"),
       });
-      // alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join("\n- ")}`);
+    
       e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
       return;
     }
 
-    // 5. อัปเดต State array ณ ตำแหน่ง index ที่ส่งเข้ามา
+  
     setAttachedFiles((prev) => {
       const newFiles = [...prev];
       newFiles[index] = file; // เก็บไฟล์จริง
@@ -914,12 +917,12 @@ export default function DailyReport() {
 
       // 3) แนบไฟล์
       attachedFiles
-        .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
+        .filter((file) => !!file) 
         .forEach((file) => {
           formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
         });
 
-      await sendDailyReport(formData); //  เรียก API ที่เราแก้ในข้อ 1
+      await sendDailyReport(formData); 
       setIsEmailModalOpen(false);
       setFeedbackModal({
         isOpen: true,
@@ -965,23 +968,23 @@ export default function DailyReport() {
   );
 
   // Data for Dashboard Cards
-  // ใน Monthly mode เราใช้ cases ทั้งหมดที่ fetch มาได้เลย เพราะ API กรองมาให้แล้ว
+ 
   const casesOfSelectedDate = cases;
 
   return (
     <div
       className="fixed inset-0 w-full h-full overflow-y-auto font-sans text-slate-900 pb-20 
-      bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
+      bg-gradient-to-br from-blue-100 via-slate-100 to-blue-100 
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
     >
-      {" "}
-      {/* contanier  Background Dark Mode */}
+      {" "} {/* contanier  Background Dark Mode */}
+     
 
       {/* Header Bar */}
       <PageHeader
         title="Daily Report"
         subtitle="รายงานประจำวัน"
-        icon={<ClipboardList size={24}  />}
+        icon={<FileText size={24}  />}
         left={
     <>
       <button
@@ -997,6 +1000,7 @@ export default function DailyReport() {
   }
   right={
     <>
+    {/* ปุ่มสลับ รายวัน-> รายเดือน */}
       <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
 
       <div className="w-48">
@@ -1033,7 +1037,7 @@ export default function DailyReport() {
             {viewMode === "daily"
               ? "ภาพรวมประจำวันที่"
               : "ภาพรวมประจำเดือน"}{" "}
-            <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
+            <span className="text-blue-600 dark:text-blue-400 border-b-2 border-blue-600/20 dark:border-blue-400/30 px-1">
               {/* เป็น วันเดือนปี  */}
               {selectedDate ? selectedDate.split("-").reverse().join("-") : ""}
             </span>
@@ -1081,7 +1085,7 @@ export default function DailyReport() {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="ค้นหาปัญหา, เกม..."
-                className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64
+                className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64
                   bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
               />{" "}
               {/* Search Input Dark Mode */}
@@ -1123,7 +1127,7 @@ export default function DailyReport() {
                       <div className="flex flex-col items-center gap-2">
                         <Loader2
                           size={32}
-                          className="animate-spin text-indigo-500"
+                          className="animate-spin text-blue-500"
                         />
                         <p>กำลังโหลดข้อมูล...</p>
                       </div>
@@ -1179,9 +1183,9 @@ export default function DailyReport() {
                           <div className="flex items-center gap-1.5">
                             <Gamepad2
                               size={14}
-                              className="text-indigo-500 dark:text-indigo-400"
+                              className="text-blue-500 dark:text-blue-400"
                             />
-                            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 uppercase tracking-wide">
+                            <span className="text-sm font-semibold text-blue-600 dark:text-blue-500  tracking-wide">
                               {item.game}
                             </span>
                           </div>
@@ -1286,7 +1290,7 @@ export default function DailyReport() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
                         currentPage === page
-                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/50"
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/50"
                           : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                       }`}
                     >
@@ -1347,7 +1351,7 @@ export default function DailyReport() {
                       {label}
                     </label>
                     <p className="font-medium text-sm flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
-                      <CalendarIcon size={14} className="text-indigo-500" />
+                      <CalendarIcon size={14} className="text-blue-500" />
                       {i === 0
                         ? `${selectedCaseDetail.startTime} - ${selectedCaseDetail.endTime}`
                         : i === 1
@@ -1366,7 +1370,7 @@ export default function DailyReport() {
                     Game
                   </label>
                   <div className="flex items-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900">
-                    <Gamepad2 size={16} className="text-indigo-500" />
+                    <Gamepad2 size={16} className="text-blue-500" />
                     <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                       {selectedCaseDetail.game}
                     </span>

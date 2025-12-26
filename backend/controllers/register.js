@@ -4,30 +4,38 @@ const bcrypt = require("bcryptjs");
 // ----------------------------------------------------------
 // 1. สมัครสมาชิก (CREATE)
 // ----------------------------------------------------------
-exports.register = async (req, res) => {
-  // ✅ รับ password ปกติ ไม่ใช่ password_hash
-  const { username, password, first_name, last_name, email } = req.body;
 
-  // ✅ เช็คข้อมูลให้ครบ
+
+ const validateEmail = (email) => {
+  const validmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return validmail.test(email);
+
+};
+
+
+exports.register = async (req, res) => {
+  //  รับ password ปกติ ไม่ใช่ password_hash
+  const { username, password, first_name, last_name, email } = req.body;
+  //  เช็คข้อมูลให้ครบ
   if (!username || !password || !first_name || !last_name || !email) {
     return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
   }
 
   if (username.length > 100 ){
     return res.status(400).json({
-      message:"Username ยาวเกินไป"
+      message:"Username ยาวเกินไป (สูงสุด 100 ตัวอักษร)"
     })
   }
 
   if (first_name.length > 100){
     return res.status(400).json({
-      message:"Firstname ยาวเกินไป"
+      message:"Firstname ยาวเกินไป (สูงสุด 100 ตัวอักษร)"
     })
   }
 
 if (last_name.length> 100){
   return res.status(400).json({
-    message:"Lastname ยาวเกินไป"
+    message:"Lastname ยาวเกินไป (สูงสุด 100 ตัวอักษร) "
   })
 }
 
@@ -36,6 +44,9 @@ if (password.length > 64){
     message:"รหัสผ่านยาวเกินไป (สูงสุด 64 ตัวอักษร)"
   })
 }
+if (!validateEmail(email)) {
+    return res.status(400).json({ message: "รูปแบบอีเมลไม่ถูกต้อง" });
+  }
 
   try {
     // 1) เช็คว่ามี username หรือ email นี้ในระบบแล้วหรือยัง
@@ -154,6 +165,11 @@ exports.updateUser = async (req, res) => {
          AND user_id <> $3`,
       [username, email, id]
     );
+  
+    //เช็ครูปแบบอีเมล (ถ้ามีการส่ง email มาแก้ไข)
+  if (email && !validateEmail(email)) {
+    return res.status(400).json({ message: "รูปแบบอีเมลไม่ถูกต้อง" });
+  }
 
     if (duplicate.rows.length > 0) {
       const dup = duplicate.rows[0];

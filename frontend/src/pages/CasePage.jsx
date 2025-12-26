@@ -29,8 +29,18 @@ import { getProblems } from "../api/problems";
 // 1. Helper Functions
 // ==========================================
 const THAI_MONTHS = [
-  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
 ];
 
 const formatThaiDate = (dateObj) => {
@@ -115,17 +125,25 @@ const CustomTimePicker = ({ label, value, onChange }) => {
           }`}
       >
         <Clock
-          className={`w-5 h-5 ${value ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+          className={`w-5 h-5 ${
+            value ? "text-blue-600 dark:text-blue-400" : "text-slate-400"
+          }`}
         />
         <span
-          className={value ? "text-slate-800 dark:text-slate-200 font-medium" : "text-slate-400"}
+          className={
+            value
+              ? "text-slate-800 dark:text-slate-200 font-medium"
+              : "text-slate-400"
+          }
         >
           {value || "--:--"}
         </span>
       </div>
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2 w-48 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-fade-in-down flex flex-col
-          bg-white dark:bg-slate-800">
+        <div
+          className="absolute left-0 z-50 mt-2 w-48 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-fade-in-down flex flex-col
+          bg-white dark:bg-slate-800"
+        >
           <div className="flex border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
             <div className="flex-1 py-2 text-center text-xs font-bold text-blue-600 dark:text-blue-400">
               ชม.
@@ -187,7 +205,9 @@ const CustomSelect = ({
 
   const safeOptions = Array.isArray(options) ? options : [];
   const selectedOption = safeOptions.find((opt) => opt[valueKey] === value);
-  const displayValue = selectedOption ? selectedOption[displayKey] : placeholder;
+  const displayValue = selectedOption
+    ? selectedOption[displayKey]
+    : placeholder;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -215,7 +235,13 @@ const CustomSelect = ({
               : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }`}
       >
-        <span className={value ? "text-slate-700 dark:text-slate-200 font-medium" : "text-slate-400"}>
+        <span
+          className={
+            value
+              ? "text-slate-700 dark:text-slate-200 font-medium"
+              : "text-slate-400"
+          }
+        >
           {displayValue}
         </span>
         <ChevronDown
@@ -226,11 +252,15 @@ const CustomSelect = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-fade-in-down
-          bg-white dark:bg-slate-800">
+        <div
+          className="absolute z-50 w-full mt-2 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-fade-in-down
+          bg-white dark:bg-slate-800"
+        >
           <div className="max-h-60 overflow-y-auto py-1">
-            <div className="px-3 py-2 text-xs font-medium border-b border-slate-100 dark:border-slate-700
-              bg-slate-50 dark:bg-slate-900 text-slate-400">
+            <div
+              className="px-3 py-2 text-xs font-medium border-b border-slate-100 dark:border-slate-700
+              bg-slate-50 dark:bg-slate-900 text-slate-400"
+            >
               เลือก{label}...
             </div>
             {safeOptions.map((option) => (
@@ -341,26 +371,42 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           }`}
       >
         <CalendarIcon
-          className={`w-5 h-5 ${value ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+          className={`w-5 h-5 ${
+            value ? "text-blue-600 dark:text-blue-400" : "text-slate-400"
+          }`}
         />
         <span
-          className={value ? "text-slate-800 dark:text-slate-200 font-medium" : "text-slate-400"}
+          className={
+            value
+              ? "text-slate-800 dark:text-slate-200 font-medium"
+              : "text-slate-400"
+          }
         >
           {value ? formatThaiDate(new Date(value)) : "วว/ดด/ปปปป"}
         </span>
       </div>
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2 w-72 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-4 animate-fade-in-down
-          bg-white dark:bg-slate-800">
+        <div
+          className="absolute left-0 z-50 mt-2 w-72 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-4 animate-fade-in-down
+          bg-white dark:bg-slate-800"
+        >
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-slate-800 dark:text-slate-200 font-bold text-lg">
               {THAI_MONTHS[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
             </h3>
             <div className="flex gap-1">
-              <button onClick={handlePrevMonth} type="button" className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
+              <button
+                onClick={handlePrevMonth}
+                type="button"
+                className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <button onClick={handleNextMonth} type="button" className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
+              <button
+                onClick={handleNextMonth}
+                type="button"
+                className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
@@ -433,7 +479,8 @@ export default function CasePage() {
     message: "",
     onConfirm: () => {},
   });
-  const closeFeedbackModal = () => setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
+  const closeFeedbackModal = () =>
+    setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
 
   const initialFormState = () => {
     const now = new Date();
@@ -523,28 +570,28 @@ export default function CasePage() {
     // 2. Check Date/Time Logic (End < Start)
     const startStr = `${formData.start_datetime}T${formData.timeStart}:00`;
     const endStr = `${formData.end_datetime}T${formData.timeEnd}:00`;
-    
+
     const startObj = new Date(startStr);
     const endObj = new Date(endStr);
 
     if (endObj < startObj) {
-        setFeedbackModal({
-            isOpen: true,
-            type: "error",
-            title: "ช่วงเวลาไม่ถูกต้อง",
-            message: "กรุณาเลือกช่วงเวลาที่ถูกต้อง"
-        });
-        return; // Stop here
+      setFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "ช่วงเวลาไม่ถูกต้อง",
+        message: "กรุณาเลือกช่วงเวลาที่ถูกต้อง",
+      });
+      return; // Stop here
     }
 
     // 3. Confirm
     setSubmitError(null);
     setFeedbackModal({
-        isOpen: true,
-        type: "confirm",
-        title: "ยืนยันการส่งข้อมูล?",
-        message: "กรุณาตรวจสอบความถูกต้องก่อนกดส่ง",
-        onConfirm: confirmSubmit
+      isOpen: true,
+      type: "confirm",
+      title: "ยืนยันการส่งข้อมูล?",
+      message: "กรุณาตรวจสอบความถูกต้องก่อนกดส่ง",
+      onConfirm: confirmSubmit,
     });
   };
 
@@ -570,7 +617,7 @@ export default function CasePage() {
 
     try {
       await createCase(payload);
-      
+
       // [UPDATED] Success Modal
       setFeedbackModal({
         isOpen: true,
@@ -582,19 +629,20 @@ export default function CasePage() {
         confirmText: "ดูรายการเคส",
         onClose: () => navigate("/menu"),
         onConfirm: () => {
-             setFeedbackModal(prev => ({...prev, isOpen: false}));
-             navigate("/dailyreport", { replace: true });
-        }
+          setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
+          navigate("/dailyreport", { replace: true });
+        },
       });
-      
+
       setFormData(initialFormState());
     } catch (error) {
       console.error("Error on submission:", error.response || error);
-      const errMsg = error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล";
+      const errMsg =
+        error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล";
       setSubmitError(errMsg);
-      
+
       // Close confirm modal implicitly by overwriting or explicitly closing
-      setFeedbackModal(prev => ({...prev, isOpen: false}));
+      setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
     } finally {
       setIsSubmitting(false);
     }
@@ -606,45 +654,60 @@ export default function CasePage() {
   };
 
   return (
-    <div className="fixed grid place-items-center inset-0 w-full h-full overflow-y-auto z-0 p-10
+    <div
+      className="fixed grid place-items-center inset-0 w-full h-full overflow-y-auto z-0 p-10
       bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
-      dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"> {/* ✅ Background Dark Mode */}
-
+      dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
+    >
+      {" "}
+      {/* ✅ Background Dark Mode */}
       {/* ปุ่ม Toggle Dark Mode */}
-            <DarkModeToggle />
-      <div className="w-full max-w-2xl rounded-3xl shadow-2xl border p-8 sm:p-10 relative
+      <DarkModeToggle />
+      <div
+        className="w-full max-w-2xl rounded-3xl shadow-2xl border p-8 sm:p-10 relative
         bg-white/90 backdrop-blur-xl border-white/50
-        dark:bg-slate-800/90 dark:border-slate-700"> {/* ✅ Card Dark Mode */}
-        
+        dark:bg-slate-900/95 dark:border-slate-700/50"
+      >
+        {" "}
+        {/* ✅ Card Dark Mode */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300">
             Create New Case
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium"> {/* ✅ Text Dark Mode */}
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium">
+            {" "}
+            {/* ✅ Text Dark Mode */}
             บันทึกข้อมูลเคสประจำวัน
           </p>
         </div>
-
         {submitError && (
-          <div className="mb-4 p-3 rounded-xl text-sm font-medium flex items-center gap-2
-            bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"> {/* ✅ Error Box Dark Mode */}
+          <div
+            className="mb-4 p-3 rounded-xl text-sm font-medium flex items-center gap-2
+            bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+          >
+            {" "}
+            {/* ✅ Error Box Dark Mode */}
             <AlertTriangle className="w-5 h-5" /> Error: {submitError}
           </div>
         )}
-
         {loadingLookup && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm z-50 rounded-3xl
-            bg-white/60 dark:bg-slate-900/60"> {/* ✅ Loading Screen Dark Mode */}
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-sm z-50 rounded-3xl
+            bg-white/60 dark:bg-slate-900/60"
+          >
+            {" "}
+            {/* ✅ Loading Screen Dark Mode */}
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400" />
             <p className="mt-3 font-medium text-slate-600 dark:text-slate-300">
               กำลังโหลดข้อมูล...
             </p>
           </div>
         )}
-
         <form onSubmit={handleSaveClick} className="space-y-6">
           <div className="space-y-4 text-left">
-            <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2"> {/* ✅ Section Title Dark Mode */}
+            <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              {" "}
+              {/* ✅ Section Title Dark Mode */}
               วันที่-เวลา
             </h2>
 
@@ -689,9 +752,8 @@ export default function CasePage() {
                    }
                    
                   `}
-                  
                 >
-               {/* ✅ แก้ตรงนี้ครับ */}
+                  {/* ✅ แก้ตรงนี้ครับ */}
                   {currentDuration === "0 นาที" ? (
                     <span className="text-slate-400 dark:text-slate-500 opacity-70">
                       ระบบคำนวณอัตโนมัติ
@@ -699,14 +761,12 @@ export default function CasePage() {
                   ) : (
                     currentDuration
                   )}
-                                    
                 </div>
               </div>
             </div>
           </div>
-
-          <hr className="border-slate-100 dark:border-slate-700" /> {/* ✅ HR Dark Mode */}
-
+          <hr className="border-slate-100 dark:border-slate-700" />{" "}
+          {/* ✅ HR Dark Mode */}
           <div className="space-y-4 text-left">
             <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ข้อมูลเคส
@@ -743,29 +803,9 @@ export default function CasePage() {
               valueKey="problem_id"
             />
 
-             <div>
-              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
-                วิธีการแก้ไข (Solution)
-              </label>
-              <div className="relative">
-                <Wrench className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
-                <textarea
-                  name="solution"
-                  rows="2"
-                  maxLength={1000}
-                  value={formData.solution}
-                  onChange={handleChange}
-                  placeholder="อธิบายวิธีแก้ไข..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-3 text-sm transition-all resize-none
-                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
-                    focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                /> {/*  Textarea Dark Mode */}
-              </div>
-            </div>
-
             <div>
-              <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
-                รายละเอียดเคส (Detail)
+              <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 block ml-1">
+                รายละเอียด (Detail)
               </label>
               <textarea
                 name="description"
@@ -780,12 +820,33 @@ export default function CasePage() {
                   placeholder-slate-400 dark:placeholder-slate-500
                   hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-600
                   focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              /> {/* ✅ Textarea Dark Mode */}
+              />{" "}
+              {/* ✅ Textarea Dark Mode */}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2 block ml-1">
+                วิธีการแก้ไข (Solution)
+              </label>
+              <div className="relative">
+                <Wrench className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                <textarea
+                  name="solution"
+                  rows="2"
+                  maxLength={1000}
+                  value={formData.solution}
+                  onChange={handleChange}
+                  placeholder="อธิบายวิธีแก้ไข..."
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-3 text-sm transition-all resize-none
+                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />{" "}
+                {/*  Textarea Dark Mode */}
+              </div>
             </div>
           </div>
-
-          <hr className="border-slate-100 dark:border-slate-700" /> {/* ✅ HR Dark Mode */}
-
+          <hr className="border-slate-100 dark:border-slate-700" />{" "}
+          {/* ✅ HR Dark Mode */}
           <div className="space-y-4 text-left">
             <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ผู้เกี่ยวข้อง
@@ -793,7 +854,7 @@ export default function CasePage() {
 
             <div>
               <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
-                ผู้ร้องขอ (Requester) 
+                ผู้ร้องขอ (Requester)
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500 w-4 h-4" />
@@ -807,11 +868,10 @@ export default function CasePage() {
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                /> {/* ✅ Input Dark Mode */}
+                />{" "}
+                {/* ✅ Input Dark Mode */}
               </div>
             </div>
-
-           
 
             <div>
               <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
@@ -829,11 +889,11 @@ export default function CasePage() {
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                /> {/* ✅ Input Dark Mode */}
+                />{" "}
+                {/* ✅ Input Dark Mode */}
               </div>
             </div>
           </div>
-
           <div className="flex justify-between pt-6 mt-4 gap-8">
             <ButtonCancel
               type="button"
@@ -844,11 +904,22 @@ export default function CasePage() {
             >
               Cancel
             </ButtonCancel>
-            <ButtonSubmit disabled={loadingLookup}>Submit Case</ButtonSubmit>
+            <ButtonSubmit
+              type="submit"
+              disabled={loadingLookup || isSubmitting} 
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Submitting...</span>
+                </div>
+              ) : (
+                "Submit Case"
+              )}
+            </ButtonSubmit>
           </div>
         </form>
       </div>
-
       {/* ✅ Action Feedback Modal (เหลือตัวเดียว) */}
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}

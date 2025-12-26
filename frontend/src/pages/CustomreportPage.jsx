@@ -29,6 +29,7 @@ import {
   PieChart as PieChartIcon,
   FileCog,
   Flame,
+  Wrench,
 } from "lucide-react";
 
 // ไม่ต้อง import Recharts ตรงนี้แล้ว เพราะใช้ใน Component ลูก
@@ -189,17 +190,18 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
 
       days.push(
         <button
+          type="button"
           key={i}
           onClick={() => handleDayClick(i)}
           className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors
             ${
               isSelected
-                ? "bg-indigo-600 text-white"
-                : "hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-300"
+                ? "bg-blue-600 text-white"
+                : "hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300"
             }
             ${
               isToday && !isSelected
-                ? "border border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400"
+                ? "border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
                 : ""
             }
           `}
@@ -235,13 +237,13 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
           bg-white dark:bg-slate-900
           ${
             isOpen
-              ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-              : "border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+              : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }
         `}
       >
         <div className="flex items-center gap-2">
-          <CalendarDays size={18} className=" text-indigo-500" />
+          <CalendarDays size={18} className=" text-blue-500" />
           <span
             className={`${
               value
@@ -265,12 +267,14 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
             </h3>
             <div className="flex gap-1">
               <button
+                type="button"
                 onClick={() => changeMonth(-1)}
                 className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
+                type="button"
                 onClick={() => changeMonth(1)}
                 className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
@@ -290,14 +294,16 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
           </div>
           <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
             <button
+              type="button"
               onClick={clearDate}
               className="text-xs text-slate-500 hover:text-red-500 font-medium px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
             >
               ล้างค่า
             </button>
             <button
+              type="button"
               onClick={setToday}
-              className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold px-2 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-bold px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
             >
               วันนี้
             </button>
@@ -354,13 +360,13 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
           bg-white dark:bg-slate-900
           ${
             isOpen
-              ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-              : "border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+              : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }
         `}
       >
         <div className="flex items-center gap-2">
-          <Clock size={18} className="text-indigo-500" />
+          <Clock size={18} className="text-blue-500" />
           <span
             className={`${
               value
@@ -374,7 +380,7 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
         <ChevronDown
           size={18}
           className={`text-slate-400 transition-transform duration-200 shrink-0 ml-2 ${
-            isOpen ? "rotate-180 text-indigo-500" : ""
+            isOpen ? "rotate-180 text-blue-500" : ""
           }`}
         />
       </button>
@@ -398,7 +404,7 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
                 className={`text-center py-2 rounded-lg cursor-pointer text-sm font-medium mb-1 transition-colors 
                       ${
                         selectedHour === h
-                          ? "bg-indigo-600 text-white shadow-sm"
+                          ? "bg-blue-600 text-white shadow-sm"
                           : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
                       }`}
               >
@@ -421,7 +427,7 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
                 className={`text-center py-2 rounded-lg cursor-pointer text-sm font-medium mb-1 transition-colors 
                       ${
                         selectedMinute === m
-                          ? "bg-indigo-600 text-white shadow-sm"
+                          ? "bg-blue-600 text-white shadow-sm"
                           : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
                       }`}
               >
@@ -482,8 +488,8 @@ const CustomSelect = ({
           bg-white dark:bg-slate-900
           ${
             isOpen
-              ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-              : "border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+              : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }
         `}
       >
@@ -502,7 +508,7 @@ const CustomSelect = ({
         <ChevronDown
           size={18}
           className={`text-slate-400 transition-transform duration-200 shrink-0 ml-2 ${
-            isOpen ? "rotate-180 text-indigo-500" : ""
+            isOpen ? "rotate-180 text-blue-500" : ""
           }`}
         />
       </button>
@@ -524,7 +530,7 @@ const CustomSelect = ({
                 className={`px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors mb-0.5 last:mb-0
                   ${
                     isSelected
-                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-semibold"
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
                       : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
                   }
                 `}
@@ -834,6 +840,32 @@ export default function CustomReport() {
     };
   }, [filteredCases]); //casesOfSelectedDate
 
+  const getFriendlyErrorMessage = (error) => {
+    // 1. ตรวจสอบ Error จากฝั่ง Backend (API Response)
+    if (error.response?.data?.message) {
+      return error.response.data.message;
+    }
+
+    // 2. ตรวจสอบ Error Technical ทั่วไป
+    const message = error.message || "";
+
+    if (
+      message.includes("currentUserId is not defined") ||
+      message.includes("null")
+    ) {
+      return "กรุณาลองใหม่อีกครั้ง";
+    }
+    if (message.includes("Network Error")) {
+      return "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต";
+    }
+    if (message.includes("timeout")) {
+      return "การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง";
+    }
+
+    // 3. ค่าเริ่มต้นถ้าไม่ตรงกับเงื่อนไขใดเลย
+    return "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาติดต่อผู้ดูแลระบบ";
+  };
+
   // --- HELPER: AUTO-CALCULATE DURATION ---
   const calculateDuration = (start, end) => {
     if (!start || !end) return "";
@@ -1006,8 +1038,12 @@ export default function CustomReport() {
   };
 
   const confirmSave = async () => {
+    setIsSaveConfirmModalOpen(false);
     setIsLoading(true);
     try {
+      
+      const userData = JSON.parse(localStorage.getItem("user"));
+      const currentUserId = userData?.user_id || userData?.id;
       const cleanDate = currentCase.date.replaceAll("/", "-");
       const cleanEndDate = (currentCase.endDate || currentCase.date).replaceAll(
         "/",
@@ -1027,6 +1063,7 @@ export default function CustomReport() {
         solution: currentCase.solution,
         requester_name: currentCase.reporter,
         solver: currentCase.operator,
+        created_by: currentUserId,
       };
 
       if (currentCase.id === null) {
@@ -1046,7 +1083,6 @@ export default function CustomReport() {
           message: "ข้อมูลถูกบันทึกเรียบร้อยแล้ว",
         });
       }
-
       setIsSaveConfirmModalOpen(false);
       setIsEditModalOpen(false);
       fetchCases();
@@ -1057,7 +1093,7 @@ export default function CustomReport() {
         isOpen: true,
         type: "error",
         title: "บันทึกไม่สำเร็จ",
-        message: error.response?.data?.message || error.message,
+        message: getFriendlyErrorMessage(error),
       });
     } finally {
       setIsLoading(false);
@@ -1336,10 +1372,12 @@ export default function CustomReport() {
         }
         right={
           <>
+            {/* ปุ่มสลับ รายวัน-> รายเดือน */}
             <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
 
             <div className="w-48">
               <CustomDatePicker
+                type="button"
                 value={selectedDate}
                 onChange={setSelectedDate}
                 placeholder="เลือกวันที่"
@@ -1372,7 +1410,7 @@ export default function CustomReport() {
               {viewMode === "daily"
                 ? "ภาพรวมประจำวันที่"
                 : "ภาพรวมประจำเดือน"}{" "}
-              <span className="text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
+              <span className="text-blue-600 dark:text-blue-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
                 {selectedDate
                   ? selectedDate.split("-").reverse().join("-")
                   : ""}
@@ -1418,7 +1456,7 @@ export default function CustomReport() {
               title="Most Impacted"
               value={dashboardData.stats.mostImpacted}
               icon={
-                < Flame className="w-6 h-6 text-red-600 dark:text-red-600"  />
+                <Flame className="w-6 h-6 text-red-600 dark:text-red-600" />
               }
               color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
             />
@@ -1465,7 +1503,7 @@ export default function CustomReport() {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="ค้นหาปัญหา, เกม..."
-                className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64
+                className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64
                   bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
               />
             </div>
@@ -1506,7 +1544,7 @@ export default function CustomReport() {
                       <div className="flex flex-col items-center gap-2">
                         <Loader2
                           size={32}
-                          className="animate-spin text-indigo-500"
+                          className="animate-spin text-blue-500"
                         />
                         <p>กำลังโหลดข้อมูล...</p>
                       </div>
@@ -1551,7 +1589,7 @@ export default function CustomReport() {
                           </div>
                           <span
                             className="text-xs px-2 py-0.5 rounded w-fit
-              bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                           bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
                           >
                             ใช้เวลา: {item.duration}
                           </span>
@@ -1564,9 +1602,9 @@ export default function CustomReport() {
                           <div className="flex items-center gap-1.5">
                             <Gamepad2
                               size={14}
-                              className="text-indigo-500 dark:text-indigo-400"
+                              className="text-blue-500 dark:text-blue-400"
                             />
-                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300 uppercase tracking-wide">
+                            <span className="text-sm font-bold text-blue-600 dark:text-blue-500  tracking-wide">
                               {item.game}
                             </span>
                           </div>
@@ -1696,7 +1734,7 @@ export default function CustomReport() {
                       className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all
                       ${
                         currentPage === page
-                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/50"
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/50"
                           : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
                       }
                     `}
@@ -1738,7 +1776,7 @@ export default function CustomReport() {
                 ) : (
                   <Pencil
                     size={20}
-                    className="text-indigo-600 dark:text-indigo-400"
+                    className="text-yellow-600 dark:text-yellow-400"
                   />
                 )}
                 {currentCase.id === null ? "เพิ่มเคสใหม่" : `แก้ไขข้อมูลเคส`}
@@ -1761,6 +1799,7 @@ export default function CustomReport() {
                     วันที่เริ่ม (Start Date)
                   </label>
                   <CustomDatePicker
+                    type="button"
                     value={currentCase.date}
                     onChange={(val) =>
                       setCurrentCase({ ...currentCase, date: val })
@@ -1777,6 +1816,7 @@ export default function CustomReport() {
                   </label>
                   {/* [ADDED] End Date Field */}
                   <CustomDatePicker
+                    type="button"
                     value={currentCase.endDate}
                     onChange={(val) =>
                       setCurrentCase({ ...currentCase, endDate: val })
@@ -1874,6 +1914,7 @@ export default function CustomReport() {
                   รายละเอียด (Details)
                 </label>
                 <textarea
+                  placeholder="พิมพ์รายละเอียด..."
                   rows={3}
                   maxLength={1000}
                   value={currentCase.details}
@@ -1889,6 +1930,7 @@ export default function CustomReport() {
                   วิธีการแก้ไข (Solution)
                 </label>
                 <textarea
+                  placeholder="อธิบายวิธีแก้ไข..."
                   rows={3}
                   maxLength={1000}
                   value={currentCase.solution}
@@ -1949,9 +1991,21 @@ export default function CustomReport() {
                 Cancel{" "}
               </ButtonCancel>
 
-              <ButtonSave onClick={handleInitiateSave}>
-                <Save size={20} />{" "}
-                {currentCase.id === null ? "Create Case" : "Save Changes"}
+              <ButtonSave
+                onClick={handleInitiateSave}
+                disabled={isLoading} // ป้องกันการกดซ้ำขณะโหลด
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    กำลังบันทึก...
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} />
+                    {currentCase.id === null ? "Create Case" : "Save Changes"}
+                  </>
+                )}
               </ButtonSave>
             </div>
           </div>
@@ -2005,7 +2059,7 @@ export default function CustomReport() {
               คุณแน่ใจหรือไม่ที่จะลบรายการเคสนี้? <br />
               การกระทำนี้ไม่สามารถย้อนกลับได้
             </p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-6 justify-center">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="px-4 py-2 border rounded-xl font-bold text-sm transition-colors
@@ -2075,7 +2129,7 @@ export default function CustomReport() {
                         </span>
                       ) : (
                         <>
-                          <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap">
+                          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap">
                             {selectedRecipientIds.length} Selected
                           </span>
                           <span className="text-sm text-slate-600 dark:text-slate-400 truncate flex-1">
@@ -2117,14 +2171,14 @@ export default function CustomReport() {
                               onClick={() => toggleRecipient(user.recipient_id)}
                               className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                                 isSelected
-                                  ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                                   : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
                               }`}
                             >
                               <div
                                 className={`shrink-0 ${
                                   isSelected
-                                    ? "text-indigo-600 dark:text-indigo-400"
+                                    ? "text-blue-600 dark:text-blue-400"
                                     : "text-slate-300"
                                 }`}
                               >
@@ -2275,6 +2329,22 @@ export default function CustomReport() {
         onClose={closeFeedbackModal}
         onConfirm={feedbackModal.onConfirm}
       />
+      {/* --- GLOBAL LOADING OVERLAY ---
+      {isLoading && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
+            <Loader2 size={48} className="animate-spin text-blue-500" />
+            <div className="text-center">
+              <p className="font-bold text-slate-800 dark:text-white text-lg">
+                กำลังประมวลผล
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                กรุณารอสักครู่
+              </p>
+            </div>
+          </div>
+        </div>
+      )} */}
     </div>
   );
 }

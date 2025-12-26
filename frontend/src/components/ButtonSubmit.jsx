@@ -1,8 +1,9 @@
-export default function ButtonSubmit({ children, type = "submit", onClick }) {
+export default function ButtonSubmit({ children, type = "submit", onClick ,disabled}) {
   return (
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className="flex-1 py-3 rounded-lg  bg-blue-600 text-white font-medium   hover:bg-blue-700 shadow-lg shadow-blue-500/30 
       
       duration-300 

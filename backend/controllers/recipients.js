@@ -1,7 +1,7 @@
 const pool = require("../config/db");
 
 const validateEmail = (email) => {
-  const validmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const validmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return validmail.test(email);
 };
 
@@ -25,7 +25,7 @@ exports.createRecipient = async (req, res) => {
   if (email.length > 255)
     return res
       .status(400)
-      .json({ message: "Email ยาวเกินไป (สูงสุด 150 ตัวอักษร)" });
+      .json({ message: "Email ยาวเกินไป (สูงสุด 255 ตัวอักษร)" });
 
   if (name && name.length > 150)
     return res

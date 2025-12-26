@@ -53,7 +53,7 @@ const DowntimeBarChart = ({ data }) => {
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm h-full">
       <div className="flex items-center gap-2 mb-6">
-        <BarChart2 className="text-indigo-500 dark:text-indigo-400" size={24} />
+        <BarChart2 className="text-blue-500 dark:text-blue-400" size={24} />
         <div>
             <h3 className="text-lg flex font-medium text-slate-800 dark:text-white">
             Downtime Breakdown

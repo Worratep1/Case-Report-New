@@ -7,7 +7,7 @@ const ViewModeToggle = ({ viewMode, setViewMode }) => {
         onClick={() => setViewMode("daily")}
         className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
           viewMode === "daily"
-            ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
+            ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
             : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
         }`}
       >
@@ -17,7 +17,7 @@ const ViewModeToggle = ({ viewMode, setViewMode }) => {
         onClick={() => setViewMode("monthly")}
         className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
           viewMode === "monthly"
-            ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
+            ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
             : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
         }`}
       >

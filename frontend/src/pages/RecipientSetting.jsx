@@ -26,6 +26,7 @@ import ButtonBack from "../components/ButtonBack.jsx";
 import ButtonAdd from "../components/ButtonAdd.jsx"; // ใช้ ButtonAdd มาตรฐาน
 import ButtonSave from "../components/ButtonSave.jsx";
 import ButtonCancel from "../components/ButtonCancel.jsx";
+import DarkModeToggle from "../components/DarkModeToggle.jsx"
 
 export default function RecipientSetting() {
   const navigate = useNavigate();
@@ -239,18 +240,20 @@ export default function RecipientSetting() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full overflow-y-auto pt-10
+    <div className ="fixed inset-0 w-full h-full overflow-y-auto pt-10
       bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900
       grid place-items-center">
+         <DarkModeToggle />
       
       {/* --- UI Container --- */}
-      <div className="w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden relative
-        bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+      <div className ="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative
+  bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl 
+  border border-white/50 dark:border-slate-700/50">
         
         {/* Header */}
-        <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 
-          bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700">
+        <div className ="p-8 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 
+          bg-transparent border-slate-200/50 dark:border-slate-700/50">
           <div>
             <h1 className="text-2xl font-medium text-left text-slate-900 dark:text-white">
               Recipients Setting
@@ -352,108 +355,110 @@ export default function RecipientSetting() {
       </div>
 
       {/* --- MODAL FORM --- */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="rounded-xl shadow-2xl w-full max-w-md overflow-hidden border
-            bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700">
-            
-            <div className="p-5 border-b flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-700">
-              <h3 className="font-bold text-lg text-slate-800 dark:text-white">
-                {editingIndex !== null ? "Edit Recipient" : "Add New Recipient"}
-              </h3>
-              <button
-                onClick={closeModal}
-                className="transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              >
-                <X size={20} />
-              </button>
-            </div>
+     {isModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden
+      bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+      animate-in zoom-in-95 duration-200"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <h3 className="text-xl font-medium text-slate-800 dark:text-white">
+          {editingIndex !== null ? "Edit Recipient" : "Add New Recipient"}
+        </h3>
+        <button
+          onClick={closeModal}
+          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div className="p-5 rounded-xl border space-y-4
-                bg-blue-50/50 border-blue-100 
-                dark:bg-blue-900/20 dark:border-blue-900/50">
-                
-                {/* Name */}
-                <div>
-                  <label className="text-xs font-bold uppercase mb-2 justify-between flex items-center
-                    text-blue-800 dark:text-blue-300">
-                    Username
-                  </label>
-                  <div className="relative group">
-                    <User
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 dark:text-blue-400"
-                    />
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      maxLength={150}
-                      placeholder="username"
-                      className="w-full pl-10 pr-4 py-3 rounded-lg text-base focus:outline-none focus:ring-4 transition-all 
-                        bg-white dark:bg-slate-900 
-                        border border-blue-200 dark:border-slate-700 
-                        text-slate-800 dark:text-white
-                        focus:border-blue-500 focus:ring-blue-500/20"
-                      autoFocus
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="text-xs font-bold uppercase mb-2 justify-between flex items-center
-                    text-blue-800 dark:text-blue-300">
-                    Email
-                  </label>
-                  <div className="relative group">
-                    <Mail
-                      size={18}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${
-                        isValidEmail(formData.email)
-                          ? "text-blue-600 dark:text-blue-400"
-                          : "text-slate-400"
-                      }`}
-                    /> 
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="user@example.com"
-                      maxLength={255}
-                      className={`w-full pl-10 pr-4 py-3 rounded-lg text-base focus:outline-none focus:ring-4 transition-all
-                        bg-white dark:bg-slate-900 
-                        text-slate-800 dark:text-white
-                        ${
-                          isValidEmail(formData.email)
-                            ? "border-blue-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20"
-                            : "border-slate-200 dark:border-slate-700 focus:border-slate-400 focus:ring-slate-200 dark:focus:ring-slate-700"
-                        }
-                      `}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-2">
-                <ButtonCancel type="button" onClick={closeModal} disabled={loading}>
-                  Cancel
-                </ButtonCancel>
-                <ButtonSave onClick={handleSave} disabled={loading}>
-                   <Save size={16} />
-                   {editingIndex !== null ? "Save Changes" : "Save Recipient"}
-                </ButtonSave>
-              </div>
-            </form>
+      {/* Content */}
+      <form onSubmit={handleSave} noValidate className="px-6 py-5 space-y-5 text-left">
+        {/* Username */}
+        <div>
+          <label className="block text-xs font-medium mb-2 text-slate-600 dark:text-slate-300">
+            Username
+          </label>
+          <div className="relative">
+            <User
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter username"
+              maxLength={150}
+              autoFocus
+              required
+              className="w-full pl-10 pr-4 py-3 rounded-lg text-sm
+                bg-white dark:bg-slate-900
+                border border-slate-200 dark:border-slate-700
+                text-slate-800 dark:text-white
+                focus:outline-none
+                focus:ring-2 focus:ring-blue-500/30
+                focus:border-blue-500"
+            />
           </div>
         </div>
-      )}
+
+        {/* Email */}
+        <div>
+          <label className="block text-xs font-medium mb-2 text-slate-600 dark:text-slate-300">
+            Email
+          </label>
+          <div className="relative">
+            <Mail
+              size={16}
+              className={`absolute left-3 top-1/2 -translate-y-1/2 ${
+                isValidEmail(formData.email)
+                  ? "text-blue-500"
+                  : "text-slate-400"
+              }`}
+            />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="user@example.com"
+              maxLength={255}
+              required
+              className={`w-full pl-10 pr-4 py-3 rounded-lg text-sm
+                bg-white dark:bg-slate-900
+                text-slate-800 dark:text-white
+                border
+                focus:outline-none
+                focus:ring-2
+                ${
+                  isValidEmail(formData.email)
+                    ? "border-slate-200 dark:border-slate-700 focus:ring-blue-500/30 focus:border-blue-500"
+                    : "border-slate-200 dark:border-slate-700 focus:ring-slate-300"
+                }`}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <ButtonCancel type="button" onClick={closeModal} disabled={loading}>
+            Cancel
+          </ButtonCancel>
+          <ButtonSave type="submit" disabled={loading}>
+            <Save size={16} />
+            {editingIndex !== null ? "Save Changes" : "Save Recipient"}
+          </ButtonSave>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
         type={feedbackModal.type}

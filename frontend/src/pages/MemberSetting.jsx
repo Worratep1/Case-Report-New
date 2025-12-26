@@ -26,6 +26,7 @@ import ButtonBack from "../components/ButtonBack";
 import ButtonAdd from "../components/ButtonAdd";
 import ButtonSave from "../components/ButtonSave";
 import ButtonCancel from "../components/ButtonCancel";
+import DarkModeToggle from "../components/DarkModeToggle";
 
 export default function MemberSetting() {
   const navigate = useNavigate();
@@ -42,9 +43,9 @@ export default function MemberSetting() {
       console.error("Error fetching members:", error);
       setFeedbackModal({
         isOpen: true,
-        type: 'error',
-        title: 'เกิดข้อผิดพลาด',
-        message: 'ไม่สามารถโหลดข้อมูลสมาชิกได้',
+        type: "error",
+        title: "เกิดข้อผิดพลาด",
+        message: "ไม่สามารถโหลดข้อมูลสมาชิกได้",
       });
     }
   };
@@ -72,13 +73,13 @@ export default function MemberSetting() {
   const [formData, setFormData] = useState(initialFormState);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const [feedbackModal, setFeedbackModal] = useState({
     isOpen: false,
-    type: 'success',
-    title: '',
-    message: '',
-    onConfirm: () => {}
+    type: "success",
+    title: "",
+    message: "",
+    onConfirm: () => {},
   });
 
   const closeFeedbackModal = () => {
@@ -145,42 +146,44 @@ export default function MemberSetting() {
     if (!username || !first_name || !last_name || !email) {
       setFeedbackModal({
         isOpen: true,
-        type: 'error',
-        title: 'ข้อมูลไม่ครบ',
-        message: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        type: "error",
+        title: "ข้อมูลไม่ครบ",
+        message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       });
       return;
     }
 
     // Password Validation
-    if (editingIndex === null) { // กรณีเพิ่มใหม่
+    if (editingIndex === null) {
+      // กรณีเพิ่มใหม่
       if (!password || !confirmPassword) {
         setFeedbackModal({
-            isOpen: true,
-            type: 'error',
-            title: 'ข้อมูลไม่ครบถ้วน',
-            message: 'กรุณากรอก Password และ Confirm Password',
+          isOpen: true,
+          type: "error",
+          title: "ข้อมูลไม่ครบถ้วน",
+          message: "กรุณากรอก Password และ Confirm Password",
         });
         return;
       }
       if (password !== confirmPassword) {
         setFeedbackModal({
-            isOpen: true,
-            type: 'error',
-            title: 'รหัสผ่านไม่ตรงกัน',
-            message: 'Password และ Confirm Password ไม่ตรงกัน',
+          isOpen: true,
+          type: "error",
+          title: "รหัสผ่านไม่ตรงกัน",
+          message: "Password และ Confirm Password ไม่ตรงกัน",
         });
         return;
       }
     }
 
-    if (editingIndex !== null && (password || confirmPassword)) { // กรณีแก้ไขและมีการกรอกรหัสผ่าน
+    if (editingIndex !== null && (password || confirmPassword)) {
+      // กรณีแก้ไขและมีการกรอกรหัสผ่าน
       if (password !== confirmPassword) {
         setFeedbackModal({
-            isOpen: true,
-            type: 'error',
-            title: 'รหัสผ่านไม่ตรงกัน',
-            message: 'Password และ Confirm Password ไม่ตรงกัน',
+          isOpen: true,
+          type: "error",
+          title: "รหัสผ่านไม่ตรงกัน",
+          message: "Password และ Confirm Password ไม่ตรงกัน",
         });
         return;
       }
@@ -207,23 +210,23 @@ export default function MemberSetting() {
 
       await fetchMembers();
       closeModal();
-      
+
       setFeedbackModal({
         isOpen: true,
-        type: 'success',
-        title: isNew ? 'เพิ่มสมาชิกสำเร็จ' : 'แก้ไขสมาชิกสำเร็จ',
-        message: isNew 
-            ? 'เพิ่มสมาชิกใหม่เข้าสู่ระบบเรียบร้อยแล้ว' 
-            : 'ข้อมูลสมาชิกถูกแก้ไขเรียบร้อยแล้ว',
+        type: "success",
+        title: isNew ? "เพิ่มสมาชิกสำเร็จ" : "แก้ไขสมาชิกสำเร็จ",
+        message: isNew
+          ? "เพิ่มสมาชิกใหม่เข้าสู่ระบบเรียบร้อยแล้ว"
+          : "ข้อมูลสมาชิกถูกแก้ไขเรียบร้อยแล้ว",
       });
-
     } catch (err) {
       console.error("Save error:", err);
       setFeedbackModal({
         isOpen: true,
-        type: 'error',
-        title: 'บันทึกข้อมูลไม่สำเร็จ',
-        message: err.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง",
+        type: "error",
+        title: "บันทึกข้อมูลไม่สำเร็จ",
+        message:
+          err.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง",
       });
     }
   };
@@ -237,54 +240,65 @@ export default function MemberSetting() {
 
     setFeedbackModal({
       isOpen: true,
-      type: 'confirm-delete',
-      title: 'ยืนยันการลบสมาชิก',
+      type: "confirm-delete",
+      title: "ยืนยันการลบสมาชิก",
       message: `คุณต้องการลบสมาชิกชื่อ ${memberName} ใช่หรือไม่? การกระทำนี้ไม่สามารถยกเลิกได้`,
       onConfirm: async () => {
         try {
           await deleteMember(userId);
           await fetchMembers();
-          
+
           setFeedbackModal({
             isOpen: true,
-            type: 'success',
-            title: 'ลบสำเร็จ',
-            message: 'ข้อมูลสมาชิกถูกลบออกจากระบบแล้ว',
+            type: "success",
+            title: "ลบสำเร็จ",
+            message: "ข้อมูลสมาชิกถูกลบออกจากระบบแล้ว",
           });
         } catch (err) {
           console.error("Delete error:", err);
           setFeedbackModal({
             isOpen: true,
-            type: 'error',
-            title: 'ลบสมาชิกไม่สำเร็จ',
-            message: 'เกิดข้อผิดพลาดในการลบข้อมูล กรุณาลองใหม่อีกครั้ง',
+            type: "error",
+            title: "ลบสมาชิกไม่สำเร็จ",
+            message: "เกิดข้อผิดพลาดในการลบข้อมูล กรุณาลองใหม่อีกครั้ง",
           });
         }
-      }
+      },
     });
   };
 
   const getAvatarColor = (name) => {
     const colors = [
-      "bg-blue-500", "bg-emerald-500", "bg-purple-500", "bg-amber-500", "bg-rose-500",
+      "bg-blue-500",
+      "bg-emerald-500",
+      "bg-purple-500",
+      "bg-amber-500",
+      "bg-rose-500",
     ];
     const charCode = name ? name.charCodeAt(0) : 0;
     return colors[charCode % colors.length];
   };
 
   return (
-   <div className="fixed inset-0 w-full h-full overflow-y-auto pt-10
+    <div
+      className="fixed inset-0 w-full h-full overflow-y-auto pt-10
     bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
     dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900
-    grid place-items-center">
-      
+    grid place-items-center"
+    >
+      <DarkModeToggle />
+
       {/* --- UI Container หลัก --- */}
-      <div className="w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden relative
-        bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-        
+      <div
+        className="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative
+      bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl 
+        border border-white/50 dark:border-slate-700/50"
+      >
         {/* Header */}
-        <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4
-          bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700">
+        <div
+          className="p-8 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 
+          bg-transparent border-slate-200/50 dark:border-slate-700/50"
+        >
           <div>
             <h1 className="text-2xl font-medium text-left text-slate-900 dark:text-white">
               Member Setting
@@ -303,8 +317,13 @@ export default function MemberSetting() {
         <div className="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
           {members.length === 0 ? (
             <div className="p-10 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
-              <AlertCircle size={48} className="mb-2 opacity-20" />
-              <p>No members found.</p>
+              <AlertCircle size={48} className="mb-3 opacity-20" />
+              <p>กำลังโหลดข้อมูล...</p>
+            </div>
+          ) : members.length === 0 ? (
+            <div className="p-12 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
+              <AlertCircle size={48} className="mb-3 opacity-20" />
+              <p>No Members found.</p>
             </div>
           ) : (
             members.map((member, index) => (
@@ -315,7 +334,11 @@ export default function MemberSetting() {
               >
                 {/* ข้อมูลสมาชิก */}
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className={`w-12 h-12 rounded-full ${getAvatarColor(member.first_name)} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0`}>
+                  <div
+                    className={`w-12 h-12 rounded-full ${getAvatarColor(
+                      member.first_name
+                    )} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0`}
+                  >
                     {member.first_name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -357,10 +380,12 @@ export default function MemberSetting() {
         </div>
 
         {/* Footer / Back Button */}
-        <div className="p-4 border-t text-left
-          bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-700">
+        <div
+          className="p-4 border-t text-left
+          bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-700"
+        >
           <div className="w-fit">
-             <ButtonBack onClick={() => navigate("/setting")}>Back</ButtonBack>
+            <ButtonBack onClick={() => navigate("/setting")}>Back</ButtonBack>
           </div>
         </div>
       </div>
@@ -368,11 +393,14 @@ export default function MemberSetting() {
       {/* --- MODAL FORM --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto
-            bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-            
-            <div className="p-5 border-b flex justify-between items-center sticky top-0 z-10 backdrop-blur
-              bg-slate-50/80 dark:bg-slate-900/80 border-slate-100 dark:border-slate-700">
+          <div
+            className="rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto
+            bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
+          >
+            <div
+              className="p-5 border-b flex justify-between items-center sticky top-0 z-10 backdrop-blur
+              bg-slate-50/80 dark:bg-slate-900/80 border-slate-100 dark:border-slate-700"
+            >
               <h3 className="font-semibold text-lg text-slate-800 dark:text-white">
                 {editingIndex !== null ? "Edit Member" : "Add New Member"}
               </h3>
@@ -387,11 +415,14 @@ export default function MemberSetting() {
             <form onSubmit={handleSave} className="p-5 space-y-4 text-left">
               {/* Username */}
               <div>
-                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
+                <label className="block text-xs font-medium  mb-1 text-slate-500 dark:text-slate-400">
                   Username
                 </label>
                 <div className="relative">
-                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <User
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     name="username"
                     value={formData.username}
@@ -406,7 +437,7 @@ export default function MemberSetting() {
 
               {/* First Name */}
               <div>
-                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
+                <label className="block text-xs font-medium  mb-1 text-slate-500 dark:text-slate-400">
                   First Name
                 </label>
                 <input
@@ -422,7 +453,7 @@ export default function MemberSetting() {
 
               {/* Last Name */}
               <div>
-                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
+                <label className="block text-xs font-medium  mb-1 text-slate-500 dark:text-slate-400">
                   Last Name
                 </label>
                 <input
@@ -438,11 +469,14 @@ export default function MemberSetting() {
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
+                <label className="block text-xs font-medium  mb-1 text-slate-500 dark:text-slate-400">
                   Email
                 </label>
                 <div className="relative">
-                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Mail
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     name="email"
                     value={formData.email}
@@ -457,18 +491,25 @@ export default function MemberSetting() {
 
               {/* Password */}
               <div>
-                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
+                <label className="block text-xs font-medium  mb-1 text-slate-500 dark:text-slate-400">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Lock
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     maxLength={64}
-                    placeholder={editingIndex !== null ? "Enter new password (optional)" : "Enter password"}
+                    placeholder={
+                      editingIndex !== null
+                        ? "Enter new password (optional)"
+                        : "Enter password"
+                    }
                     className="w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
                       bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
@@ -485,23 +526,32 @@ export default function MemberSetting() {
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-xs font-medium uppercase mb-1 text-slate-500 dark:text-slate-400">
+                <label className="block text-xs font-medium  mb-1 text-slate-500 dark:text-slate-400">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <CheckCircle size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <CheckCircle
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                     maxLength={64}
-                    placeholder={editingIndex !== null ? "Re-enter new password (optional)" : "Re-enter password"}
+                    maxLength={64}
+                    placeholder={
+                      editingIndex !== null
+                        ? "Re-enter new password (optional)"
+                        : "Re-enter password"
+                    }
                     className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
                       bg-white dark:bg-slate-900 text-slate-800 dark:text-white
-                      ${formData.confirmPassword && formData.password !== formData.confirmPassword
-                        ? "border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-500"
-                        : "border-slate-200 dark:border-slate-700"
+                      ${
+                        formData.confirmPassword &&
+                        formData.password !== formData.confirmPassword
+                          ? "border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-500"
+                          : "border-slate-200 dark:border-slate-700"
                       }`}
                   />
                   <button
@@ -510,17 +560,24 @@ export default function MemberSetting() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none"
                     tabIndex="-1"
                   >
-                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showConfirmPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
                   </button>
                 </div>
-                {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                {formData.confirmPassword &&
+                  formData.password !== formData.confirmPassword && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Passwords do not match
+                    </p>
                   )}
               </div>
 
               <div className="pt-4 flex gap-3">
                 <ButtonCancel type="button" onClick={closeModal}>
-                   Cancel
+                  Cancel
                 </ButtonCancel>
                 <ButtonSave type="submit" onClick={handleSave}>
                   <Save size={16} /> Save Member
@@ -530,13 +587,13 @@ export default function MemberSetting() {
           </div>
         </div>
       )}
-      
+
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
         type={feedbackModal.type}
         title={feedbackModal.title}
         message={feedbackModal.message}
-        onClose={closeFeedbackModal} 
+        onClose={closeFeedbackModal}
         onConfirm={feedbackModal.onConfirm}
       />
     </div>

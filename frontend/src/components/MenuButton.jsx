@@ -4,8 +4,8 @@ import { ChevronRight } from 'lucide-react';
 const MenuButton = ({ icon, label, onClick, description }) => (
   <button 
     onClick={onClick}
-    className="group w-full flex items-center p-4 bg-white dark:bg-slate-700/50 hover:bg-blue-50 dark:hover:bg-slate-700 
-    border border-slate-100 dark:border-slate-600 rounded-2xl transition-all duration-200 
+    className="group w-full flex items-center p-4 bg-white dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-slate-800 
+    border border-slate-100 dark:border-slate-700/50 rounded-2xl transition-all duration-200 
     shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
   >
     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-600 transition-colors shadow-sm duration-300">
@@ -15,7 +15,7 @@ const MenuButton = ({ icon, label, onClick, description }) => (
     </div>
     
     <div className="ml-4 text-left flex-1">
-      <h3 className="font-medium text-slate-700 dark:text-slate-100 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-300">
+      <h3 className="font-medium text-slate-700 dark:text-slate-100 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors duration-300">
         {label}
       </h3>
       {description && (

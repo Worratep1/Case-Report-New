@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 import {
-  ClipboardList,
-  FileCog
+  FileText,
+  FileCog,
+  
 } from "lucide-react";
 
 // Import Components ที่แยกไฟล์ไว้
@@ -22,18 +23,18 @@ export default function ReportPage() {
         
 
       <div className="w-full max-w-sm rounded-2xl shadow-lg p-6 sm:p-8
-        bg-white dark:bg-slate-800 border-none dark:border dark:border-slate-700">
+        bg-white dark:bg-slate-900 border-none dark:border dark:border-slate-700/50">
         <DarkModeToggle />
         {/* Title */}
         <h1 className="text-2xl font-medium mb-6 text-left
           text-slate-900 dark:text-white">
-          REPORT
+          Report
         </h1>
 
         <div className="space-y-4">
           {/* Daily Report */}
           <MenuButton
-            icon={<ClipboardList className="text-blue-400" />}
+            icon={<FileText className="text-blue-400" />}
             label="Daily Report"
             description="รายงานประจำวัน"
             onClick={() => navigate("/dailyreport")} 

@@ -6,7 +6,7 @@ import {
   PlusCircle,
   FileText,
   Settings,
-  Users,
+  UserCog,
   Mail,
   Info,
   LogOut,
@@ -25,7 +25,7 @@ import ButtonHome from "../components/ButtonHome";
 import ButtonBack from "../components/ButtonBack";
 import loginImg from "../assets/manual/login1.png";
 import menuImg from "../assets/manual/menupage.png";
-import casepageImg from "../assets/manual/Casepage2.png";
+import casepageImg from "../assets/manual/Casepage.png";
 import dailyReportImg from "../assets/manual/Dailyreport2.png";
 import sendEmailImg from "../assets/manual/sendmail1.png";
 import addGame from "../assets/manual/Addgame.png";
@@ -52,7 +52,7 @@ const UIHint = ({ icon: Icon, label, variant = "primary" }) => {
     <span
       className={`
       inline-flex items-center gap-1.5 px-2.5 py-1 mx-1 
-      rounded-lg font-bold text-xs border shadow-sm 
+      rounded-lg font-normal text-sm border shadow-sm 
       transition-colors cursor-default select-none
       ${styles[variant] || styles.primary}
     `}
@@ -67,7 +67,7 @@ const UIHint = ({ icon: Icon, label, variant = "primary" }) => {
 const ManualCard = ({ item, onClick }) => (
   <div
     onClick={() => onClick(item)}
-    className="group relative bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full"
+    className="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full"
   >
     <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl w-fit group-hover:scale-110 transition-transform duration-300">
       {item.icon}
@@ -295,7 +295,7 @@ export default function ManualPage() {
               "เลือกสลับโหมดเป็นรายวันหรือ รายเดือนได้",
               "Dashboard กราฟสรุปสถานะและสถิติของข้อมูล",
               <>ปุ่ม <UIHint label="Export File " variant="add" /> ดาวน์โหลดข้อมูลเป็น Excel</>,
-              <>ปุ่ม <UIHint label="Send Email" variant="Send" /> ส่งอีเมลรายงาน (เลือกผู้รับอีเมล์,พิมพ์หัวข้อ/ข้อความ,เเนบไฟล์ได้ไม่เกิน 5 ไฟล์ในเเต่ละช่อง) <button onClick={() => setPreviewImage(sendEmailImg)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
+              <>ปุ่ม <UIHint label="Send Email" variant="Send" /> ส่งอีเมลรายงาน (เลือกผู้รับอีเมล,พิมพ์หัวข้อ/ข้อความ,เเนบไฟล์ได้ไม่เกิน 5 MB ในเเต่ละช่อง) <button onClick={() => setPreviewImage(sendEmailImg)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
             ],
             image: dailyReportImg,
             imageCaption: "รูปที่ 4 หน้าจอ Daily Report",
@@ -315,7 +315,7 @@ export default function ManualPage() {
               <>หากต้องการลบข้อมูล ให้เลือกไอคอน <UIHint icon={Trash2} variant="danger" /> ที่ท้ายแถว</>,
               <>คลิกที่ปุ่ม <UIHint label="+ New case" variant="add" /> เพื่อเพิ่มเคสย้อนหลัง</>,
               <>ปุ่ม <UIHint label="Export File " variant="add" /> ดาวน์โหลดข้อมูลเป็น Excel</>,
-              <>ปุ่ม <UIHint label="Send Email" variant="Send" /> ส่งอีเมลรายงาน (เลือกผู้รับอีเมล์,พิมพ์หัวข้อ/ข้อความ,เเนบไฟล์ได้ไม่เกิน 5 ไฟล์ในเเต่ละช่อง) <button onClick={() => setPreviewImage(sendEmailImg)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
+              <>ปุ่ม <UIHint label="Send Email" variant="Send" /> ส่งอีเมลรายงาน (เลือกผู้รับอีเมล,พิมพ์หัวข้อ/ข้อความ,เเนบไฟล์ได้ไม่เกิน 5 MB ในเเต่ละช่อง) <button onClick={() => setPreviewImage(sendEmailImg)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
             ],
             image: customReportImg,
             imageCaption: "รูปที่ 5 หน้าจอ Custom Report สำหรับจัดการข้อมูล",
@@ -336,8 +336,8 @@ export default function ManualPage() {
             steps: [
               <>คลิกที่ปุ่ม <UIHint label="+ Add Game" /> เพื่อเพิ่มเกมใหม่</>,
               <>จะปรากฎหน้า Pop-up กรอกชื่อ แล้วกดปุ่ม เพื่อบันทึกข้อมูลลงระบบ <UIHint label="Save game" variant="success" /><button onClick={() => setPreviewImage(addGame)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button> </>,
-              <>หากต้องการแก้ไข ให้เลือกไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
-              <>หากต้องการลบ ให้เลือกไอคอน <UIHint icon={Trash2} variant="danger" /></>,
+              <>หากต้องการแก้ไขให้เลือกไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
+              <>หากต้องการลบให้เลือกไอคอน <UIHint icon={Trash2} variant="danger" /></>,
             ],
             image: gamesettingImg,
             imageCaption: "รูปที่ 6 gamesetting สำหรับจัดการข้อมูลเกม",
@@ -346,14 +346,14 @@ export default function ManualPage() {
         {
           id: "member-setting",
           title: "Member Setting",
-          icon: <Users className="w-6 h-6 text-yellow-600" />, //Addmember
+          icon: <UserCog className="w-6 h-6 text-yellow-600" />, //Addmember
           description: "จัดการรายชื่อสมาชิก",
           content: {
             steps: [
               <>คลิกที่ปุ่ม <UIHint label="+ Add Member" /> เพื่อเพิ่มสมาชิกใหม่</>,
               <>จะปรากฎหน้า Pop-up กรอกข้อมูลให้ครบตามที่กำหนดไว้ แล้วกดปุ่ม <UIHint label="Save Member" variant="success" /> เพื่อบันทึกข้อมูลลงระบบ <button onClick={() => setPreviewImage(addMember)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button> </>,
-              <>แก้ไขข้อมูลสมาชิกด้วยไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
-              <>ลบสมาชิกด้วยไอคอน <UIHint icon={Trash2} variant="danger" /></>,
+              <>หากต้องการแก้ไขให้เลือกไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
+              <>หากต้องการแก้ไขให้เลือกไอคอน <UIHint icon={Trash2} variant="danger" /></>,
             ],
             image: membersettingImg,
             imageCaption: "รูปที่ 7 Member setting สำหรับจัดการข้อมูลสมาชิก",
@@ -368,8 +368,8 @@ export default function ManualPage() {
             steps: [
               <>คลิกที่ปุ่ม <UIHint label="+ Add Recipient" /> เพื่อเพิ่มอีเมลผู้รับใหม่</>,
               <>จะปรากฎหน้า Pop-up กรอกข้อมูลให้ครบตามที่กำหนดไว้ แล้วกดปุ่ม <UIHint label="Save Recipient" variant="success" /> เพื่อบันทึกข้อมูลลงระบบ <button onClick={() => setPreviewImage(AddRecipient)} className="ml-2 text-indigo-500 underline text-sm hover:text-indigo-600 font-medium">ตัวอย่างภาพ</button></>,
-              <>แก้ไขรายชื่อด้วยไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
-              <>ลบรายชื่อด้วยไอคอน <UIHint icon={Trash2} variant="danger" /></>,
+              <>หากต้องการแก้ไขให้เลือกไอคอน <UIHint icon={Edit2} variant="Edit" /></>,
+              <>หากต้องการแก้ไขให้เลือกไอคอน <UIHint icon={Trash2} variant="danger" /></>,
             ],
             image: recipientsettingImg,
             imageCaption: "รูปที่ 8 Recipients Setting สำหรับจัดการรายชื่ออีเมลผู้รับ",
@@ -391,7 +391,7 @@ export default function ManualPage() {
             </button>
             <div className="flex flex-col">
               <h1 className="text-xl font-bold text-slate-800 dark:text-white leading-none">NOC Manual</h1>
-              <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">คู่มือการใช้งานระบบ</span>
+              <span className="text-xs text-start text-slate-500 dark:text-slate-400 mt-1">คู่มือการใช้งาน</span>
             </div>
           </div>
           <ButtonHome onClick={() => navigate("/menu")} />

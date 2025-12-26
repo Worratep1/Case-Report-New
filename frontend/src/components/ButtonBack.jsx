@@ -14,8 +14,8 @@ export default function ButtonBack({ children, type = "button", onClick, classNa
         border border-transparent
         transition-all duration-300
         
-        hover:bg-indigo-50 dark:hover:bg-indigo-900/30
-        hover:text-indigo-600 dark:hover:text-indigo-400
+        hover:bg-blue-50 dark:hover:bg-blue-900/30
+        hover:text-blue-600 dark:hover:text-blue-400
         hover:pr-5 hover:pl-2
         ${className}
       `}
