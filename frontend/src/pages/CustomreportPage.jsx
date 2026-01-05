@@ -15,7 +15,6 @@ import {
   Square,
   ChevronDown,
   ChevronUp,
-  CheckCircle2,
   Loader2,
   CalendarDays,
   ChevronLeft,
@@ -29,11 +28,8 @@ import {
   PieChart as PieChartIcon,
   FileCog,
   Flame,
-  Wrench,
 } from "lucide-react";
 
-// ไม่ต้อง import Recharts ตรงนี้แล้ว เพราะใช้ใน Component ลูก
-import PageHeader from "../components/PageHeader.jsx";
 import { getCases } from "../api/case";
 import { getProblems } from "../api/problems";
 import { getStatuses } from "../api/status";
@@ -48,6 +44,7 @@ import { exportReport } from "../api/export";
 import { useNavigate } from "react-router-dom";
 import { captureReportImage } from "../utils/reportCapture";
 
+import BackIconButton from "../components/BackIconButton.jsx";
 import ExportButton from "../components/ButtonExport";
 import ButtonHome from "../components/ButtonHome";
 import ButtonSend from "../components/ButtonSend";
@@ -56,6 +53,8 @@ import ButtonSave from "../components/ButtonSave";
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
 import ViewModeToggle from "../components/ViewModeToggle";
+import PageHeader from "../components/PageHeader.jsx";
+import SearchInput from "../components/SearchInput.jsx";
 
 // --- IMPORT DASHBOARD COMPONENTS ---
 import StatCard from "../components/dashboard/StatCard";
@@ -64,7 +63,6 @@ import StatusPieChart from "../components/dashboard/StatusPieChart";
 
 import { STATUS_CONFIG } from "../constants/status";
 
-// --- CONSTANTS ---
 const CONFIG = {
   MAX_FILE_SIZE_MB: 5,
   MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
@@ -73,9 +71,9 @@ const CONFIG = {
     "image/jpeg",
     "image/png",
     "application/msword",
-    "application/vnd.ms-excel", //XLS
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // ✅ XLSX
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ],
 };
 
@@ -387,53 +385,52 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
 
       {isOpen && (
         <div
-          className="absolute z-50 mt-2 rounded-xl shadow-xl border w-full sm:w-48 flex h-64 overflow-hidden animate-in fade-in zoom-in-95 duration-200
+          className="absolute z-50 mt-2 rounded-xl shadow-xl border w-full sm:w-48 overflow-hidden animate-fade-in-down flex flex-col
           bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700"
         >
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-1 border-r border-slate-100 dark:border-slate-700">
-            <div
-              className="text-xs font-bold text-slate-400 text-center py-1 sticky top-0 
-                bg-white dark:bg-slate-800 z-10 border-b border-slate-50 dark:border-slate-700"
-            >
+          {/* 1. แยก Header ออกมาเป็นแถวเดียว ไม่ใช้ Sticky ภายในช่องเลื่อน */}
+          <div className="flex border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+            <div className="flex-1 py-2 text-center text-xs font-bold text-blue-600 dark:text-blue-400">
               ชม.
             </div>
-            {hours.map((h) => (
-              <div
-                key={h}
-                onClick={() => handleSelect("hour", h)}
-                className={`text-center py-2 rounded-lg cursor-pointer text-sm font-medium mb-1 transition-colors 
-                      ${
-                        selectedHour === h
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
-                      }`}
-              >
-                {h}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
-            <div
-              className="text-xs font-bold text-slate-400 text-center py-1 sticky top-0 
-                bg-white dark:bg-slate-800 z-10 border-b border-slate-50 dark:border-slate-700"
-            >
+            <div className="flex-1 py-2 text-center text-xs font-bold text-blue-600 dark:text-blue-400 border-l border-slate-100 dark:border-slate-700">
               นาที
             </div>
-            {minutes.map((m) => (
-              <div
-                key={m}
-                onClick={() => handleSelect("minute", m)}
-                className={`text-center py-2 rounded-lg cursor-pointer text-sm font-medium mb-1 transition-colors 
-                      ${
-                        selectedMinute === m
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
-                      }`}
-              >
-                {m}
-              </div>
-            ))}
+          </div>
+
+          {/* 2. ส่วนช่องเลื่อน กำหนดความสูงให้ชัดเจนเหมือน CasePage */}
+          <div className="flex h-48">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-600">
+              {hours.map((h) => (
+                <div
+                  key={h}
+                  onClick={() => handleSelect("hour", h)}
+                  className={`py-2 text-center text-sm cursor-pointer transition-colors ${
+                    selectedHour === h
+                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {h}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex-1 overflow-y-auto border-l border-slate-100 dark:border-slate-700 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-600">
+              {minutes.map((m) => (
+                <div
+                  key={m}
+                  onClick={() => handleSelect("minute", m)}
+                  className={`py-2 text-center text-sm cursor-pointer transition-colors ${
+                    selectedMinute === m
+                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {m}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -607,7 +604,6 @@ export default function CustomReport() {
   const [loadingData, setLoadingData] = useState(false);
 
   //export file
-
   const [isExporting, setIsExporting] = useState(false);
 
   // Email States
@@ -702,17 +698,25 @@ export default function CustomReport() {
           "others";
         const finalStatus = STATUS_CONFIG[statusKey] ? statusKey : "others";
 
+        const getLocalDateString = (dateObj) => {
+          if (!dateObj || isNaN(dateObj)) return "";
+          const offset = dateObj.getTimezoneOffset() * 60000;
+          return new Date(dateObj.getTime() - offset)
+            .toISOString()
+            .split("T")[0];
+        };
+
         return {
           ...c,
           id: c.case_id,
           startTime: formatTime(start),
           endTime: formatTime(end),
           startDate: startDateStr,
-          raw_start_date: c.start_datetime.split("T")[0], // เพิ่มอันนี้: เก็บ "2025-12-22"
-          raw_end_date: c.end_datetime.split("T")[0], // เพิ่มอันนี้: เก็บ "2025-12-22"
+          raw_start_date: getLocalDateString(start), // เก็บ "2025-12-22"
+          raw_end_date: getLocalDateString(end), //  เก็บ "2025-12-22"
           endDate: endDateStr,
           duration: durationStr,
-          durationMins: durationMins, // [เพิ่ม] สำคัญสำหรับคำนวณกราฟ
+          durationMins: durationMins,
           problem: problemObj ? problemObj.problem_name : "Unknown",
           game: productObj ? productObj.product_name : "Unknown",
           details: c.description,
@@ -841,12 +845,12 @@ export default function CustomReport() {
   }, [filteredCases]); //casesOfSelectedDate
 
   const getFriendlyErrorMessage = (error) => {
-    // 1. ตรวจสอบ Error จากฝั่ง Backend (API Response)
+    //  ตรวจสอบ Error จากฝั่ง Backend (API Response)
     if (error.response?.data?.message) {
       return error.response.data.message;
     }
 
-    // 2. ตรวจสอบ Error Technical ทั่วไป
+    //  ตรวจสอบ Error Technical ทั่วไป
     const message = error.message || "";
 
     if (
@@ -862,8 +866,8 @@ export default function CustomReport() {
       return "การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง";
     }
 
-    // 3. ค่าเริ่มต้นถ้าไม่ตรงกับเงื่อนไขใดเลย
-    return "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาติดต่อผู้ดูแลระบบ";
+    //  ค่าเริ่มต้นถ้าไม่ตรงกับเงื่อนไขใดเลย
+    return "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ ";
   };
 
   // --- HELPER: AUTO-CALCULATE DURATION ---
@@ -900,15 +904,12 @@ export default function CustomReport() {
     // ข้อมูลต้องครบถึงจะคำนวณ
     if (!date || !startTime || !endTime) return;
 
-    // 1. รวมร่าง (Combine Date + Time) เป็น Timestamp
     const startStr = `${date}T${startTime}:00`;
-    // ถ้า endDate ยังไม่มี (User ไม่ได้เลือก) ให้ถือว่าเป็นวันเดียวกับ date
     const endStr = `${endDate || date}T${endTime}:00`;
 
     const startObj = new Date(startStr);
     const endObj = new Date(endStr);
 
-    // 2. คำนวณผลต่าง (Milliseconds)
     const diffMs = endObj - startObj;
 
     let newDuration = "";
@@ -929,7 +930,6 @@ export default function CustomReport() {
       }
     }
 
-    // 3. อัปเดต State (เช็คก่อนเพื่อกัน Infinite Loop)
     if (currentCase.duration !== newDuration) {
       setCurrentCase((prev) => ({ ...prev, duration: newDuration }));
     }
@@ -993,6 +993,13 @@ export default function CustomReport() {
 
   const openDeleteModal = (item) => {
     setCurrentCase(item);
+    setFeedbackModal({
+      isOpen: true,
+      type: "error", // ใช้ type error เพื่อแสดงสีแดงและไอคอนเตือน
+      title: "ยืนยันการลบ?",
+      message: "คุณแน่ใจหรือไม่ที่จะลบรายการเคสนี้?",
+      onConfirm: () => confirmDelete(item.id), // เมื่อกดยืนยัน ให้เรียกฟังก์ชัน confirmDelete
+    });
     setIsDeleteModalOpen(true);
   };
 
@@ -1023,16 +1030,23 @@ export default function CustomReport() {
     const startTime = new Date(startStr);
     const endTime = new Date(endStr);
 
-    if (endTime < startTime) {
+    if (endTime <= startTime) {
       setFeedbackModal({
         isOpen: true,
         type: "error",
         title: "ช่วงเวลาไม่ถูกต้อง",
-        message:
-          "เวลาสิ้นสุด (End Time) ต้องเกิดขึ้นหลังจากเวลาเริ่มต้น (Start Time)",
+        message: "กรุณาตรวจสอบอีกครั้ง",
       });
       return; // สั่งหยุดทันที ไม่ให้ไปต่อ
     }
+
+    setFeedbackModal({
+      isOpen: true,
+      type: "confirm", // เปลี่ยนเป็นประเภท confirm
+      title: "ยืนยันการบันทึก?",
+      message: "กรุณาตรวจสอบความถูกต้องก่อนบันทึกข้อมูล ",
+      onConfirm: confirmSave, // ส่งฟังก์ชันที่จะทำงานเมื่อกดยืนยัน
+    });
 
     setIsSaveConfirmModalOpen(true);
   };
@@ -1041,7 +1055,6 @@ export default function CustomReport() {
     setIsSaveConfirmModalOpen(false);
     setIsLoading(true);
     try {
-      
       const userData = JSON.parse(localStorage.getItem("user"));
       const currentUserId = userData?.user_id || userData?.id;
       const cleanDate = currentCase.date.replaceAll("/", "-");
@@ -1100,20 +1113,28 @@ export default function CustomReport() {
     }
   };
 
-  const confirmDelete = async () => {
-    if (!currentCase || !currentCase.id) return;
+  // แก้ไขจากเดิมที่ไม่รับค่า ให้รับ id เข้ามา
+  const confirmDelete = async (idFromModal) => {
+    // ใช้ ID ที่ส่งมาจาก Modal ถ้าไม่มีค่อยไปหาจาก currentCase
+    const targetId = idFromModal || currentCase?.id;
 
+    if (!targetId) {
+      console.error("No case ID found for deletion");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      await deleteCase(currentCase.id);
+      await deleteCase(targetId); // ใช้ targetId แทน
 
       setFeedbackModal({
         isOpen: true,
         type: "success",
         title: "ลบข้อมูลสำเร็จ",
         message: "รายการถูกลบออกจากระบบแล้ว",
+        onConfirm: () => setFeedbackModal({ isOpen: false }),
       });
 
-      setIsDeleteModalOpen(false);
       setCurrentCase(null);
       fetchCases();
     } catch (error) {
@@ -1124,6 +1145,8 @@ export default function CustomReport() {
         title: "ลบไม่สำเร็จ",
         message: error.response?.data?.message || error.message,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1359,13 +1382,7 @@ export default function CustomReport() {
         iconColor="text-yellow-400"
         left={
           <>
-            <button
-              className="p-2 rounded-full text-slate-500 dark:text-slate-400
-        hover:bg-slate-100 dark:hover:bg-slate-700"
-              onClick={() => window.history.back()}
-            >
-              <ChevronLeft size={24} />
-            </button>
+            <BackIconButton />
 
             <ButtonHome onClick={() => navigate("/menu")} />
           </>
@@ -1423,10 +1440,10 @@ export default function CustomReport() {
             </p>
           </div>
 
-          {/* --- NEW CASE BUTTON (คงเดิมไว้) --- */}
+          {/* --- NEW CASE BUTTON --- */}
           <button
             onClick={openNewCaseModal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-normal shadow-md hover:bg-emerald-700 transition-all active:scale-95 duration-500 hover:-translate-y-1 hover:shadow-md"
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium shadow-md hover:bg-emerald-700 transition-all active:scale-95 duration-500 hover:-translate-y-1 hover:shadow-md"
           >
             <Plus size={18} /> New Case
           </button>
@@ -1434,7 +1451,7 @@ export default function CustomReport() {
 
         {/* --- DASHBOARD SECTION (UPDATED with reusable components) --- */}
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-8">
-          {/* 1. Summary Cards */}
+          {/*  Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard
               title="Total Downtime"
@@ -1462,7 +1479,7 @@ export default function CustomReport() {
             />
           </div>
 
-          {/* 2. Charts Section */}
+          {/*  Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Downtime Bar Chart */}
             <div className="lg:col-span-2">
@@ -1496,17 +1513,11 @@ export default function CustomReport() {
             </div>
 
             {/* Search */}
-            <div className="relative w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="ค้นหาปัญหา, เกม..."
-                className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64
-                  bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
-              />
-            </div>
+            <SearchInput
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="ค้นหาปัญหา, เกม..."
+            />
           </div>
         </div>
 
@@ -1617,7 +1628,7 @@ export default function CustomReport() {
                       {/* DETAILS & SOLUTION */}
                       <td className="px-6 py-4 align-top">
                         <div className="space-y-2">
-                          <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+                          <p className="text-sm text-slate-600 dark:text-slate-300 ">
                             <span className="font-semibold text-slate-900 dark:text-white">
                               รายละเอียด:
                             </span>{" "}
@@ -1625,7 +1636,7 @@ export default function CustomReport() {
                           </p>
                           {item.solution && (
                             <div
-                              className="text-xs px-3 py-2 rounded-lg line-clamp-2
+                              className="text-xs px-3 py-2 rounded-lg 
                               bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30"
                             >
                               <span className="font-bold text-emerald-700 dark:text-emerald-400">
@@ -1759,7 +1770,7 @@ export default function CustomReport() {
         </div>
       </main>
 
-      {/* --- EDIT / ADD MODAL --- */}
+      {/* --- เเก้ไขเคส / เพิ่มเคสใหม่  --- */}
       {isEditModalOpen && currentCase && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div
@@ -1852,21 +1863,23 @@ export default function CustomReport() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-left ml-1">
                   ระยะเวลา (Duration)
                 </label>
-                <input
-                  type="text"
-                  value={currentCase.duration}
-                  onChange={(e) =>
-                    setCurrentCase({ ...currentCase, duration: e.target.value })
-                  }
-                  //  เช็คว่าถ้ามีคำว่า "ไม่ถูกต้อง" ให้เป็นสีแดง+พื้นหลังแดงจางๆ
-                  className={`w-full border rounded-xl p-2.5 text-sm transition-colors
-                              ${
-                                currentCase.duration.includes("ไม่ถูกต้อง")
-                                  ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-900/50 font-bold"
-                                  : "bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200 dark:border-slate-700"
-                              }`}
-                  placeholder="ระบบคำนวณอัตโนมัติ"
-                />
+                <div
+                  className={`w-full border rounded-xl p-2.5 text-sm transition-colors font-medium text-left
+                ${
+                  currentCase.duration.includes("ไม่ถูกต้อง")
+                    ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-900/50"
+                    : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                }`}
+                >
+                  {currentCase.duration === "0 นาที" ||
+                  !currentCase.duration ? (
+                    <span className="text-slate-400 dark:text-slate-500 opacity-70 ">
+                      ระบบคำนวณเวลาอัตโนมัติ
+                    </span>
+                  ) : (
+                    currentCase.duration
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4 text-left">
                 <div>
@@ -1922,13 +1935,15 @@ export default function CustomReport() {
                     setCurrentCase({ ...currentCase, details: e.target.value })
                   }
                   className="w-full border rounded-xl p-2.5 text-sm resize-none
-                            bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
+                            bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white
+                             focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-left ml-1">
                   วิธีการแก้ไข (Solution)
                 </label>
+
                 <textarea
                   placeholder="อธิบายวิธีแก้ไข..."
                   rows={3}
@@ -1938,7 +1953,8 @@ export default function CustomReport() {
                     setCurrentCase({ ...currentCase, solution: e.target.value })
                   }
                   className="w-full border rounded-xl p-2.5 text-sm resize-none
-                           bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
+                           bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white
+                            focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
@@ -1958,7 +1974,8 @@ export default function CustomReport() {
                       })
                     }
                     className="w-full border rounded-xl p-2.5 text-sm
-                                 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
+                                 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white
+                                  focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                     placeholder="ระบุชื่อผู้ร้องขอ"
                     maxLength={150}
                   />
@@ -1978,7 +1995,7 @@ export default function CustomReport() {
                       })
                     }
                     className="w-full border rounded-xl p-2.5 text-sm
-                                 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
+                                 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white  focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                     placeholder="ระบุชื่อผู้ดำเนินการ"
                     maxLength={150}
                   />
@@ -2003,7 +2020,7 @@ export default function CustomReport() {
                 ) : (
                   <>
                     <Save size={20} />
-                    {currentCase.id === null ? "Create Case" : "Save Changes"}
+                    {currentCase.id === null ? "Add Case" : "Save Changes"}
                   </>
                 )}
               </ButtonSave>
@@ -2012,7 +2029,7 @@ export default function CustomReport() {
         </div>
       )}
 
-      {/* --- SAVE CONFIRMATION MODAL (UPDATED for Dark Mode) --- */}
+      {/* --- SAVE CONFIRMATION MODAL (UPDATED for Dark Mode) ---
       {isSaveConfirmModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
@@ -2043,9 +2060,9 @@ export default function CustomReport() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
-      {/* --- DELETE CONFIRM MODAL (UPDATED for Dark Mode) --- */}
+      {/* --- DELETE CONFIRM MODAL (UPDATED for Dark Mode) ---
       {isDeleteModalOpen && currentCase && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
@@ -2076,7 +2093,7 @@ export default function CustomReport() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* --- SEND MAIL MODAL (UPDATED for Dark Mode) --- */}
       {isEmailModalOpen && (
@@ -2329,22 +2346,6 @@ export default function CustomReport() {
         onClose={closeFeedbackModal}
         onConfirm={feedbackModal.onConfirm}
       />
-      {/* --- GLOBAL LOADING OVERLAY ---
-      {isLoading && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
-            <Loader2 size={48} className="animate-spin text-blue-500" />
-            <div className="text-center">
-              <p className="font-bold text-slate-800 dark:text-white text-lg">
-                กำลังประมวลผล
-              </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                กรุณารอสักครู่
-              </p>
-            </div>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 }

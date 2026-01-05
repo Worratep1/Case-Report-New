@@ -547,11 +547,9 @@ export default function CasePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // [UPDATED] Save Click Logic with Validation
   const handleSaveClick = (e) => {
     e.preventDefault();
 
-    // 1. Check Empty Fields
     if (
       !formData.product_id ||
       !formData.problem_id ||
@@ -567,30 +565,28 @@ export default function CasePage() {
       return;
     }
 
-    // 2. Check Date/Time Logic (End < Start)
     const startStr = `${formData.start_datetime}T${formData.timeStart}:00`;
     const endStr = `${formData.end_datetime}T${formData.timeEnd}:00`;
 
     const startObj = new Date(startStr);
     const endObj = new Date(endStr);
 
-    if (endObj < startObj) {
+    if (endObj <= startObj) {
       setFeedbackModal({
         isOpen: true,
         type: "error",
         title: "ช่วงเวลาไม่ถูกต้อง",
         message: "กรุณาเลือกช่วงเวลาที่ถูกต้อง",
       });
-      return; // Stop here
+      return;
     }
 
-    // 3. Confirm
     setSubmitError(null);
     setFeedbackModal({
       isOpen: true,
       type: "confirm",
       title: "ยืนยันการส่งข้อมูล?",
-      message: "กรุณาตรวจสอบความถูกต้องก่อนกดส่ง",
+      message: "กรุณาตรวจสอบข้อมูลก่อนกดส่ง",
       onConfirm: confirmSubmit,
     });
   };
@@ -616,23 +612,24 @@ export default function CasePage() {
     };
 
     try {
-      await createCase(payload);
-
-      // [UPDATED] Success Modal
-      setFeedbackModal({
-        isOpen: true,
-        type: "success",
-        title: "ส่งข้อมูลสำเร็จ!",
-        message: "ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว",
-        showSecondaryButton: true,
-        cancelText: "กลับหน้าหลัก",
-        confirmText: "ดูรายการเคส",
-        onClose: () => navigate("/menu"),
-        onConfirm: () => {
-          setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
-          navigate("/dailyreport", { replace: true });
-        },
-      });
+  await createCase(payload);
+  setFeedbackModal({
+    isOpen: true,
+    type: "success",
+    title: "ส่งข้อมูลสำเร็จ!",
+    message: "ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว",
+    showSecondaryButton: true,
+    cancelText: "กลับหน้าหลัก",
+    confirmText: "ดูรายการเคส",
+    onClose: () => {
+      closeFeedbackModal();
+      navigate("/menu");
+    },
+    onConfirm: () => {
+      closeFeedbackModal(); 
+      navigate("/dailyreport"); 
+    },
+  });
 
       setFormData(initialFormState());
     } catch (error) {
@@ -641,7 +638,6 @@ export default function CasePage() {
         error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล";
       setSubmitError(errMsg);
 
-      // Close confirm modal implicitly by overwriting or explicitly closing
       setFeedbackModal((prev) => ({ ...prev, isOpen: false }));
     } finally {
       setIsSubmitting(false);
@@ -660,8 +656,6 @@ export default function CasePage() {
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
     >
       {" "}
-      {/* ✅ Background Dark Mode */}
-      {/* ปุ่ม Toggle Dark Mode */}
       <DarkModeToggle />
       <div
         className="w-full max-w-2xl rounded-3xl shadow-2xl border p-8 sm:p-10 relative
@@ -669,14 +663,14 @@ export default function CasePage() {
         dark:bg-slate-900/95 dark:border-slate-700/50"
       >
         {" "}
-        {/* ✅ Card Dark Mode */}
+        {/*  Card Dark Mode */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300">
             Create New Case
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium">
             {" "}
-            {/* ✅ Text Dark Mode */}
+            {/*  Text Dark Mode */}
             บันทึกข้อมูลเคสประจำวัน
           </p>
         </div>
@@ -686,7 +680,7 @@ export default function CasePage() {
             bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
           >
             {" "}
-            {/* ✅ Error Box Dark Mode */}
+            {/*  Error Box Dark Mode */}
             <AlertTriangle className="w-5 h-5" /> Error: {submitError}
           </div>
         )}
@@ -696,7 +690,7 @@ export default function CasePage() {
             bg-white/60 dark:bg-slate-900/60"
           >
             {" "}
-            {/* ✅ Loading Screen Dark Mode */}
+            {/*  Loading Screen Dark Mode */}
             <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400" />
             <p className="mt-3 font-medium text-slate-600 dark:text-slate-300">
               กำลังโหลดข้อมูล...
@@ -707,7 +701,7 @@ export default function CasePage() {
           <div className="space-y-4 text-left">
             <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               {" "}
-              {/* ✅ Section Title Dark Mode */}
+              {/*  Section Title Dark Mode */}
               วันที่-เวลา
             </h2>
 
@@ -753,7 +747,6 @@ export default function CasePage() {
                    
                   `}
                 >
-                  {/* ✅ แก้ตรงนี้ครับ */}
                   {currentDuration === "0 นาที" ? (
                     <span className="text-slate-400 dark:text-slate-500 opacity-70">
                       ระบบคำนวณอัตโนมัติ
@@ -766,7 +759,6 @@ export default function CasePage() {
             </div>
           </div>
           <hr className="border-slate-100 dark:border-slate-700" />{" "}
-          {/* ✅ HR Dark Mode */}
           <div className="space-y-4 text-left">
             <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ข้อมูลเคส
@@ -814,14 +806,14 @@ export default function CasePage() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="พิมพ์รายละเอียดเคส..."
-                className="w-full rounded-xl border border-transparent px-4 py-3 text-sm transition-all resize-none
-                  bg-slate-50 dark:bg-slate-900 
+                className="w-full rounded-xl border  px-4 py-3 text-sm transition-all resize-none
+                   dark:bg-slate-900 border-slate-200 dark:border-slate-700
                   text-slate-700 dark:text-slate-200 
                   placeholder-slate-400 dark:placeholder-slate-500
-                  hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-600
+                  dark:hover:border-slate-600
                   focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />{" "}
-              {/* ✅ Textarea Dark Mode */}
+              {/*  Textarea */}
             </div>
 
             <div>
@@ -837,16 +829,16 @@ export default function CasePage() {
                   value={formData.solution}
                   onChange={handleChange}
                   placeholder="อธิบายวิธีแก้ไข..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-3 text-sm transition-all resize-none
-                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
+                  className="w-full rounded-xl border pr-4 py-3 text-sm transition-all resize-none
+                   border-slate-200 dark:border-slate-700 pl-10 
+                    bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200
+                     placeholder-slate-400 dark:placeholder-slate-500 hover:bg-white  hover:border-slate-200 dark:hover:border-slate-600
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />{" "}
-                {/*  Textarea Dark Mode */}
               </div>
             </div>
           </div>
           <hr className="border-slate-100 dark:border-slate-700" />{" "}
-          {/* ✅ HR Dark Mode */}
           <div className="space-y-4 text-left">
             <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
               ผู้เกี่ยวข้อง
@@ -869,7 +861,6 @@ export default function CasePage() {
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />{" "}
-                {/* ✅ Input Dark Mode */}
               </div>
             </div>
 
@@ -890,7 +881,6 @@ export default function CasePage() {
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />{" "}
-                {/* ✅ Input Dark Mode */}
               </div>
             </div>
           </div>
@@ -906,7 +896,7 @@ export default function CasePage() {
             </ButtonCancel>
             <ButtonSubmit
               type="submit"
-              disabled={loadingLookup || isSubmitting} 
+              disabled={loadingLookup || isSubmitting}
             >
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
@@ -920,7 +910,6 @@ export default function CasePage() {
           </div>
         </form>
       </div>
-      {/* ✅ Action Feedback Modal (เหลือตัวเดียว) */}
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
         type={feedbackModal.type}

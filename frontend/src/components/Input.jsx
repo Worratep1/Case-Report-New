@@ -1,7 +1,5 @@
-// src/components/Input.jsx
 import React from "react";
 
-// 1. เพิ่ม icon เข้าไปใน props
 export default function Input({ 
   label, 
   type = "text", 
@@ -9,7 +7,7 @@ export default function Input({
   onChange, 
   placeholder, 
   icon,
-  rightElement, // รับ icon เข้ามา
+  rightElement, 
   ...props // รับ props อื่นๆ เช่น maxLength
 }) {
   return (

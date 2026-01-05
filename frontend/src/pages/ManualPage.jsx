@@ -1,28 +1,20 @@
 import React, { useState } from "react";
 import {
-  BookOpen,
   LogIn,
   LayoutDashboard,
   PlusCircle,
   FileText,
-  Settings,
   UserCog,
   Mail,
-  Info,
-  LogOut,
   ChevronRight,
-  ArrowLeft,
-  ShieldCheck,
-  FileSpreadsheet,
-  Monitor,
+  FileCog,
   Edit2,
   Trash2,
   Gamepad2,
   X
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import ButtonHome from "../components/ButtonHome";
-import ButtonBack from "../components/ButtonBack";
+import BackIconButton from "../components/BackIconButton.jsx";
 import loginImg from "../assets/manual/login1.png";
 import menuImg from "../assets/manual/menupage.png";
 import casepageImg from "../assets/manual/Casepage.png";
@@ -88,19 +80,13 @@ const ManualCard = ({ item, onClick }) => (
   </div>
 );
 
-// 2.2 Detail View Component (หน้าเนื้อหา)
-//  รับ setPreviewImage ผ่าน Props เพื่อนำไปใช้กับปุ่มใน MANUAL_DATA
+
 const ManualDetail = ({ item, onBack }) => {
   if (!item) return null;
 
   return (
     <div className="animate-in fade-in slide-in-from-right-8 duration-500">
-      {/* <button
-        onClick={onBack}
-        className="mb-6 py-3 flex items-center gap-3 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors font-medium"
-      >
-        <ArrowLeft size={20} /> กลับสู่คู่มือหลัก
-      </button> */}
+    
 
       <div className="bg-white dark:bg-slate-900 m-6 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg">
         <div className="p-8 border-b   border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
@@ -130,7 +116,7 @@ const ManualDetail = ({ item, onBack }) => {
                     key={index}
                     className="flex items-start gap-3 text-slate-600 dark:text-slate-300 text-lg"
                   >
-                    <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                    <span className="flex-shrink-0    text-indigo-600 dark:text-indigo-400  flex items-center justify-center text-xs font-bold mt-1.5">
                       {"-"}
                     </span>
                     <span>{step}</span>
@@ -230,7 +216,7 @@ export default function ManualPage() {
               <>คลิกที่ปุ่ม <UIHint label="LOGIN" /> เพื่อเข้าสู่ระบบ</>,
             ],
             image: loginImg,
-            imageCaption: "รูปที่ 1 หน้าเข้าสู่ระบบ",
+            imageCaption: "รูปที่ 1 หน้า Login เข้าสู่ระบบ",
           },
         },
         {
@@ -281,7 +267,7 @@ export default function ManualPage() {
     },
     {
       id: "group-report",
-      groupTitle: "รายงาน (Reports)",
+      groupTitle: "รายงาน (Report)",
       items: [
         {
           id: "daily-report",
@@ -304,7 +290,7 @@ export default function ManualPage() {
         {
           id: "custom-report",
           title: "Custom Report",
-          icon: <FileSpreadsheet className="w-6 h-6 text-yellow-500" />,
+          icon: <FileCog className="w-6 h-6 text-yellow-500" />,
           description: "จัดการข้อมูลเคสย้อนหลังและแก้ไขข้อมูล",
           content: {
             features: [
@@ -330,7 +316,7 @@ export default function ManualPage() {
         {
           id: "Game-setting",
           title: "Game Setting",
-          icon: <Gamepad2 className="w-6 h-6 text-cyan-600" />,
+          icon: <Gamepad2 className="w-6 h-6 text-blue-400" />,
           description: "จัดการรายชื่อเกม",
           content: {
             steps: [
@@ -385,16 +371,12 @@ export default function ManualPage() {
       <header className="fixed top-0 left-0 right-0 z-50 w-full h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 flex items-center shadow-sm">
         <div className="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
           <div className="flex items-center gap-4">
-            
-            <button onClick={handleNavbarBack} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full  transition-colors">
-              <ArrowLeft size={24} className="text-slate-600 dark:text-slate-300" />
-            </button>
+             <BackIconButton  onClick={handleNavbarBack}/>
             <div className="flex flex-col">
               <h1 className="text-xl font-bold text-slate-800 dark:text-white leading-none">NOC Manual</h1>
               <span className="text-xs text-start text-slate-500 dark:text-slate-400 mt-1">คู่มือการใช้งาน</span>
             </div>
           </div>
-          <ButtonHome onClick={() => navigate("/menu")} />
         </div>
       </header>
 
@@ -435,7 +417,7 @@ export default function ManualPage() {
         </div>
       </main>
 
-      {/* ✅ 3. Popup Modal (วางไว้นอกสุดเพื่อให้แสดงทับทุกส่วน) */}
+      {/*  3. Popup Modal (วางไว้นอกสุดเพื่อให้แสดงทับทุกส่วน) */}
       {previewImage && (
         <div 
           className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300"

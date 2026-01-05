@@ -44,6 +44,7 @@ import ButtonHome from "../components/ButtonHome";
 import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ViewModeToggle from "../components/ViewModeToggle";
+import BackIconButton from "../components/BackIconButton.jsx";
 
 
 import PageHeader from "../components/PageHeader.jsx";
@@ -898,7 +899,7 @@ export default function DailyReport() {
 
     try {
 
-      // เมื่อส่งเมล์จะเเคปภาพหน้า Dailyrerport ไปด้วย
+      // เมื่อส่งเมล์จะเเคปภาพไปด้วย
       const imageBlob = await captureReportImage("report-content");
       
       // 1) ดึง email จาก recipients ที่เลือก
@@ -912,7 +913,7 @@ export default function DailyReport() {
       formData.append("subject", emailSubject);
       formData.append("body", emailBody);
 
-      // --- ส่วนที่เพิ่มใหม่: แนบรูป Screenshot ไปด้วย ---
+      // --- ส่วนที่เพิ่มใหม่: แนบรูป Screenshot  ---
       formData.append("reportImage", imageBlob, "report-screenshot.png");
 
       // 3) แนบไฟล์
@@ -987,13 +988,7 @@ export default function DailyReport() {
         icon={<FileText size={24}  />}
         left={
     <>
-      <button
-        className="p-2 rounded-full text-slate-500 dark:text-slate-400
-        hover:bg-slate-100 dark:hover:bg-slate-700"
-        onClick={() => window.history.back()}
-      >
-        <ChevronLeft size={24} />
-      </button>
+     <BackIconButton/>
 
       <ButtonHome onClick={() => navigate("/menu")} />
     </>

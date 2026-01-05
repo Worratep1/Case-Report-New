@@ -1,4 +1,4 @@
-// src/api/report.jsx ส่งอีเมล์ 
+
 import client from "./client";
 
 export async function sendDailyReport(formData) {
@@ -8,7 +8,7 @@ export async function sendDailyReport(formData) {
          headers: { 
         "Content-Type": "multipart/form-data",
       },
-    }); // ✅ ส่ง JSON ไป backend
+    }); //  ส่ง JSON ไป backend
     return res.data;
 
   } catch (error) {

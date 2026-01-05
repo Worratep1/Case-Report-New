@@ -6,10 +6,10 @@ import ButtonBack from "../components/ButtonBack";
 export default function MainPage() {
   const navigate = useNavigate();
 
-  return ( // flex-col ให้อย่คนละบรรทัด
+  return ( // flex-col ให้อยู่คนละบรรทัด
     <div className="min-h-screen flex flex-col items-center justify-center gap-7">
       <h1 className="text-3xl font-bold text-slate-800 font-mono">
-        Version  1.5
+        Version DEMO 1.0
       </h1>
 
       <ButtonBack onClick={() => navigate("/menu")}>

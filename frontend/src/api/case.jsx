@@ -1,7 +1,5 @@
 import client from "./client";
 
-//
-// Case API functions
 
 // สร้างเคสใหม่
 export async function createCase(caseData) {

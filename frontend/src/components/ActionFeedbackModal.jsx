@@ -1,7 +1,5 @@
 import React from 'react';
 import { X, CheckCircle, AlertCircle, Trash2, Save, AlertTriangle, Loader2 } from 'lucide-react';
-// ✅ Import Framer Motion (Framer Motion is not available in this environment. Using standard motion/AnimatePresence.)
-// Note: Assuming a basic mock implementation for motion/AnimatePresence if running in an environment without the library.
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ActionFeedbackModal({ 
@@ -24,23 +22,20 @@ export default function ActionFeedbackModal({
   switch (type) {
     case 'success':
       IconComponent = CheckCircle;
-      //  Dark Mode Icon Color: bg-green-100 -> dark:bg-green-900/30
       iconColor = 'text-green-500 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
-      // เปลี่ยนปุ่ม Success เป็นสี Indigo
       buttonColor = 'bg-blue-600 hover:bg-blue-700'; 
       break;
     
     case 'warning': 
     case 'error':
       IconComponent = AlertCircle; 
-      //  Dark Mode Icon Color: bg-red-100 -> dark:bg-red-900/30
       iconColor = 'text-red-500 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
       buttonColor = 'bg-red-600 hover:bg-red-700';
+      if (onConfirm) isConfirmation = true;
       break;
 
     case 'confirm-delete':
       IconComponent = Trash2;
-      //  Dark Mode Icon Color: bg-red-100 -> dark:bg-red-900/30
       iconColor = 'text-red-500 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
       buttonColor = 'bg-red-600 hover:bg-red-700';
       isConfirmation = true;
@@ -50,19 +45,24 @@ export default function ActionFeedbackModal({
     case 'confirm-save':
     default:
       IconComponent = Save;
-      //  Dark Mode Icon Color: bg-blue-100 -> dark:bg-blue-900/30
       iconColor = 'text-blue-500 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
-      // เปลี่ยนปุ่ม Confirm/Default เป็นสี Indigo
-      buttonColor = 'bg-indigo-600 hover:bg-indigo-700';
+      buttonColor = 'bg-blue-600 hover:bg-blue-700';
       isConfirmation = true;
+      break;
+
+      
   }
 
   const showTwoButtons = isConfirmation || showSecondaryButton;
 
-  const handleConfirm = () => {
-    if (onConfirm) onConfirm();
-    if (!onConfirm) onClose(); 
-  };
+ 
+const handleConfirm = () => {
+  if (onConfirm) {
+    onConfirm(); 
+  } else {
+    onClose();  
+  }
+};
 
   // -----------------------------------------------------
   //  Animation Config (คงไว้เหมือนเดิม)

@@ -76,7 +76,8 @@ export default function LoginPage() {
           {/* Header Section */}
           <div className="flex flex-col items-center mb-10">
             <div className="relative mb-5">
-              {/* Logo: ลดขนาดลงเพื่อความสมดุล (h-24) */}
+
+              {/* Logo (h-24) */}
               <img 
                 src={Logoplaypark1} 
                 alt="System Logo" 
@@ -122,7 +123,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all text-slate-400 hover:text-blue-500 focus:outline-none" 
+                    className="p-1 hover:bg-slate-100  rounded-full transition-all text-slate-400 hover:text-blue-500 focus:outline-none" 
                     title={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

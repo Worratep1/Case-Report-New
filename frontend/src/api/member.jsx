@@ -1,26 +1,29 @@
 import client from "./client";
 
+// ดึงรายชื่อสมาชิกทั้งหมด
 export async function getMembers() {
   const res = await client.get("/users");
   return res.data;
   
 }
 
+// ดึงข้อมูลสมาชิกตาม Id
+
 export async function getMemberById(id) {
   const res = await client.get(`/users/${id}`);
   return res.data;
 }
-
+// แก้ไขข้อมูลสมาชิกตาม Id
 export async function updateMember(id, memberData) {
   const res = await client.put(`/users/${id}`, memberData);
   return res.data;
 }
-
+// ลบสมาชิกตาม Id
 export async function deleteMember(id) {
     const res = await client.delete(`/users/${id}`);
     return res.data;
 }
-
+// สมัครสมาชิกใหม่
 export async function registerMember(data) {
   try {
     const res = await client.post("/register", {

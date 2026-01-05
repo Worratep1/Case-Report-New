@@ -13,11 +13,11 @@ const ButtonHome = ({ onClick, className = "" }) => {
         /* Default State: เริ่มต้นแบบโปร่งใส ไม่มีกรอบ */
         bg-transparent
         text-slate-500 dark:text-slate-400
-        border border-transparent
+        border border-transparent 
         
         /* Hover State: แสดงกรอบและพื้นหลังเมื่อเอาเมาส์ไปชี้ */
-        hover:bg-slate-100 dark:hover:bg-slate-800
-         dark:hover:border-blue-400/50
+        hover:bg-slate-100 dark:hover:bg-slate-700
+      
         hover:text-blue-600 dark:hover:text-blue-400
         hover:shadow-sm
         

@@ -6,7 +6,6 @@ import {
   
 } from "lucide-react";
 
-// Import Components ที่แยกไฟล์ไว้
 import ButtonBack from "../components/ButtonBack";
 import MenuButton from "../components/MenuButton";
 import DarkModeToggle from '../components/DarkModeToggle';

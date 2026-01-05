@@ -1,5 +1,5 @@
 const {Pool} = require('pg')
-require("dotenv").config(); // เราใช้ dotenv เพื่ออ่านไฟล์ .env 
+require("dotenv").config(); 
 
 const pool = new Pool({ //ดึงค่าจาก .env
     host: process.env.DB_HOST,

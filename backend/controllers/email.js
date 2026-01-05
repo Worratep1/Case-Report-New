@@ -4,7 +4,6 @@ exports.sendDailyReport = async (req, res) => {
   try {
     let { toEmails, subject, body } = req.body;
 
-    // --- ส่วนจัดการ Email Recipients (เหมือนเดิม) ---
     if (typeof toEmails === "string") {
       try { toEmails = JSON.parse(toEmails); } 
       catch { toEmails = toEmails.split(",").map((e) => e.trim()).filter(Boolean); }
@@ -44,7 +43,12 @@ exports.sendDailyReport = async (req, res) => {
     // --- 2. สร้าง HTML Body และฝังรูปภาพ (CID) ---
     const screenshotCid = "report_screenshot_cid"; // ID สำหรับอ้างอิงรูปใน HTML
     
-  let htmlContent = `<div style="font-family: sans-serif;">`;
+  let htmlContent = `
+  <div style="font-family: sans-serif; color: #000000; line-height: 1.5;">
+    <div style="margin-bottom: 20px; font-size: 16px;">
+      ${body ? body.replace(/\n/g, '<br/>') : ''} 
+    </div>
+`;
     // ถ้ามีรูปที่แคปมาจาก Frontend ให้ใส่ลงใน HTML
     if (reportImageFile) {
       htmlContent += `
@@ -60,6 +64,8 @@ exports.sendDailyReport = async (req, res) => {
         cid: screenshotCid // ต้องตรงกับ cid ในแท็ก <img>
       });
     }
+
+    htmlContent += `</div>`;
 
     // --- 3. ส่งเมลออกไป ---
     const mailOptions = {

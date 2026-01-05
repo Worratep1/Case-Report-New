@@ -542,8 +542,8 @@ export default function MemberSetting() {
                     maxLength={64}
                     placeholder={
                       editingIndex !== null
-                        ? "Re-enter new password (optional)"
-                        : "Re-enter password"
+                        ? "Confirm new password (optional)"
+                        : "Confirm password"
                     }
                     className={`w-full pl-9 pr-10 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
                       bg-white dark:bg-slate-900 text-slate-800 dark:text-white
