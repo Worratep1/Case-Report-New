@@ -1,9 +1,9 @@
 const pool = require("../config/db");
-const bcrypt = require("bcrypt"); // <- เพิ่มบรรทัดนี้
+const bcrypt = require("bcrypt"); 
 const jwt = require("jsonwebtoken")
 
 exports.login = async (req, res) => {
-  const { username, password } = req.body;  // <- เปลี่ยนเป็น password
+  const { username, password } = req.body;  
 
   if (!username || !password) {
     return res

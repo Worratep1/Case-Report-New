@@ -6,7 +6,7 @@ import ButtonBack from "../components/ButtonBack";
 export default function MainPage() {
   const navigate = useNavigate();
 
-  return ( // flex-col ให้อยู่คนละบรรทัด
+  return ( 
     <div className="min-h-screen flex flex-col items-center justify-center gap-7">
       <h1 className="text-3xl font-bold text-slate-800 font-mono">
         Version DEMO 1.0

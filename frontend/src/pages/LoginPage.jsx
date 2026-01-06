@@ -4,18 +4,12 @@ import { login } from "../api/auth";
 
 import Input from "../components/Input";
 import Button from "../components/Button";
-import Logoplaypark1 from '../assets/Logoplaypark1.png';
-import BackgroundBlue from '../assets/BackgroundBlue.png'; 
+import Logoplaypark1 from "../assets/Logoplaypark1.png";
+import BackgroundBlue from "../assets/BackgroundBlue.png";
 
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import DarkmodeToggle from "../components/DarkModeToggle";
-import { 
-  User,
-  KeyRound,
-  Eye, 
-  EyeOff,
-  ShieldCheck
-} from "lucide-react";
+import { User, KeyRound, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -24,10 +18,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  const [showErrorModal , setShowErrorModal] = useState(false);
-  const [errorMessage , setErrorMessage] = useState("");
-  
+
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -36,26 +30,35 @@ export default function LoginPage() {
       const data = await login(username, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/menu"); 
+      navigate("/menu");
     } catch (err) {
-       console.error("Login Error", err);
-       const msg = err.response?.data?.message || "Username หรือ Password ไม่ถูกต้อง";
-       setErrorMessage(msg);
-       setShowErrorModal(true); 
-    } finally {
+  console.error("Login Error", err);
+  let msg = "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
+
+  if (err.response) {
+    // กรณี Server ตอบกลับมา (เช่น 401)
+    msg = err.response.data?.message || "Username หรือ Password ไม่ถูกต้อง";
+  } else {
+    // กรณีไม่มี response (เช่น Server Down) 
+    // พอมันไม่มี err.response มันจะวิ่งมาที่นี่ และใช้ภาษาไทยที่เราตั้งไว้
+    msg = "ไม่สามารถเชื่อมต่อกับ Server ได้ กรุณาตรวจสอบการเชื่อมต่อของคุณ";
+  }
+
+  setErrorMessage(msg);
+  setShowErrorModal(true);
+}finally {
       setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 w-full h-full flex items-center justify-center overflow-hidden">
-      
       {/* --- BACKGROUND SECTION --- */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105" 
-        style={{ 
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105"
+        style={{
           backgroundImage: `url(${BackgroundBlue})`,
-          filter: 'blur(4px)' // ปรับ Blur ให้นุ่มนวลขึ้น
+          filter: "blur(4px)", 
         }}
       />
       {/* Subtle Gradient Overlay: ช่วยให้ Card ดูลอยเด่นขึ้น */}
@@ -63,37 +66,32 @@ export default function LoginPage() {
 
       {/* Dark Mode Toggle Area */}
       <div className="absolute top-8 right-8 z-20">
-       
-           <DarkmodeToggle />
-        </div>
-      
+        <DarkmodeToggle />
+      </div>
 
       <div className="relative w-full max-w-[420px] mx-4 z-10 animate-in fade-in zoom-in duration-500">
-        
         {/* --- MAIN LOGIN CARD --- */}
         <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-10 transition-all">
-          
           {/* Header Section */}
           <div className="flex flex-col items-center mb-10">
             <div className="relative mb-5">
-
               {/* Logo (h-24) */}
-              <img 
-                src={Logoplaypark1} 
-                alt="System Logo" 
+              <img
+                src={Logoplaypark1}
+                alt="System Logo"
                 className="h-32 w-auto object-contain drop-shadow-2xl animate-pulse-slow"
               />
               {/* <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-500 rounded-full opacity-40"></div> */}
             </div>
-            
+
             <h1 className="text-center text-2xl font-bold text-slate-800 dark:text-white tracking-tight leading-tight">
               NOC Report System
             </h1>
             <div className="flex items-center gap-2 mt-2">
-               <ShieldCheck size={14} className="text-blue-500" />
-               <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-[0.2em]">
+              <ShieldCheck size={14} className="text-blue-500" />
+              <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-[0.2em]">
                 Administrator Access
-               </p>
+              </p>
             </div>
           </div>
 
@@ -110,7 +108,7 @@ export default function LoginPage() {
                 autoComplete="username"
               />
             </div>
-            
+
             <div className="space-y-1">
               <Input
                 label="Password"
@@ -123,7 +121,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="p-1 hover:bg-slate-100  rounded-full transition-all text-slate-400 hover:text-blue-500 focus:outline-none" 
+                    className="p-1 hover:bg-slate-100  rounded-full transition-all text-slate-400 hover:text-blue-500 focus:outline-none"
                     title={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -135,8 +133,8 @@ export default function LoginPage() {
 
             {/* Login Button Section */}
             <div className="pt-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
                 className="w-full h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-bold uppercase tracking-[0.1em] shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
               >
@@ -145,25 +143,27 @@ export default function LoginPage() {
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     <span>กำลังเข้าสู่ระบบ...</span>
                   </div>
-                ) : "LOGIN"}
+                ) : (
+                  "LOGIN"
+                )}
               </Button>
             </div>
           </form>
 
           {/* Footer Note */}
           <p className="text-center mt-8 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-            &copy; 2025 Play Park NOC TEAM. <br/> All Rights Reserved.
+            &copy; 2025 Play Park NOC TEAM. <br /> All Rights Reserved.
           </p>
         </div>
       </div>
-      
+
       {/* Error Feedback Modal */}
       <ActionFeedbackModal
         isOpen={showErrorModal}
         onClose={() => setShowErrorModal(false)}
-        type="error" 
+        type="error"
         title="เข้าสู่ระบบไม่สำเร็จ"
-        message={errorMessage} 
+        message={errorMessage}
         confirmText="ลองใหม่อีกครั้ง"
       />
     </div>

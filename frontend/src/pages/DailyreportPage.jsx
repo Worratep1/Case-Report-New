@@ -25,7 +25,6 @@ import {
   Flame,
 } from "lucide-react";
 
-
 import { getCases } from "../api/case";
 import { getProblems } from "../api/problems";
 import { getStatuses } from "../api/status";
@@ -37,7 +36,6 @@ import { useNavigate } from "react-router-dom";
 import { STATUS_CONFIG } from "../constants/status";
 import { captureReportImage } from "../utils/reportCapture";
 
-
 import ExportButton from "../components/ButtonExport";
 import ButtonSend from "../components/ButtonSend";
 import ButtonHome from "../components/ButtonHome";
@@ -45,14 +43,12 @@ import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
 import ViewModeToggle from "../components/ViewModeToggle";
 import BackIconButton from "../components/BackIconButton.jsx";
-
+import SearchInput from "../components/SearchInput.jsx";
 
 import PageHeader from "../components/PageHeader.jsx";
 import StatCard from "../components/dashboard/StatCard";
 import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
 import StatusPieChart from "../components/dashboard/StatusPieChart";
-
-
 
 const CONFIG = {
   MAX_FILE_SIZE_MB: 5,
@@ -450,7 +446,6 @@ const CustomSelect = ({
   placeholder,
   icon: Icon,
 }) => {
-
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -585,8 +580,13 @@ export default function DailyReport() {
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-
-  // ข้อมูล Cases
+  
+  // รีเซ็ตหน้าเป็น 1 เมื่อ searchText หรือ filterStatus เปลี่ยน
+   useEffect(() => { 
+      setCurrentPage(1); 
+    }, [searchText, filterStatus]);
+ const [loadingData, setLoadingData] = useState(false);
+ 
   const [cases, setCases] = useState([]);
   const [lookupData, setLookupData] = useState({
     products: [],
@@ -594,7 +594,7 @@ export default function DailyReport() {
     problem: [],
   });
 
-  const [loadingData, setLoadingData] = useState(false);
+ 
 
   // UI States
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
@@ -726,7 +726,6 @@ export default function DailyReport() {
               ? `${Math.floor(durationMins / 60)} ชม. ${durationMins % 60} นาที`
               : `${durationMins} นาที`;
 
-         
           const statusKey = statusObj?.status_name?.toLowerCase() || "others";
 
           return {
@@ -736,15 +735,15 @@ export default function DailyReport() {
             endDate: endDateStr,
             endTime: endTimeStr,
             duration: durationStr,
-            durationMins: durationMins, 
+            durationMins: durationMins,
             problem: problemObj ? problemObj.problem_name : "Unknown Problem",
             game: productObj ? productObj.product_name : "Unknown Game",
             details: c.description,
             solution: c.solution,
             reporter: c.requester_name,
             operator: c.solver,
-            status: statusKey, 
-            date: selectedDate, 
+            status: statusKey,
+            date: selectedDate,
 
             startMs: start.getTime(),
           };
@@ -759,7 +758,7 @@ export default function DailyReport() {
       }
     };
 
-    // รอให้โหลด Master Data เสร็จก่อนค่อยดึง Case เพื่อให้ map ชื่อถูก
+   
     if (lookupData.products.length > 0 || lookupData.statuses.length > 0) {
       fetchCases();
     }
@@ -865,12 +864,11 @@ export default function DailyReport() {
         title: "ไม่สามารถอัปโหลดไฟล์นี้ได้",
         message: errors.join("\n"),
       });
-    
+
       e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
       return;
     }
 
-  
     setAttachedFiles((prev) => {
       const newFiles = [...prev];
       newFiles[index] = file; // เก็บไฟล์จริง
@@ -898,10 +896,9 @@ export default function DailyReport() {
     setIsLoading(true);
 
     try {
-
       // เมื่อส่งเมล์จะเเคปภาพไปด้วย
       const imageBlob = await captureReportImage("report-content");
-      
+
       // 1) ดึง email จาก recipients ที่เลือก
       const toEmails = availableRecipients
         .filter((r) => selectedRecipientIds.includes(r.recipient_id))
@@ -918,12 +915,12 @@ export default function DailyReport() {
 
       // 3) แนบไฟล์
       attachedFiles
-        .filter((file) => !!file) 
+        .filter((file) => !!file)
         .forEach((file) => {
           formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
         });
 
-      await sendDailyReport(formData); 
+      await sendDailyReport(formData);
       setIsEmailModalOpen(false);
       setFeedbackModal({
         isOpen: true,
@@ -968,8 +965,6 @@ export default function DailyReport() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Data for Dashboard Cards
- 
   const casesOfSelectedDate = cases;
 
   return (
@@ -978,53 +973,50 @@ export default function DailyReport() {
       bg-gradient-to-br from-blue-100 via-slate-100 to-blue-100 
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
     >
-      {" "} {/* contanier  Background Dark Mode */}
-     
-
+      {" "}
+      {/* contanier  Background Dark Mode */}
       {/* Header Bar */}
       <PageHeader
         title="Daily Report"
         subtitle="รายงานประจำวัน"
-        icon={<FileText size={24}  />}
+        icon={<FileText size={24} />}
         left={
-    <>
-     <BackIconButton/>
+          <>
+            <BackIconButton />
 
-      <ButtonHome onClick={() => navigate("/menu")} />
-    </>
-  }
-  right={
-    <>
-    {/* ปุ่มสลับ รายวัน-> รายเดือน */}
-      <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+            <ButtonHome onClick={() => navigate("/menu")} />
+          </>
+        }
+        right={
+          <>
+            {/* ปุ่มสลับ รายวัน-> รายเดือน */}
+            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
 
-      <div className="w-48">
-        <CustomDatePicker
-          value={selectedDate}
-          onChange={setSelectedDate}
-          placeholder="เลือกวันที่"
-        />
-      </div>
+            <div className="w-48">
+              <CustomDatePicker
+                value={selectedDate}
+                onChange={setSelectedDate}
+                placeholder="เลือกวันที่"
+              />
+            </div>
 
-      <ExportButton
-        onClick={handleExport}
-        isExporting={isExporting}
-        disabled={casesOfSelectedDate.length === 0}
+            <ExportButton
+              onClick={handleExport}
+              isExporting={isExporting}
+              disabled={casesOfSelectedDate.length === 0}
+            />
+
+            <ButtonSend
+              onClick={handleOpenEmailModal}
+              disabled={casesOfSelectedDate.length === 0}
+            />
+          </>
+        }
       />
-
-      <ButtonSend
-        onClick={handleOpenEmailModal}
-        disabled={casesOfSelectedDate.length === 0}
-      />
-    </>
-  }
-/>
-
-
       <main
         id="report-content"
-        className="max-w-[70%] mx-auto px-4 sm:px-6 lg:px-1 py-8" >
-
+        className="max-w-[70%] mx-auto px-4 sm:px-6 lg:px-1 py-8"
+      >
         {/* Date Header Display */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -1073,18 +1065,14 @@ export default function DailyReport() {
                 placeholder="สถานะ"
               />
             </div>
-            <div className="relative w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="ค้นหาปัญหา, เกม..."
-                className="pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64
-                  bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
-              />{" "}
-              {/* Search Input Dark Mode */}
-            </div>
+
+            {/* Search */}
+
+            <SearchInput
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="ค้นหาปัญหา, เกม..."
+            />
           </div>
         </div>
 
@@ -1106,10 +1094,16 @@ export default function DailyReport() {
                   <th className="px-6 py-4 whitespace-nowrap ">Status</th>
                   <th className="px-6 py-4 whitespace-nowrap ">Start Date</th>
                   <th className="px-6 py-4 whitespace-nowrap ">End Date</th>
-                  <th className="px-6 py-4 whitespace-nowrap ">Time/Duration</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">
+                    Time/Duration
+                  </th>
                   <th className="px-6 py-4 whitespace-nowrap ">Game/Problem</th>
-                  <th className="px-6 py-4 whitespace-nowrap ">Details/Solution</th>
-                  <th className="px-6 py-4 whitespace-nowrap ">Requester/Operator</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">
+                    Details/Solution
+                  </th>
+                  <th className="px-6 py-4 whitespace-nowrap ">
+                    Requester/Operator
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -1239,10 +1233,10 @@ export default function DailyReport() {
                     </tr>
                   ))
                 ) : (
-                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูลในวันที่เลือก 
+                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูลในวันที่เลือก
                   <tr>
                     <td
-                      colSpan="8"   //คอลัมน์
+                      colSpan="8" //คอลัมน์
                       className="px-6 py-12 text-center  text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2 ">

@@ -568,6 +568,12 @@ export default function CustomReport() {
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // รีเซ็ตหน้าเป็น 1 เมื่อ searchText หรือ filterStatus เปลี่ยน
+  useEffect(() => { 
+    setCurrentPage(1); 
+  }, [searchText, filterStatus]);
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Modal States
@@ -1374,7 +1380,6 @@ export default function CustomReport() {
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
     >
       {/* --- HEADER ---  */}
-      {/* Header Bar */}
       <PageHeader
         title="Custom Report"
         subtitle="เพิ่มข้อมูลย้อนหลัง/แก้ไข/ลบข้อมูล"
@@ -1654,7 +1659,7 @@ export default function CustomReport() {
                           <div className="flex items-center gap-2">
                             <div
                               className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                            bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
                             >
                               R
                             </div>
@@ -1665,7 +1670,7 @@ export default function CustomReport() {
                           <div className="flex items-center gap-2">
                             <div
                               className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                              bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                             >
                               O
                             </div>
@@ -2261,7 +2266,7 @@ export default function CustomReport() {
                   {attachedFiles.map((file, index) => (
                     <div key={index} className="flex items-center gap-3">
                       {file ? (
-                        // --- Display Area when File Exists ---
+                      
                         <div
                           className="flex-1 flex items-center justify-between p-3 rounded-lg text-sm border border-slate-200 dark:border-slate-700 
                                   bg-slate-50 dark:bg-slate-900"
@@ -2287,7 +2292,7 @@ export default function CustomReport() {
                           </button>
                         </div>
                       ) : (
-                        // --- Upload Area when Slot is Empty ---
+                     
                         <div className="flex-1">
                           <label
                             htmlFor={`file-input-${index}`}

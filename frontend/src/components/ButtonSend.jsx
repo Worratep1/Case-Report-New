@@ -1,5 +1,5 @@
 import React from "react";
-import { Send , Mail} from "lucide-react";
+import { Send } from "lucide-react";
 
 const ButtonSend = ({ 
   onClick, 

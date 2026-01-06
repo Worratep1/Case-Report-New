@@ -28,8 +28,7 @@ const exportReport = require("..//controllers/exportreport");
 
 
 
-router.post("/login", login); // เส้นทางสำหรับการสมัคร
-
+router.post("/login", login); // เส้นทางสำหรับล็อกอินผู้ใช้
 
 router.use(authMiddleware);
 

@@ -10,8 +10,6 @@ module.exports = (req, res, next) => {
       });
     }
 
- 
-
     const token = authHeader.split(" ")[1];
 
     // verify token ด้วย SECRET ใน .env

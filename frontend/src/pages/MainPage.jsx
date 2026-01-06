@@ -1,4 +1,3 @@
-// src/pages/Main.jsx
 
 export default function MainPage() {
   return (

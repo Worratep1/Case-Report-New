@@ -8,7 +8,7 @@ export default function Input({
   placeholder, 
   icon,
   rightElement, 
-  ...props // รับ props อื่นๆ เช่น maxLength
+  ...props
 }) {
   return (
     <div className="mb-4 w-full text-left">
@@ -31,7 +31,7 @@ export default function Input({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          {...props} // กระจาย props อื่นๆ ลงในแท็ก input
+          {...props}
           className={`w-full py-2.5 border border-slate-300 rounded-xl text-sm transition-all
                      focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500
                      bg-white dark:bg-slate-900 

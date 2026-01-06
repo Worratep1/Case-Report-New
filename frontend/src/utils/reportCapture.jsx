@@ -8,7 +8,7 @@ export const captureReportImage = async (elementId) => {
   const captureBgColor = isDarkMode ? "#0f172a" : "#ffffff";
   const textColor = isDarkMode ? "#ffffff" : "#1e293b";
 
-  // ใส่ Logic ทั้งหมดที่แก้ปัญหา "ภาพขาด" และ "ตัวอักษรตก" ไว้ที่นี่ที่เดียว
+  // ใส่ Logic ทั้งหมดที่แก้ปัญหา "ภาพขาด" และ "ตัวอักษรตก" 
   const canvas = await html2canvas(element, {
     scale: 2,
     useCORS: true,

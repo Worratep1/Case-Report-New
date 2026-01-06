@@ -9,7 +9,7 @@ export default function MenuLogout({ children }) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
-  };//handleLogout
+  };
   return (
    <button 
     onClick={handleLogout}

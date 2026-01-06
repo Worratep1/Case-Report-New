@@ -198,7 +198,7 @@ export default function ManualPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  //  2. ย้าย MANUAL_DATA มาไว้ข้างในฟังก์ชันเพื่อให้รู้จัก setPreviewImage
+
   const MANUAL_DATA = [
     {
       id: "group-start",

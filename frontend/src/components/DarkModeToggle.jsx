@@ -33,7 +33,7 @@ export default function DarkModeToggle() {
     <div className="absolute top-4 right-4 z-10">
       <button
         onClick={toggleDarkMode}
-        // Tailwind CSS styles สำหรับปุ่ม Dark Mode/Light Mode
+        
         className="p-3 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md shadow-lg border border-white/50 dark:border-slate-700
                    text-slate-600 dark:text-yellow-400 transition-all hover:scale-110 active:rotate-12 duration-300 hover:shadow-xl"
         title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
