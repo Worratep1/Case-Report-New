@@ -46,6 +46,7 @@ export default function SettingPage() {
           />
 
           <div className="text-left px-1">
+            
             <ButtonBack onClick={() => navigate("/menu")} > Back </ButtonBack>
 
           </div>

@@ -81,7 +81,7 @@ export default function LoginPage() {
                 alt="System Logo"
                 className="h-32 w-auto object-contain drop-shadow-2xl animate-pulse-slow"
               />
-              {/* <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-blue-500 rounded-full opacity-40"></div> */}
+            
             </div>
 
             <h1 className="text-center text-2xl font-bold text-slate-800 dark:text-white tracking-tight leading-tight">

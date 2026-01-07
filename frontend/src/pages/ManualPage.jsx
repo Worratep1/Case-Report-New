@@ -417,7 +417,7 @@ export default function ManualPage() {
         </div>
       </main>
 
-      {/*  3. Popup Modal (วางไว้นอกสุดเพื่อให้แสดงทับทุกส่วน) */}
+      {/*  3. Popup Modal  */}
       {previewImage && (
         <div 
           className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300"

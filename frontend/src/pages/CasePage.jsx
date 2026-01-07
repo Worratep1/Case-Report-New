@@ -332,10 +332,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
     for (let d = 1; d <= daysInMonth; d++) {
       const month = viewDate.getMonth() + 1;
       const year = viewDate.getFullYear();
-      const currentDateString = `${year}-${String(month).padStart(
-        2,
-        "0"
-      )}-${String(d).padStart(2, "0")}`;
+      const currentDateString = `${year}-${String(month).padStart(2,"0")}-${String(d).padStart(2, "0")}`;
       const isSelected = value === currentDateString;
       days.push(
         <button
@@ -460,7 +457,7 @@ export default function CasePage() {
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const loggedInUserId = storedUser?.user_id ?? null;
 
-  // State
+  
   const [lookupData, setLookupData] = useState({
     products: [],
     statuses: [],
@@ -469,7 +466,7 @@ export default function CasePage() {
   });
   const [loadingLookup, setLoadingLookup] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null); // Keep for inline error if needed
+  const [submitError, setSubmitError] = useState(null); 
 
   // [UPDATED] Unified Modal State
   const [feedbackModal, setFeedbackModal] = useState({

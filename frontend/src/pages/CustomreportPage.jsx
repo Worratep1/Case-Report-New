@@ -568,10 +568,10 @@ export default function CustomReport() {
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // รีเซ็ตหน้าเป็น 1 เมื่อ searchText หรือ filterStatus เปลี่ยน
-  useEffect(() => { 
-    setCurrentPage(1); 
+  useEffect(() => {
+    setCurrentPage(1);
   }, [searchText, filterStatus]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -662,8 +662,10 @@ export default function CustomReport() {
         date: selectedDate,
         mode: viewMode,
       });
+        // เรียงข้อมูลเก่าไปใหม่
+      const rawCases = (res.cases || [])
+          .slice();
 
-      const rawCases = res.cases || [];
 
       const formatDate = (date) => {
         if (!date || isNaN(date)) return "-";
@@ -711,6 +713,7 @@ export default function CustomReport() {
             .toISOString()
             .split("T")[0];
         };
+        
 
         return {
           ...c,
@@ -718,6 +721,8 @@ export default function CustomReport() {
           startTime: formatTime(start),
           endTime: formatTime(end),
           startDate: startDateStr,
+          startMs: start.getTime(), 
+          endMs: end.getTime(),    
           raw_start_date: getLocalDateString(start), // เก็บ "2025-12-22"
           raw_end_date: getLocalDateString(end), //  เก็บ "2025-12-22"
           endDate: endDateStr,
@@ -736,6 +741,21 @@ export default function CustomReport() {
           raw_status_id: c.status_id,
           raw_problem_id: c.problem_id,
         };
+      });
+
+      mappedCases.sort((a, b) => {
+        // 1. เรียงตามวันเริ่ม (เก่า → ใหม่)
+        if (a.startMs !== b.startMs) {
+          return a.startMs - b.startMs;
+        }
+
+        // 2. ถ้าวันเริ่มเท่ากัน → เคสที่จบก่อนอยู่บน
+        if (a.endMs !== b.endMs) {
+          return a.endMs - b.endMs;
+        }
+
+        // 3. กันกรณีเท่าหมด
+        return a.id - b.id;
       });
 
       setCases(mappedCases);
@@ -2266,7 +2286,6 @@ export default function CustomReport() {
                   {attachedFiles.map((file, index) => (
                     <div key={index} className="flex items-center gap-3">
                       {file ? (
-                      
                         <div
                           className="flex-1 flex items-center justify-between p-3 rounded-lg text-sm border border-slate-200 dark:border-slate-700 
                                   bg-slate-50 dark:bg-slate-900"
@@ -2292,7 +2311,6 @@ export default function CustomReport() {
                           </button>
                         </div>
                       ) : (
-                     
                         <div className="flex-1">
                           <label
                             htmlFor={`file-input-${index}`}

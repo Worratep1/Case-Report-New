@@ -19,6 +19,7 @@ import {
   Eye,
   EyeOff,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
@@ -30,6 +31,7 @@ import DarkModeToggle from "../components/DarkModeToggle";
 
 export default function MemberSetting() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
   const [members, setMembers] = useState([]);
 
   // -----------------------------
@@ -37,6 +39,7 @@ export default function MemberSetting() {
   // -----------------------------
   const fetchMembers = async () => {
     try {
+      setIsLoading(true);
       const data = await getMembers();
       setMembers(data.users || []);
     } catch (error) {
@@ -47,6 +50,8 @@ export default function MemberSetting() {
         title: "เกิดข้อผิดพลาด",
         message: "ไม่สามารถโหลดข้อมูลสมาชิกได้",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,8 +62,15 @@ export default function MemberSetting() {
   // -----------------------------
   // 2) State ของฟอร์ม + Modal
   // -----------------------------
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+
+  const isValidEmail = (email) => {
+    // ใช้ Regex เพื่อเช็คความถูกต้องของอีเมล
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const initialFormState = {
     username: "",
@@ -153,6 +165,16 @@ export default function MemberSetting() {
       return;
     }
 
+    if (!isValidEmail(email)) {
+      setFeedbackModal({
+        isOpen: true,
+        type: "error",
+        title: "รูปแบบอีเมลไม่ถูกต้อง",
+        message: "กรุณากรอกอีเมลให้ถูกต้อง (เช่น example@mail.com)",
+      });
+      return;
+    }
+
     // Password Validation
     if (editingIndex === null) {
       // กรณีเพิ่มใหม่
@@ -160,7 +182,7 @@ export default function MemberSetting() {
         setFeedbackModal({
           isOpen: true,
           type: "error",
-          title: "ข้อมูลไม่ครบถ้วน",
+          title: "ข้อมูลไม่ครบ",
           message: "กรุณากรอก Password และ Confirm Password",
         });
         return;
@@ -315,9 +337,9 @@ export default function MemberSetting() {
 
         {/* List Content */}
         <div className="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
-          {members.length === 0 ? (
+          {isLoading ? (
             <div className="p-10 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
-              <AlertCircle size={48} className="mb-3 opacity-20" />
+              <Loader2 size={48} className="mb-3 opacity-20 animate-spin" />
               <p>กำลังโหลดข้อมูล...</p>
             </div>
           ) : members.length === 0 ? (
@@ -469,24 +491,37 @@ export default function MemberSetting() {
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-medium  mb-1 text-slate-500 dark:text-slate-400">
+                <label className="block text-xs font-medium mb-1 text-slate-500">
                   Email
                 </label>
                 <div className="relative">
                   <Mail
                     size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${
+                      isValidEmail(formData.email)
+                        ? "text-emerald-500"
+                        : "text-slate-400"
+                    }`}
                   />
                   <input
                     name="email"
                     value={formData.email}
-                    maxLength={255}
                     onChange={handleChange}
+                    className={`w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white  ${
+                      formData.email && !isValidEmail(formData.email)
+                        ? "border-red-500 ring-1 ring-red-500/20"
+                        : "border-slate-200 focus:border-blue-500"
+                    }`}
                     placeholder="Enter email address"
-                    className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
+                {/* แสดงข้อความเตือนเล็กๆ */}
+                {formData.email && !isValidEmail(formData.email) && (
+                  <p className="text-[10px] text-red-500 mt-1">
+                    Invalid email format
+                  </p>
+                )}
               </div>
 
               {/* Password */}

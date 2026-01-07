@@ -1,5 +1,3 @@
-
-
 export default function Button({ children, type = "button", onClick }) {
   return (
     <button

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, X, Save, AlertCircle } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Save, AlertCircle ,Loader2} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import ButtonBack from "../components/ButtonBack.jsx";
 import ButtonSave from "../components/ButtonSave.jsx";
 import ButtonCancel from "../components/ButtonCancel.jsx";
-import ButtonAdd from "../components/ButtonAdd.jsx"; // ใช้ ButtonAdd แทน ButtonAddGame เพื่อลดความซ้ำซ้อน
+import ButtonAdd from "../components/ButtonAdd.jsx";
 import ActionFeedbackModal from "../components/ActionFeedbackModal.jsx";
 import DarkModeToggle from "../components/DarkModeToggle.jsx";
 
@@ -22,6 +22,8 @@ export default function GameSetting() {
 
   // รายการ game
   const [products, setProducts] = useState([]);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   // State สำหรับ Modal แจ้งเตือน
   const [feedbackModal, setFeedbackModal] = useState({
@@ -54,6 +56,7 @@ export default function GameSetting() {
 
   const loadProducts = async () => {
     try {
+      setIsLoading(true);
       const data = await getproducts();
       setProducts(data.products || []);
     } catch (error) {
@@ -64,6 +67,8 @@ export default function GameSetting() {
         title: "โหลดข้อมูลไม่สำเร็จ",
         message: "ไม่สามารถโหลดรายการ Game ได้ กรุณาลองใหม่อีกครั้ง",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,7 +108,7 @@ export default function GameSetting() {
         isOpen: true,
         type: "error",
         title: "ข้อมูลไม่ครบถ้วน",
-        message: "กรุณากรอกชื่อ Game ให้เรียบร้อย",
+        message: "กรุณากรอกชื่อให้เรียบร้อย",
       });
       return;
     }
@@ -116,7 +121,7 @@ export default function GameSetting() {
         isOpen: true,
         type: "error",
         title: "ชื่อซ้ำ",
-        message: "มีชื่อ Game นี้ในระบบแล้ว",
+        message: "มีชื่อนี้อยู่ในระบบแล้ว",
       });
       return;
     }
@@ -141,14 +146,13 @@ export default function GameSetting() {
           isOpen: true,
           type: "success",
           title: "แก้ไขสำเร็จ",
-          message: "อัปเดต Game เรียบร้อยแล้ว",
+          message: "อัปเดตข้อมูลเรียบร้อยแล้ว",
         });
       } else {
         const res = await addproducts(name);
         const newProduct = res.product || null;
 
         if (!newProduct) {
-          // Fallback สำหรับ Mock data ถ้า API ไม่ส่งกลับมา
           const mockNewProduct = { product_id: Date.now(), product_name: name };
           setProducts((prev) => [...prev, mockNewProduct]);
         } else {
@@ -160,7 +164,7 @@ export default function GameSetting() {
           isOpen: true,
           type: "success",
           title: "บันทึกสำเร็จ",
-          message: "เพิ่ม Game ใหม่เรียบร้อยแล้ว",
+          message: "เพิ่มข้อมูลใหม่เรียบร้อยแล้ว",
         });
       }
     } catch (error) {
@@ -169,7 +173,7 @@ export default function GameSetting() {
         isOpen: true,
         type: "error",
         title: "เกิดข้อผิดพลาด",
-        message: "ไม่สามารถบันทึก Game ได้ กรุณาลองใหม่อีกครั้ง",
+        message: "ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง",
       });
     }
   };
@@ -177,16 +181,16 @@ export default function GameSetting() {
   // -----------------------------
   // ลบ product
   // -----------------------------
+
   const handleDeleteProduct = async (index) => {
     const product = products[index];
     const id = product.product_id;
 
-    // เปลี่ยนไปใช้ Modal แบบ Confirm Delete แทน window.confirm
     setFeedbackModal({
       isOpen: true,
       type: "confirm-delete",
       title: "ยืนยันการลบ",
-      message: `คุณต้องการลบเกม "${product.product_name}" ใช่หรือไม่?`,
+      message: `คุณต้องการลบ "${product.product_name}" ใช่หรือไม่?`,
       onConfirm: async () => {
         try {
           await deleteProduct(id);
@@ -196,7 +200,7 @@ export default function GameSetting() {
             isOpen: true,
             type: "success",
             title: "ลบข้อมูลสำเร็จ",
-            message: `ลบเกม "${product.product_name}" เรียบร้อยแล้ว`,
+            message: `ลบ "${product.product_name}" เรียบร้อยแล้ว`,
           });
         } catch (error) {
           console.error("Error deleting product:", error);
@@ -204,7 +208,7 @@ export default function GameSetting() {
             isOpen: true,
             type: "error",
             title: "เกิดข้อผิดพลาด",
-            message: "ไม่สามารถลบ Game ได้",
+            message: "ไม่สามารถลบได้",
           });
         }
       },
@@ -223,13 +227,13 @@ export default function GameSetting() {
       {/* กล่อง card กลางจอ */}
       <div
         className="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative
-  bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl 
-  border border-white/50 dark:border-slate-700/50"
+        bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl 
+        border border-white/50 dark:border-slate-700/50"
       >
         {/* Header */}
         <div
           className="p-8 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 
-bg-transparent border-slate-200/50 dark:border-slate-700/50"
+          bg-transparent border-slate-200/50 dark:border-slate-700/50"
         >
           <div>
             <h1 className="text-2xl font-medium text-left text-slate-900 dark:text-white">
@@ -248,9 +252,9 @@ bg-transparent border-slate-200/50 dark:border-slate-700/50"
 
         {/* List Content */}
         <div className="max-h-[480px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
-          {products.length === 0 ? (
+          { isLoading  ? (
             <div className="p-12 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
-              <AlertCircle size={48} className="mb-3 opacity-20" />
+              <Loader2 size={48} className="mb-3 opacity-20 animate-spin" />
               <p>กำลังโหลดข้อมูล...</p>
             </div>
           ) : products.length === 0 ? (
@@ -353,10 +357,8 @@ bg-transparent border-slate-200/50 dark:border-slate-700/50"
               text-slate-800 dark:text-white
               focus:outline-none
               focus:ring-2 focus:ring-blue-500/30
-              focus:border-blue-500
-            "
-          />
-
+              focus:border-blue-500 "/>
+           
           <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
             This game will appear in the case form dropdown.
           </p>
@@ -369,10 +371,8 @@ bg-transparent border-slate-200/50 dark:border-slate-700/50"
           </ButtonCancel>
 
           <ButtonSave
-            type="submit"
-            disabled={!formData.productName.trim()}
-            className="disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            type="submit">
+          
             <Save size={16} />
             Save Game
           </ButtonSave>
@@ -382,15 +382,14 @@ bg-transparent border-slate-200/50 dark:border-slate-700/50"
   </div>
 )}
 
-
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
         type={feedbackModal.type}
         title={feedbackModal.title}
         message={feedbackModal.message}
         onClose={closeFeedbackModal}
-        onConfirm={feedbackModal.onConfirm}
-      />
+        onConfirm={feedbackModal.onConfirm}/>
+      
     </div>
   );
 }

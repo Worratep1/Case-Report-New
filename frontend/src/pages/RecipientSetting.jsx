@@ -8,11 +8,11 @@ import {
   Save,
   AlertCircle,
   User,
+  Loader2,
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
 
-// API (ระบุ .js เพื่อความชัวร์)
 import {
   getRecipients,
   createRecipient,
@@ -23,10 +23,10 @@ import {
 // Components
 import ActionFeedbackModal from "../components/ActionFeedbackModal.jsx";
 import ButtonBack from "../components/ButtonBack.jsx";
-import ButtonAdd from "../components/ButtonAdd.jsx"; // ใช้ ButtonAdd มาตรฐาน
+import ButtonAdd from "../components/ButtonAdd.jsx";
 import ButtonSave from "../components/ButtonSave.jsx";
 import ButtonCancel from "../components/ButtonCancel.jsx";
-import DarkModeToggle from "../components/DarkModeToggle.jsx"
+import DarkModeToggle from "../components/DarkModeToggle.jsx";
 
 export default function RecipientSetting() {
   const navigate = useNavigate();
@@ -114,13 +114,13 @@ export default function RecipientSetting() {
   };
 
   const isValidEmail = (email) => {
-    return email && email.includes("@") && email.includes(".");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
-
   // --- 4. Save Logic ---
   const handleSave = async (e) => {
     e.preventDefault();
-    const isNew = editingIndex === null; 
+    const isNew = editingIndex === null;
 
     const { name, email, is_active } = formData;
 
@@ -135,11 +135,11 @@ export default function RecipientSetting() {
     }
 
     if (!isValidEmail(email)) {
-       setFeedbackModal({
+      setFeedbackModal({
         isOpen: true,
         type: "error",
         title: "รูปแบบอีเมลไม่ถูกต้อง",
-        message: "กรุณากรอกอีเมลให้ถูกต้อง (เช่น user@example.com)",
+        message: "กรุณากรอก Email ให้ถูกต้อง (เช่น user@example.com)",
       });
       return;
     }
@@ -206,7 +206,7 @@ export default function RecipientSetting() {
           setLoading(true);
           await deleteRecipient(target.recipient_id);
           const data = await getRecipients();
-          setRecipients(data); 
+          setRecipients(data);
 
           setFeedbackModal((prev) => ({
             ...prev,
@@ -233,36 +233,45 @@ export default function RecipientSetting() {
 
   const getAvatarColor = (name) => {
     const colors = [
-      "bg-blue-500", "bg-emerald-500", "bg-purple-500", "bg-amber-500", "bg-rose-500",
+      "bg-blue-500",
+      "bg-emerald-500",
+      "bg-purple-500",
+      "bg-amber-500",
+      "bg-rose-500",
     ];
     const charCode = name ? name.charCodeAt(0) : 0;
     return colors[charCode % colors.length];
   };
 
   return (
-    <div className ="fixed inset-0 w-full h-full overflow-y-auto pt-10
+    <div
+      className="fixed inset-0 w-full h-full overflow-y-auto pt-10
       bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900
-      grid place-items-center">
-         <DarkModeToggle />
-      
+      grid place-items-center"
+    >
+      <DarkModeToggle />
+
       {/* --- UI Container --- */}
-      <div className ="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative
+      <div
+        className="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative
   bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl 
-  border border-white/50 dark:border-slate-700/50">
-        
+  border border-white/50 dark:border-slate-700/50"
+      >
         {/* Header */}
-        <div className ="p-8 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 
-          bg-transparent border-slate-200/50 dark:border-slate-700/50">
+        <div
+          className="p-8 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 
+          bg-transparent border-slate-200/50 dark:border-slate-700/50"
+        >
           <div>
             <h1 className="text-2xl font-medium text-left text-slate-900 dark:text-white">
               Recipients Setting
             </h1>
             <p className="text-sm mt-1 text-left text-slate-500 dark:text-slate-400">
-              Manage email recipients 
+              Manage email recipients
             </p>
           </div>
-          
+
           <ButtonAdd onClick={() => openModal()} disabled={loading}>
             <Plus size={18} />
             Add Recipient
@@ -271,9 +280,9 @@ export default function RecipientSetting() {
 
         {/* List Content */}
         <div className="max-h-[500px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
-          {loading && recipients.length === 0 ? (
+          {loading ? (
             <div className="p-12 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
-              <AlertCircle size={48} className="mb-3 opacity-20" />
+              <Loader2 size={48} className="mb-3 opacity-20 animate-spin" />
               <p>กำลังโหลดข้อมูล...</p>
             </div>
           ) : recipients.length === 0 ? (
@@ -290,7 +299,11 @@ export default function RecipientSetting() {
               >
                 {/* Left: Avatar + Name/Email */}
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className={`w-10 h-10 rounded-full ${getAvatarColor(recipient.name)} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0 uppercase`}>
+                  <div
+                    className={`w-10 h-10 rounded-full ${getAvatarColor(
+                      recipient.name
+                    )} flex items-center justify-center text-white font-normal text-lg shadow-sm shrink-0 uppercase`}
+                  >
                     {recipient.name?.charAt(0) || "U"}
                   </div>
 
@@ -300,8 +313,10 @@ export default function RecipientSetting() {
                       {recipient.is_active ? (
                         <span className=""></span>
                       ) : (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold
-                          bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                        <span
+                          className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold
+                          bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600"
+                        >
                           Inactive
                         </span>
                       )}
@@ -341,123 +356,136 @@ export default function RecipientSetting() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t flex items-center justify-between
-          bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-700">
+        <div
+          className="p-4 border-t flex items-center justify-between
+          bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-700"
+        >
           <div className="flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2 rounded w-fit text-slate-500 hover:text-slate-800">
             <ButtonBack onClick={() => navigate("/setting")}>Back</ButtonBack>
           </div>
           {loading && (
-            <span className="text-xs text-slate-400">
-              Processing...
-            </span>
+            <span className="text-xs text-slate-400">Processing...</span>
           )}
         </div>
       </div>
 
       {/* --- MODAL FORM --- */}
-     {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-    <div
-      className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden
       bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
       animate-in zoom-in-95 duration-200"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-        <h3 className="text-xl font-medium text-slate-800 dark:text-white">
-          {editingIndex !== null ? "Edit Recipient" : "Add New Recipient"}
-        </h3>
-        <button
-          onClick={closeModal}
-          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
-        >
-          <X size={20} />
-        </button>
-      </div>
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h3 className="text-xl font-medium text-slate-800 dark:text-white">
+                {editingIndex !== null ? "Edit Recipient" : "Add New Recipient"}
+              </h3>
+              <button
+                onClick={closeModal}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-      {/* Content */}
-      <form onSubmit={handleSave} noValidate className="px-6 py-5 space-y-5 text-left">
-        {/* Username */}
-        <div>
-          <label className="block text-xs font-medium mb-2 text-slate-600 dark:text-slate-300">
-            Username
-          </label>
-          <div className="relative">
-            <User
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter username"
-              maxLength={150}
-              autoFocus
-              required
-              className="w-full pl-10 pr-4 py-3 rounded-lg text-sm
+            {/* Content */}
+            <form
+              onSubmit={handleSave}
+              noValidate
+              className="px-6 py-5 space-y-5 text-left"
+            >
+              {/* Username */}
+              <div>
+                <label className="block text-xs font-medium mb-2 text-slate-600 dark:text-slate-300">
+                  Username
+                </label>
+                <div className="relative">
+                  <User
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Enter username"
+                    maxLength={150}
+                    autoFocus
+                    required
+                    className="w-full pl-10 pr-4 py-3 rounded-lg text-sm
                 bg-white dark:bg-slate-900
                 border border-slate-200 dark:border-slate-700
                 text-slate-800 dark:text-white
                 focus:outline-none
                 focus:ring-2 focus:ring-blue-500/30
                 focus:border-blue-500"
-            />
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-medium mb-2 text-slate-600 dark:text-slate-300">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail
+                    size={16}
+                    className={`absolute left-3 top-1/2 -translate-y-1/2 ${
+                      isValidEmail(formData.email)
+                        ? "text-emerald-500"
+                        : "text-slate-400"
+                    }`}
+                  />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="user@example.com"
+                    maxLength={255}
+                    required
+                    className={`w-full pl-10 pr-4 py-3 rounded-lg text-sm
+                      bg-white dark:bg-slate-900
+                      text-slate-800 dark:text-white
+                      focus:outline-none
+                      focus:ring-2
+                      border transition-all
+                      ${
+                        formData.email && !isValidEmail(formData.email)
+                          ? "border-red-500 ring-1 ring-red-500/20"
+                          : "border-slate-200 dark:border-slate-700 focus:ring-blue-500/30 focus:border-blue-500"
+                      }`}
+                  />
+                </div>
+                {formData.email && !isValidEmail(formData.email) && (
+                  <p className="text-[10px] text-red-500 mt-1">
+                    Invalid email format
+                  </p>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <ButtonCancel
+                  type="button"
+                  onClick={closeModal}
+                  disabled={loading}
+                >
+                  Cancel
+                </ButtonCancel>
+                <ButtonSave type="submit" disabled={loading}>
+                  <Save size={16} />
+                  {editingIndex !== null ? "Save Changes" : "Save Recipient"}
+                </ButtonSave>
+              </div>
+            </form>
           </div>
         </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-xs font-medium mb-2 text-slate-600 dark:text-slate-300">
-            Email
-          </label>
-          <div className="relative">
-            <Mail
-              size={16}
-              className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                isValidEmail(formData.email)
-                  ? "text-blue-500"
-                  : "text-slate-400"
-              }`}
-            />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="user@example.com"
-              maxLength={255}
-              required
-              className={`w-full pl-10 pr-4 py-3 rounded-lg text-sm
-                bg-white dark:bg-slate-900
-                text-slate-800 dark:text-white
-                border
-                focus:outline-none
-                focus:ring-2
-                ${
-                  isValidEmail(formData.email)
-                    ? "border-slate-200 dark:border-slate-700 focus:ring-blue-500/30 focus:border-blue-500"
-                    : "border-slate-200 dark:border-slate-700 focus:ring-slate-300"
-                }`}
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <ButtonCancel type="button" onClick={closeModal} disabled={loading}>
-            Cancel
-          </ButtonCancel>
-          <ButtonSave type="submit" disabled={loading}>
-            <Save size={16} />
-            {editingIndex !== null ? "Save Changes" : "Save Recipient"}
-          </ButtonSave>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+      )}
 
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}

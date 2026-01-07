@@ -677,11 +677,10 @@ export default function DailyReport() {
           mode: viewMode,
         });
 
+         // เรียงข้อมูลเก่าไปใหม่
+
         const rawCases = (res.cases || [])
-          .slice()
-          .sort(
-            (a, b) => new Date(b.start_datetime) - new Date(a.start_datetime)
-          );
+          .slice();
 
         const mappedCases = rawCases.map((c) => {
           // 1. หาชื่อจาก ID
@@ -748,7 +747,20 @@ export default function DailyReport() {
             startMs: start.getTime(),
           };
         });
-        mappedCases.sort((a, b) => b.startMs - a.startMs);
+        mappedCases.sort((a, b) => {
+        // 1. เรียงตามวันเริ่ม (เก่า → ใหม่)
+        if (a.startMs !== b.startMs) {
+          return a.startMs - b.startMs;
+        }
+
+        // 2. ถ้าวันเริ่มเท่ากัน → เคสที่จบก่อนอยู่บน
+        if (a.endMs !== b.endMs) {
+          return a.endMs - b.endMs;
+        }
+
+        // 3. กันกรณีเท่าหมด
+        return a.id - b.id;
+      });
         setCases(mappedCases);
       } catch (err) {
         console.error("Error fetching cases:", err);
