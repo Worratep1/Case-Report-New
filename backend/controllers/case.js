@@ -13,7 +13,7 @@ exports.createCase = async (req, res) => {
       requester_name,
       solution,
       solver,
-      created_by,         // จะให้ส่งหรือไม่ก็ได้
+      created_by,         
     } = req.body;
 
     // 1) ตรวจให้ครบ
@@ -46,11 +46,12 @@ exports.createCase = async (req, res) => {
     }
     if (requester_name.length > 150 || solver.length > 150){
       return res.status(400).json({
-        message:"ชื่อยาวเกินไป"
+        message:"ชื่อผู้แจ้งหรือผู้แก้ไขยาวเกินไป (สูงสุด 150 ตัวอักษร)"
       })
 
     }
-    // 2) INSERT
+    
+    
     const result = await pool.query(
       `
       INSERT INTO cases (
@@ -115,11 +116,21 @@ exports.createCase = async (req, res) => {
 // ========================================
 // GET /api/cases  → ดึงเคสทั้งหมด หรือ ดึงเคสตามวันที่  (รองรับรายเดือน)
 // ========================================
+
 exports.getCases = async (req, res) => {
   try {
     const { date  , mode } = req.query; 
 
     let result;
+
+    if (date) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; //YYYY-MM-DD
+      if (!dateRegex.test(date)) {
+        return res.status(400).json({
+          message: "รูปแบบวันที่ไม่ถูกต้อง กรุณาใช้รูปแบบ YYYY-MM-DD (เช่น 2025-12-25)"
+        });
+      }
+    }
 
     if (date) {
       if(mode === "monthly"){
@@ -173,6 +184,7 @@ exports.getCases = async (req, res) => {
 // ========================================
 // GET /api/cases/:id  → ดูรายละเอียดเคสทีละอัน
 // ========================================
+
 exports.getCaseById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -252,6 +264,36 @@ exports.updateCase = async (req, res) => {
             created_by
         } = req.body;
 
+        if (
+            !start_datetime ||
+            !end_datetime ||
+            !product_id ||
+            !status_id ||
+            !problem_id ||
+            !description ||
+            !requester_name ||
+            !solution ||
+            !solver
+        ) {
+            return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
+        }
+        // 2) ตรวจสอบความยาวตัวอักษร
+        if (description.length > 1000) {
+            return res.status(400).json({
+                message: "รายละเอียดปัญหายาวเกินกำหนด (สูงสุด 1000 ตัวอักษร)"
+            });
+        }
+        if (solution.length > 1000) {
+            return res.status(400).json({
+                message: "วิธีแก้ไขยาวเกินกำหนด (สูงสุด 1000 ตัวอักษร)"
+            });
+        }
+        if (requester_name.length > 150 || solver.length > 150) {
+            return res.status(400).json({
+                message: "ชื่อผู้แจ้งหรือผู้แก้ไขยาวเกินไป (สูงสุด 150 ตัวอักษร)"
+            });
+        }
+
         // 2. [Optional] ตรวจสอบว่าเคสมีอยู่จริงหรือไม่
         const checkcase = await pool.query(
             `SELECT case_id FROM cases WHERE case_id = $1`,
@@ -260,6 +302,12 @@ exports.updateCase = async (req, res) => {
         if (checkcase.rows.length === 0) {
             return res.status(404).json({ message: "ไม่พบเคสที่ระบุ" });
         }
+
+            if (new Date(end_datetime) < new Date(start_datetime)) {
+      return res.status(400).json({
+        message: "เวลาที่สิ้นสุดต้องไม่มาก่อนเวลาที่เริ่ม"
+      });
+    }
         
         // 3. 🎯 ทำการอัปเดตข้อมูลในฐานข้อมูล (9 fields + updated_at)
         const result = await pool.query(
@@ -273,12 +321,13 @@ exports.updateCase = async (req, res) => {
                 description = $6,
                 requester_name = $7,
                 solution = $8,
-                solver = $9
+                solver = $9 ,
+                updated_at = NOW()
                 
             WHERE case_id = $10   
             RETURNING *;
             `,
-            // 🛑 Array นี้ต้องมี 10 องค์ประกอบ 🛑
+           
             [
                 start_datetime, // $1
                 end_datetime,   // $2

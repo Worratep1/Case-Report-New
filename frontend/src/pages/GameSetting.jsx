@@ -254,8 +254,10 @@ export default function GameSetting() {
         <div className="max-h-[480px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
           { isLoading  ? (
             <div className="p-12 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
-              <Loader2 size={48} className="mb-3 opacity-20 animate-spin" />
-              <p>กำลังโหลดข้อมูล...</p>
+               <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-600" />
+                          <p className="mt-3 font-medium text-slate-600 dark:text-slate-300">
+                            กำลังโหลดข้อมูล...
+                          </p>
             </div>
           ) : products.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">

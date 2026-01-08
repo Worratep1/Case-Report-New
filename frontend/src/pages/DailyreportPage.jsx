@@ -986,7 +986,7 @@ export default function DailyReport() {
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
     >
       {" "}
-      {/* contanier  Background Dark Mode */}
+      {/* contanier */}
       {/* Header Bar */}
       <PageHeader
         title="Daily Report"
@@ -1123,12 +1123,12 @@ export default function DailyReport() {
                   <tr>
                     <td
                       colSpan="6"
-                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
-                    >
+                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                    
                       <div className="flex flex-col items-center gap-2">
                         <Loader2
                           size={32}
-                          className="animate-spin text-blue-500"
+                          className="animate-spin text-blue-600"
                         />
                         <p>กำลังโหลดข้อมูล...</p>
                       </div>
@@ -1141,7 +1141,7 @@ export default function DailyReport() {
                       key={item.id}
                       onClick={() => handleCaseClick(item)}
                       className="transition-colors group cursor-pointer
-                      hover:bg-slate-50 dark:hover:bg-slate-700/50" /* Row Hover Dark Mode */
+                      hover:bg-slate-50 dark:hover:bg-slate-700/50" 
                       title="คลิกเพื่อดูรายละเอียด"
                     >
                       <td className="px-6 py-4 whitespace-nowrap align-top text-center text-slate-400 font-medium">
@@ -1313,6 +1313,7 @@ export default function DailyReport() {
           </div>
         </div>
       </main>
+      
       {/* --- CASE DETAIL MODAL --- */}
       {isCaseDetailModalOpen && selectedCaseDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">

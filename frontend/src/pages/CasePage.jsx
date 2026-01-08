@@ -688,7 +688,7 @@ export default function CasePage() {
           >
             {" "}
             {/*  Loading Screen Dark Mode */}
-            <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400" />
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-600" />
             <p className="mt-3 font-medium text-slate-600 dark:text-slate-300">
               กำลังโหลดข้อมูล...
             </p>

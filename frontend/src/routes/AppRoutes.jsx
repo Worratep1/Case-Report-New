@@ -49,7 +49,7 @@ export default function AppRoutes() {
 
 
 
-      {/* ถ้าพิมพ์ path มั่ว ให้เด้งไป /login */}
+      {/* ถ้าพิมพ์ path มั่ว ให้เด้งไป /login  */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

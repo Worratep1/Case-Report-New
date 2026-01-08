@@ -22,7 +22,9 @@ app.get("/", (req, res) => {
 });
 
 
-readdirSync("./routers").map((r) => app.use("/api", require("./routers/" + r)));
+readdirSync("./routers")
+    .filter((file) => file.endsWith(".js")) // โหลดเฉพาะไฟล์ที่ลงท้ายด้วย .js
+    .map((r) => app.use("/api", require("./routers/" + r)));
 
 app.get("/test", async (req, res) => {
     try {

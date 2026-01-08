@@ -13,10 +13,10 @@ module.exports = (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     // verify token ด้วย SECRET ใน .env
+
     const decode = jwt.verify(token, process.env.JWT_SECRET);
 
     // เก็บข้อมูล user จาก token ไว้ใน req.user
-
     req.user = decode;
 
     next();

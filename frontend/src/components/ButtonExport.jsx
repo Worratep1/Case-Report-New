@@ -18,7 +18,7 @@ const ExportButton = ({
         transition-all duration-300 
         ${
           disabled
-            ? "bg-slate-200 text-slate-400 cursor-not-allowed" // สีตอนกดไม่ได้
+            ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none" // สีตอนกดไม่ได้
             : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg  shadow-green-600/50 hover:-translate-y-1 active:scale-95" // สีปกติ
         }
       `}
