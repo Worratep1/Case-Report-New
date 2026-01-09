@@ -57,7 +57,7 @@ exports.getproducts = async (req, res) => {
 };
 
 
-// ลบ Product ตาม id (ลบออกจากตารางจริง ๆ - hard delete)
+// ลบ Product ตาม id 
 exports.deleteProduct = async (req, res) => {
   const { id } = req.params;  // ดึงมาจาก /products/:id
 

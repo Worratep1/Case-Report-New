@@ -48,7 +48,7 @@ export default function MemberSetting() {
         isOpen: true,
         type: "error",
         title: "เกิดข้อผิดพลาด",
-        message: "ไม่สามารถโหลดข้อมูลสมาชิกได้",
+        message: "ไม่สามารถโหลดข้อมูลสมาชิกได้ กรุณาลองใหม่อีกครั้ง",
       });
     } finally {
       setIsLoading(false);

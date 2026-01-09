@@ -1434,7 +1434,7 @@ export default function CustomReport() {
 
             <ButtonSend
               onClick={handleOpenEmailModal}
-              disabled={casesOfSelectedDate.length === 0}
+              // disabled={casesOfSelectedDate.length === 0}
             />
           </>
         }

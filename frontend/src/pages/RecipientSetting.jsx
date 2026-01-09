@@ -73,7 +73,7 @@ export default function RecipientSetting() {
           isOpen: true,
           type: "error",
           title: "ดึงข้อมูลไม่สำเร็จ",
-          message: "ไม่สามารถดึงข้อมูลผู้รับอีเมลได้ในขณะนี้",
+          message: "ไม่สามารถโหลดข้อมูลผู้รับอีเมลได้ กรุณาลองใหม่อีกครั้ง",
         });
       } finally {
         setLoading(false);

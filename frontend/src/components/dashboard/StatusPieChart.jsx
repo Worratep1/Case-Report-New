@@ -54,7 +54,7 @@ const StatusPieChart = ({ data }) => {
               ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
               <PieChartIcon size={32} className="mb-1 opacity-50" />
-              <p className="text-xs">No Data</p>
+              <p className="text-xs">ไม่พบข้อมูล</p>
             </div>
           )}
         </div>
@@ -70,7 +70,7 @@ const StatusPieChart = ({ data }) => {
               </div>
             ))
           ) : (
-            <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center col-span-2">No data available</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500  text-center col-span-2">ไม่พบข้อมูล </p>
           )}
         </div>
       </div>

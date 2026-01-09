@@ -52,8 +52,7 @@ exports.exportReport = async (req, res) => {
       conditions.push(`(p.product_name ILIKE ${idx} OR pr.problem_name ILIKE ${idx})`);
     }
 
-     
-
+  
 
     const finalWhereClause = conditions.join(" AND ");
 

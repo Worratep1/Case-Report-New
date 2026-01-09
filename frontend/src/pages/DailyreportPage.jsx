@@ -1020,7 +1020,6 @@ export default function DailyReport() {
 
             <ButtonSend
               onClick={handleOpenEmailModal}
-              disabled={casesOfSelectedDate.length === 0}
             />
           </>
         }
@@ -1059,8 +1058,8 @@ export default function DailyReport() {
         {/* Toolbar & Filters */}
         <div
           className="p-4 rounded-t-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4
-          bg-white dark:bg-slate-800"
-        >
+          bg-white dark:bg-slate-800">
+        
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
               รายการแจ้งปัญหา
@@ -1100,9 +1099,7 @@ export default function DailyReport() {
                   className="border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-semibold tracking-wider
                   bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400   "
                 >
-                  <th className="px-6 py-4 w-16 text-center whitespace-nowrap">
-                    ID
-                  </th>
+                  <th className="px-6 py-4 w-16 text-center whitespace-nowrap">ID</th>
                   <th className="px-6 py-4 whitespace-nowrap ">Status</th>
                   <th className="px-6 py-4 whitespace-nowrap ">Start Date</th>
                   <th className="px-6 py-4 whitespace-nowrap ">End Date</th>
@@ -1142,8 +1139,8 @@ export default function DailyReport() {
                       onClick={() => handleCaseClick(item)}
                       className="transition-colors group cursor-pointer
                       hover:bg-slate-50 dark:hover:bg-slate-700/50" 
-                      title="คลิกเพื่อดูรายละเอียด"
-                    >
+                      title="คลิกเพื่อดูรายละเอียด">
+                    
                       <td className="px-6 py-4 whitespace-nowrap align-top text-center text-slate-400 font-medium">
                         {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                       </td>
@@ -1157,6 +1154,7 @@ export default function DailyReport() {
                           <span>{item.startDate}</span>
                         </div>
                       </td>
+
                       {/* --- คอลัมน์ วันที่สิ้นสุด --- */}
                       <td className="px-6 py-4 whitespace-nowrap align-top">
                         <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-200 font-medium">
@@ -1173,8 +1171,7 @@ export default function DailyReport() {
                           </div>
                           <span
                             className="text-xs px-2 py-0.5 rounded w-fit
-                            bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
-                          >
+                            bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                             ใช้เวลา: {item.duration}
                           </span>
                         </div>
@@ -1221,8 +1218,7 @@ export default function DailyReport() {
                           <div className="flex items-center gap-2">
                             <div
                               className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                              bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
-                            >
+                              bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                               R
                             </div>
                             <span className="text-sm font-normal text-slate-700 dark:text-slate-300">
@@ -1232,8 +1228,7 @@ export default function DailyReport() {
                           <div className="flex items-center gap-2">
                             <div
                               className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                              bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                            >
+                              bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                               O
                             </div>
                             <span className="text-sm font-normal text-slate-700 dark:text-slate-300">

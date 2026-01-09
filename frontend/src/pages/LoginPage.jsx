@@ -71,7 +71,7 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-[420px] mx-4 z-10 animate-in fade-in zoom-in duration-500">
         {/* --- MAIN LOGIN CARD --- */}
-        <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-10 transition-all">
+        <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] p-10 transition-all">
           {/* Header Section */}
           <div className="flex flex-col items-center mb-10">
             <div className="relative mb-5">
@@ -152,7 +152,7 @@ export default function LoginPage() {
 
           {/* Footer Note */}
           <p className="text-center mt-8 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-            &copy; 2025 Play Park NOC TEAM. <br /> All Rights Reserved.
+            &copy; v1.5.0 • Demo
           </p>
         </div>
       </div>
