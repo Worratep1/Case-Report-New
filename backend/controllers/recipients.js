@@ -9,6 +9,7 @@ const validateEmail = (email) => {
 // 1. เพิ่มรายชื่อผู้รับ (CREATE)
 //    POST /api/recipients
 // ----------------------------------------------------------
+
 exports.createRecipient = async (req, res) => {
   const { email, name, is_active } = req.body;
 
@@ -69,6 +70,7 @@ exports.createRecipient = async (req, res) => {
 // 2. ดึงรายชื่อผู้รับทั้งหมด (READ List)
 //    GET /api/recipients
 // ----------------------------------------------------------
+
 exports.getRecipients = async (req, res) => {
   try {
     const result = await pool.query(
@@ -93,6 +95,7 @@ exports.getRecipients = async (req, res) => {
 // 3. ดึงข้อมูลผู้รับตาม id (READ Detail)
 //    GET /api/recipients/:id
 // ----------------------------------------------------------
+
 exports.getRecipientById = async (req, res) => {
   const { id } = req.params;
 
@@ -124,6 +127,7 @@ exports.getRecipientById = async (req, res) => {
 // 4. แก้ไขข้อมูลผู้รับ (UPDATE)
 //    PUT /api/recipients/:id
 // ----------------------------------------------------------
+
 exports.updateRecipient = async (req, res) => {
   const { id } = req.params;
   const { email, name, is_active } = req.body;
@@ -191,6 +195,7 @@ exports.updateRecipient = async (req, res) => {
 // 5. ลบผู้รับออกจากฐานข้อมูล (DELETE แบบ Hard Delete)
 //    DELETE /api/recipients/:id
 // ----------------------------------------------------------
+
 exports.deleteRecipient = async (req, res) => {
   const { id } = req.params;
 

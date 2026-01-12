@@ -2,8 +2,6 @@
 const pool = require("../config/db");
 const ExcelJS = require("exceljs");
 
-
-
 const formatThaiDate = (dateStr) => {
   if (!dateStr) return "-";
   const [year, month, day] = dateStr.split('-');
@@ -95,6 +93,8 @@ exports.exportReport = async (req, res) => {
     // ---------------------------------------------------------
     // 3.3 ดึง "Status Summary"
     // ---------------------------------------------------------
+
+
     const statusResult = await pool.query(
       `
       SELECT s.status_name AS status, COUNT(*) AS case_count
@@ -109,9 +109,11 @@ exports.exportReport = async (req, res) => {
       values
     );
     const statusRows = Array.isArray(statusResult?.rows) ? statusResult.rows : [];
+
     // =========================================================
     // 4. คำนวณ Summary Metrics (Total Downtime & Most Impacted)
     // =========================================================
+
     const gameStats = {};
     let totalDowntimeMinutes = 0;
 
@@ -159,6 +161,7 @@ exports.exportReport = async (req, res) => {
     // ---------------------------------------------------------
     // 5. สร้างไฟล์ Excel
     // ---------------------------------------------------------
+
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Report");
     const displayDate = getReportRangeLabel(date, mode);

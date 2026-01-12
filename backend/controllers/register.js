@@ -12,7 +12,6 @@ const bcrypt = require("bcryptjs");
 
 };
 
-
 exports.register = async (req, res) => {
   //  รับ password ปกติ ไม่ใช่ password_hash
   const { username, password, first_name, last_name, email } = req.body;
@@ -111,6 +110,8 @@ exports.getuser = async (req, res) => {
 // 3. ดึงข้อมูลสมาชิกตาม id (READ - detail)
 //    GET /api/users/:id
 // ----------------------------------------------------------
+
+
 exports.getUserById = async (req, res) => {
   const { id } = req.params; // รับจาก URL
 
@@ -142,6 +143,7 @@ exports.getUserById = async (req, res) => {
 // 4. แก้ไขข้อมูลสมาชิก (UPDATE)
 //    PUT /api/users/:id     
 // ----------------------------------------------------------
+
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
 

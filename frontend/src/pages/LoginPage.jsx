@@ -152,7 +152,7 @@ export default function LoginPage() {
 
           {/* Footer Note */}
           <p className="text-center mt-8 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-            &copy; v1.5.0 • Demo
+            &copy; v1.0 
           </p>
         </div>
       </div>

@@ -3,24 +3,18 @@ const cors = require("cors");
 require("dotenv").config(); // โหลดตัวแปรจาก .env
 const pool = require("./config/db"); // นำเข้า pool จากไฟล์ db.js
 const app = express();
-const PORT = process.env.PORT; // ใช้พอร์ตจาก .env หรือ 3000 เป็นค่าเริ่มต้น
-
+const PORT = process.env.PORT; // ใช้พอร์ตจาก .env หรือ 4000 เป็นค่าเริ่มต้น
 const {readdirSync} = require("fs");
-
-
 
 // Middleware
 app.use(cors()); 
-app.use(express.json());//ให้serverอ่านค่าjsonได้
-
+app.use(express.json());        //ให้serverอ่านค่าjsonได้
 
 // app.use('/api/auth', authRoutes);
 
-
-app.get("/", (req, res) => {
-    res.send("API is running...");
-});
-
+// app.get("/", (req, res) => {
+//     res.send("API is running...");
+// });
 
 readdirSync("./routers")
     .filter((file) => file.endsWith(".js")) // โหลดเฉพาะไฟล์ที่ลงท้ายด้วย .js
