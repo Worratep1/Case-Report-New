@@ -1192,7 +1192,7 @@ export default function DailyReport() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 align-top max-w-xs">
+                      <td className="px-6 py-4 align-top ">
                         <div className="space-y-2">
                           <p className="text-sm text-slate-600 dark:text-slate-300 ">
                             <span className="font-medium text-slate-900 dark:text-white">

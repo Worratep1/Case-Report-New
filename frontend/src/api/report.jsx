@@ -15,7 +15,7 @@ export async function sendDailyReport(formData) {
     if (error.response) {
       throw new Error(error.response.data.message || "ส่งรายงานไม่สำเร็จ (API Error)");
     } else {
-      throw new Error("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์เพื่อส่งรายงาน");
+      throw new Error("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
     }
   }
 }
