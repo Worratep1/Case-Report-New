@@ -80,10 +80,10 @@ const CustomTimePicker = ({ label, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const hours = Array.from({ length: 24 }, (_, i) =>
-    i.toString().padStart(2, "0")
+    i.toString().padStart(2, "0"),
   );
   const minutes = Array.from({ length: 60 }, (_, i) =>
-    i.toString().padStart(2, "0")
+    i.toString().padStart(2, "0"),
   );
   const [currentH, currentM] =
     value && value.includes(":") ? value.split(":") : ["--", "--"];
@@ -270,16 +270,17 @@ const CustomSelect = ({
                   onChange(option[valueKey]);
                   setIsOpen(false);
                 }}
-                className={`px-4 py-2.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
-                  value === option[valueKey]
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700"
-                }`}
+                
+                className={`px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors mb-0.5 last:mb-0
+              ${
+                value === option[valueKey]
+                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
+              }
+            `}
               >
+                {/* แสดงแค่ชื่อรายการ (เอา CheckCircle ออกตามสไตล์ CustomReport) */}
                 {option[displayKey]}
-                {value === option[valueKey] && (
-                  <CheckCircle className="w-4 h-4 text-white" />
-                )}
               </div>
             ))}
             {options.length === 0 && (
@@ -298,7 +299,7 @@ const CustomSelect = ({
 const CustomDatePicker = ({ label, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(
-    value ? new Date(value) : new Date()
+    value ? new Date(value) : new Date(),
   );
   const containerRef = useRef(null);
 
@@ -315,7 +316,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth() + 1;
     const localDateStr = `${year}-${String(month).padStart(2, "0")}-${String(
-      day
+      day,
     ).padStart(2, "0")}`;
     onChange(localDateStr);
     setIsOpen(false);
@@ -332,7 +333,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
     for (let d = 1; d <= daysInMonth; d++) {
       const month = viewDate.getMonth() + 1;
       const year = viewDate.getFullYear();
-      const currentDateString = `${year}-${String(month).padStart(2,"0")}-${String(d).padStart(2, "0")}`;
+      const currentDateString = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const isSelected = value === currentDateString;
       days.push(
         <button
@@ -346,15 +347,15 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           }`}
         >
           {d}
-        </button>
+        </button>,
       );
     }
     return days;
   };
-
+  // Lable ของวันที่เเละเวลา
   return (
     <div className="relative" ref={containerRef}>
-      <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
+      <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
         {label}
       </label>
       <div
@@ -457,7 +458,6 @@ export default function CasePage() {
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
   const loggedInUserId = storedUser?.user_id ?? null;
 
-  
   const [lookupData, setLookupData] = useState({
     products: [],
     statuses: [],
@@ -466,7 +466,7 @@ export default function CasePage() {
   });
   const [loadingLookup, setLoadingLookup] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null); 
+  const [submitError, setSubmitError] = useState(null);
 
   // [UPDATED] Unified Modal State
   const [feedbackModal, setFeedbackModal] = useState({
@@ -507,7 +507,7 @@ export default function CasePage() {
     formData.start_datetime,
     formData.timeStart,
     formData.end_datetime,
-    formData.timeEnd
+    formData.timeEnd,
   );
 
   useEffect(() => {
@@ -609,24 +609,24 @@ export default function CasePage() {
     };
 
     try {
-  await createCase(payload);
-  setFeedbackModal({
-    isOpen: true,
-    type: "success",
-    title: "ส่งข้อมูลสำเร็จ!",
-    message: "ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว",
-    showSecondaryButton: true,
-    cancelText: "กลับหน้าหลัก",
-    confirmText: "ดูรายการเคส",
-    onClose: () => {
-      closeFeedbackModal();
-      navigate("/menu");
-    },
-    onConfirm: () => {
-      closeFeedbackModal(); 
-      navigate("/dailyreport"); 
-    },
-  });
+      await createCase(payload);
+      setFeedbackModal({
+        isOpen: true,
+        type: "success",
+        title: "ส่งข้อมูลสำเร็จ!",
+        message: "ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว",
+        showSecondaryButton: true,
+        cancelText: "กลับหน้าหลัก",
+        confirmText: "ดูรายการเคส",
+        onClose: () => {
+          closeFeedbackModal();
+          navigate("/menu", { replace: true });
+        },
+        onConfirm: () => {
+          closeFeedbackModal();
+          navigate("/dailyreport", { replace: true });
+        },
+      });
 
       setFormData(initialFormState());
     } catch (error) {
@@ -755,6 +755,7 @@ export default function CasePage() {
               </div>
             </div>
           </div>
+          
           <hr className="border-slate-100 dark:border-slate-700" />{" "}
           <div className="space-y-4 text-left">
             <h2 className="text-base font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -793,7 +794,7 @@ export default function CasePage() {
             />
 
             <div>
-              <label className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 block ml-1">
+              <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2 block ml-1">
                 รายละเอียด (Detail)
               </label>
               <textarea

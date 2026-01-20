@@ -1651,9 +1651,9 @@ export default function CustomReport() {
                       </td>
 
                       {/* DETAILS & SOLUTION */}
-                      <td className="px-6 py-4 align-top">
+                      <td className="px-6 py-4 align-top max-w-xs">
                         <div className="space-y-2">
-                          <p className="text-sm text-slate-600 dark:text-slate-300 ">
+                          <p className="text-sm text-slate-600 dark:text-slate-300 break-words ">
                             <span className="font-semibold text-slate-900 dark:text-white">
                               รายละเอียด:
                             </span>{" "}
@@ -1661,10 +1661,10 @@ export default function CustomReport() {
                           </p>
                           {item.solution && (
                             <div
-                              className="text-xs px-3 py-2 rounded-lg 
+                              className="text-xs px-3 py-2 rounded-lg block w-full break-words 
                               bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30"
                             >
-                              <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                              <span className="font-medium text-emerald-700 dark:text-emerald-400">
                                 แก้ไข:
                               </span>{" "}
                               {item.solution}
@@ -1726,8 +1726,8 @@ export default function CustomReport() {
                   // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูล
                   <tr>
                     <td
-                      colSpan="8"
-                      className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
+                      colSpan="10"
+                      className="px-5 py-12 text-center text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2">
                         <Search

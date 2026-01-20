@@ -1192,9 +1192,9 @@ export default function DailyReport() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 align-top ">
+                      <td className="px-6 py-4 align-top max-w-xs">
                         <div className="space-y-2">
-                          <p className="text-sm text-slate-600 dark:text-slate-300 ">
+                          <p className="text-sm text-slate-600 dark:text-slate-300 break-words">
                             <span className="font-medium text-slate-900 dark:text-white">
                               รายละเอียด:
                             </span>{" "}
@@ -1202,7 +1202,7 @@ export default function DailyReport() {
                           </p>
                           {item.solution && (
                             <div
-                              className="text-xs px-3 py-2 rounded-lg 
+                              className="text-xs px-3 py-2 rounded-lg block w-full break-words 
                               bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30"
                             >
                               <span className="font-medium text-emerald-700 dark:text-emerald-400">
@@ -1243,7 +1243,7 @@ export default function DailyReport() {
                   // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูลในวันที่เลือก
                   <tr>
                     <td
-                      colSpan="8" //คอลัมน์
+                      colSpan="8" 
                       className="px-6 py-12 text-center  text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2 ">
