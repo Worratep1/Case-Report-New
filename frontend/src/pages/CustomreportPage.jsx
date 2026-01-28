@@ -42,7 +42,6 @@ import { getRecipients } from "../api/recipients";
 import { sendDailyReport } from "../api/report";
 import { exportReport } from "../api/export";
 import { useNavigate } from "react-router-dom";
-import { captureReportImage } from "../utils/reportCapture";
 
 import BackIconButton from "../components/BackIconButton.jsx";
 import ExportButton from "../components/ButtonExport";
@@ -1022,8 +1021,8 @@ export default function CustomReport() {
     setFeedbackModal({
       isOpen: true,
       type: "error", // ใช้ type error เพื่อแสดงสีแดงและไอคอนเตือน
-      title: "ยืนยันการลบ?",
-      message: "คุณแน่ใจหรือไม่ที่จะลบรายการเคสนี้?",
+      title: "ยืนยันการลบ",
+      message: "คุณแน่ใจหรือไม่ว่าต้องการลบเคสนี้?",
       onConfirm: () => confirmDelete(item.id), // เมื่อกดยืนยัน ให้เรียกฟังก์ชัน confirmDelete
     });
     setIsDeleteModalOpen(true);
@@ -1285,7 +1284,7 @@ export default function CustomReport() {
     );
   };
 
-  const handleSendEmail = async () => {
+ const handleSendEmail = async () => {
     if (selectedRecipientIds.length === 0) {
       setFeedbackModal({
         isOpen: true,
@@ -1296,49 +1295,67 @@ export default function CustomReport() {
       return;
     }
 
-    try {
-      const imageBlob = await captureReportImage("custom-report-content");
+    setIsLoading(true);
 
-      // 1) ดึง email จาก recipients ที่เลือก
+    try {
+      // 1. กำหนดช่วงวันที่ของรายงาน (Report Period)
+      const period = viewMode === "daily" 
+        ? selectedDate.split("-").reverse().join("/") 
+        : `01/${selectedDate.split("-")[1]}/${selectedDate.split("-")[0]} - ${selectedDate.split("-").reverse().join("/")}`;
+
+      // 2. ดึง Email ผู้รับ
       const toEmails = availableRecipients
         .filter((r) => selectedRecipientIds.includes(r.recipient_id))
         .map((r) => r.email);
 
-      // 2) สร้าง FormData
+      // 3. สร้างก้อนข้อมูล JSON สำหรับหัวรายงานและสรุป
+      const reportInfo = {
+        viewMode: viewMode,
+        reportPeriod: period
+      };
+
+      const summaryData = {
+        totalCases: dashboardData.stats.totalCases,
+        totalDowntime: dashboardData.stats.totalDowntimeStr,
+        mostImpacted: dashboardData.stats.mostImpacted
+      };
+
+      // 4. จัดเตรียม FormData
       const formData = new FormData();
       formData.append("toEmails", JSON.stringify(toEmails));
       formData.append("subject", emailSubject);
       formData.append("body", emailBody);
+      
+      // --- ส่งก้อนข้อมูล JSON (สำคัญมากเพื่อให้ตารางขึ้นในเมล) ---
+      formData.append("reportInfo", JSON.stringify(reportInfo));
+      formData.append("summaryData", JSON.stringify(summaryData));
+      formData.append("casesData", JSON.stringify(filteredCases)); // รายการทั้งหมดในตาราง
 
-      formData.append("reportImage", imageBlob, "report-screenshot.png");
-
-      // 3) แนบไฟล์ (จาก state attachedFiles ที่ฟอร์ดทำไว้แล้ว)
+      // 5. แนบไฟล์ปกติ (ถ้ามี)
       attachedFiles
-        .filter((file) => !!file) // เอาเฉพาะช่องที่มีไฟล์จริง
+        .filter((file) => !!file)
         .forEach((file) => {
-          formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
+          formData.append("attachments", file);
         });
 
-      setIsLoading(true);
-
+      // 6. ส่งข้อมูลไปที่ API
       await sendDailyReport(formData);
-      setIsEmailModalOpen(false);
 
+      setIsEmailModalOpen(false);
       setFeedbackModal({
         isOpen: true,
         type: "success",
         title: "ส่งรายงานเรียบร้อย",
-        message: "ระบบได้ทำการส่งอีเมลรายงานให้ผู้รับเรียบร้อยแล้ว",
+        message: "ระบบได้ทำการส่งอีเมลรายงานเรียบร้อยแล้ว",
       });
 
-      // reset ฟอร์ม
       setSelectedRecipientIds([]);
     } catch (error) {
       console.error("Error sending email:", error);
       setFeedbackModal({
         isOpen: true,
         type: "error",
-        title: "ส่งเมลไม่เสำเร็จ",
+        title: "ส่งเมลไม่สำเร็จ",
         message: error.message,
       });
     } finally {
@@ -1574,7 +1591,7 @@ export default function CustomReport() {
                 {loadingData ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="9"
                       className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2">

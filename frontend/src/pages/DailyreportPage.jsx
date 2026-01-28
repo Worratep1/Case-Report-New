@@ -34,7 +34,7 @@ import { sendDailyReport } from "../api/report";
 import { exportReport } from "../api/export";
 import { useNavigate } from "react-router-dom";
 import { STATUS_CONFIG } from "../constants/status";
-import { captureReportImage } from "../utils/reportCapture";
+
 
 import ExportButton from "../components/ButtonExport";
 import ButtonSend from "../components/ButtonSend";
@@ -89,131 +89,7 @@ const parseISODate = (dateStr) => {
   return new Date(year, month - 1, day, 12, 0, 0);
 };
 
-// --- REPORT DASHBOARD CONTAINER ---
-const ReportDashboard = ({ cases = [], selectedDate, viewMode }) => {
-  const dashboardData = useMemo(() => {
-    const safeCases = Array.isArray(cases) ? cases : [];
 
-    // 1. คำนวณตัวเลขสรุป
-    let totalDownMinutes = 0;
-    const gameStats = {};
-    const counts = {};
-
-    safeCases.forEach((c) => {
-      if (!c) return;
-
-      // Sum Downtime
-      const minutes = c.durationMins || 0;
-      totalDownMinutes += minutes;
-
-      // Group by Game for Bar Chart
-      const game = c.game || "Unknown";
-      if (!gameStats[game]) {
-        gameStats[game] = { minutes: 0, count: 0 };
-      }
-      gameStats[game].minutes += minutes;
-      gameStats[game].count += 1;
-
-      // Group by Status for Pie Chart
-      const status = c.status || "others";
-      counts[status] = (counts[status] || 0) + 1;
-    });
-
-    // 2. จัดการ Most Impacted (Tie-Breaker Logic)
-    const sortedGames = Object.keys(gameStats)
-      .map((key) => ({ name: key, ...gameStats[key] }))
-      .sort((a, b) => {
-        const timeDiff = b.minutes - a.minutes;
-        if (timeDiff !== 0) return timeDiff;
-        return b.count - a.count;
-      });
-
-    let mostImpacted = "-";
-    if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
-      const topGame = sortedGames[0];
-      const ties = sortedGames.filter(
-        (g) => g.minutes === topGame.minutes && g.count === topGame.count
-      );
-
-      if (ties.length > 1) {
-        const names = ties.map((t) => t.name);
-        mostImpacted = names.slice(0, 2).join(", ");
-        if (ties.length > 2) mostImpacted += "...";
-      } else {
-        mostImpacted = topGame.name;
-      }
-    }
-
-    // 3. Format Total Downtime เป็น h:m
-    const downHours = Math.floor(totalDownMinutes / 60);
-    const downMins = totalDownMinutes % 60;
-    const totalDowntimeStr = `${String(downHours).padStart(2, "0")}:${String(
-      downMins
-    ).padStart(2, "0")} hrs`;
-
-    // 4. เตรียมข้อมูลกราฟ
-    const barChartData = sortedGames.filter((item) => item.minutes > 0);
-
-    const pieData = Object.keys(STATUS_CONFIG)
-      .map((key) => ({
-        name: STATUS_CONFIG[key].label,
-        value: counts[key] || 0,
-        color: STATUS_CONFIG[key].color,
-      }))
-      .filter((item) => item.value > 0);
-
-    return {
-      stats: {
-        totalCases: safeCases.length,
-        totalDowntimeStr,
-        mostImpacted,
-      },
-      barChartData,
-      pieData,
-    };
-  }, [cases]);
-
-  return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* 1. Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard
-          title="Total Downtime"
-          value={dashboardData.stats.totalDowntimeStr}
-          icon={<Clock className="w-6 h-6 text-red-600 dark:text-red-400" />}
-          color="bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-900/30"
-        />
-        <StatCard
-          title="Total Cases"
-          value={dashboardData.stats.totalCases}
-          icon={
-            <AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-          }
-          color="bg-orange-50 border-orange-100 dark:bg-orange-900/20 dark:border-orange-900/30"
-        />
-        <StatCard
-          title="Most Impacted"
-          value={dashboardData.stats.mostImpacted}
-          icon={<Flame className="w-6 h-6 text-red-600 dark:text-red-600" />}
-          color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
-        />
-      </div>
-
-      {/* 2. Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Downtime Bar Chart */}
-        <div className="lg:col-span-2">
-          <DowntimeBarChart data={dashboardData.barChartData} />
-        </div>
-
-        {/* Status Pie Chart */}
-        <div className="lg:col-span-1">
-          <StatusPieChart data={dashboardData.pieData} />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // --- UI COMPONENTS (Keep Existing) ---
 const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
@@ -557,6 +433,46 @@ const StatusBadge = ({ status }) => {
   );
 };
 
+const ReportDashboard = ({ dashboardData }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* 1. Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Total Downtime"
+          value={dashboardData.stats.totalDowntimeStr}
+          icon={<Clock className="w-6 h-6 text-red-600 dark:text-red-400" />}
+          color="bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-900/30"
+        />
+        <StatCard
+          title="Total Cases"
+          value={dashboardData.stats.totalCases}
+          icon={<AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />}
+          color="bg-orange-50 border-orange-100 dark:bg-orange-900/20 dark:border-orange-900/30"
+        />
+        <StatCard
+          title="Most Impacted"
+          value={dashboardData.stats.mostImpacted}
+          icon={<Flame className="w-6 h-6 text-red-600 dark:text-red-600" />}
+          color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
+        />
+      </div>
+
+      {/* 2. Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Downtime Bar Chart */}
+       <div className="lg:col-span-2"> 
+          <DowntimeBarChart data={dashboardData.barChartData} />
+        </div>
+          {/* Status Pie Chart */}
+        <div className="lg:col-span-1">
+          <StatusPieChart data={dashboardData.pieData} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- MAIN COMPONENT ---
 export default function DailyReport() {
   const fileInputRef = useRef(null);
@@ -895,69 +811,92 @@ export default function DailyReport() {
     );
   };
   const handleSendEmail = async () => {
-    if (selectedRecipientIds.length === 0) {
-      setFeedbackModal({
-        isOpen: true,
-        type: "error",
-        title: "เลือกผู้รับ",
-        message: "กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน",
+  if (selectedRecipientIds.length === 0) {
+    setFeedbackModal({
+      isOpen: true,
+      type: "error",
+      title: "เลือกผู้รับ",
+      message: "กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน",
+    });
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    // 1. กำหนดช่วงวันที่ของรายงาน (Report)
+    const period = viewMode === "daily" 
+      ? selectedDate.split("-").reverse().join("/") 
+      : `01/${selectedDate.split("-")[1]}/${selectedDate.split("-")[0]} - ${selectedDate.split("-").reverse().join("/")}`;
+
+    // 2. ดึง Email ผู้รับ
+    const toEmails = availableRecipients
+      .filter((r) => selectedRecipientIds.includes(r.recipient_id))
+      .map((r) => r.email);
+
+    // 3. สร้างก้อนข้อมูล JSON
+    const reportInfo = {
+      viewMode: viewMode,
+      reportPeriod: period
+    };
+
+    const summaryData = {
+      totalCases: dashboardData.stats.totalCases,
+      totalDowntime: dashboardData.stats.totalDowntimeStr,
+      mostImpacted: dashboardData.stats.mostImpacted
+    };
+
+    // 4. จัดเตรียม FormData
+    const formData = new FormData();
+    formData.append("toEmails", JSON.stringify(toEmails));
+    formData.append("subject", emailSubject);
+    formData.append("body", emailBody);
+    
+    // --- ส่งก้อนข้อมูล JSON ---
+    formData.append("reportInfo", JSON.stringify(reportInfo));
+    formData.append("summaryData", JSON.stringify(summaryData));
+    formData.append("casesData", JSON.stringify(filteredCases)); // รายการทั้งหมดในตาราง
+
+
+    
+
+
+
+    // 5. แนบไฟล์ปกติ (ถ้ามี)
+    attachedFiles
+      .filter((file) => !!file)
+      .forEach((file) => {
+        formData.append("attachments", file);
       });
-      return;
-    }
 
-    setIsLoading(true);
+    // 6. ส่งข้อมูลไปที่ API
+    await sendDailyReport(formData);
 
-    try {
-      // เมื่อส่งเมล์จะเเคปภาพไปด้วย
-      const imageBlob = await captureReportImage("report-content");
+    setIsEmailModalOpen(false);
+    setFeedbackModal({
+      isOpen: true,
+      type: "success",
+      title: "ส่งรายงานเรียบร้อย",
+      message: "ระบบได้ทำการส่งอีเมลรายงานเรียบร้อยแล้ว",
+    });
 
-      // 1) ดึง email จาก recipients ที่เลือก
-      const toEmails = availableRecipients
-        .filter((r) => selectedRecipientIds.includes(r.recipient_id))
-        .map((r) => r.email);
-
-      // 2) สร้าง FormData
-      const formData = new FormData();
-      formData.append("toEmails", JSON.stringify(toEmails));
-      formData.append("subject", emailSubject);
-      formData.append("body", emailBody);
-
-      // --- ส่วนที่เพิ่มใหม่: แนบรูป Screenshot  ---
-      formData.append("reportImage", imageBlob, "report-screenshot.png");
-
-      // 3) แนบไฟล์
-      attachedFiles
-        .filter((file) => !!file)
-        .forEach((file) => {
-          formData.append("attachments", file); // ชื่อ field ต้องตรงกับ upload.array("attachments")
-        });
-
-      await sendDailyReport(formData);
-      setIsEmailModalOpen(false);
-      setFeedbackModal({
-        isOpen: true,
-        type: "success",
-        title: "ส่งรายงานเรียบร้อย",
-        message: "ระบบได้ทำการส่งอีเมลรายงานให้ผู้รับเรียบร้อยแล้ว",
-      });
-
-      // reset ฟอร์ม
-      setSelectedRecipientIds([]);
-    } catch (error) {
-      console.error("Error sending email:", error);
-      setFeedbackModal({
-        isOpen: true,
-        type: "error",
-        title: "ส่งเมลไม่สำเร็จ",
-        message: error.message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setSelectedRecipientIds([]);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    setFeedbackModal({
+      isOpen: true,
+      type: "error",
+      title: "ส่งเมลไม่สำเร็จ",
+      message: error.message,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // --- FILTER & PAGINATION LOGIC ---
   const filteredCases = cases.filter((c) => {
+
     // เงื่อนไขวันที่: ถ้าเป็น monthly ไม่ต้องกรองวันที่ (หรือกรองตามเดือน) แต่ถ้า daily ต้องตรงกัน
     const isSameDate = viewMode === "daily" ? c.date === selectedDate : true;
     const isSameStatus =
@@ -970,6 +909,88 @@ export default function DailyReport() {
 
     return isSameDate && isSameStatus && isMatchSearch;
   });
+   const dashboardData = useMemo(() => {
+    const safeCases = filteredCases;
+
+    // 1. คำนวณตัวเลขสรุป
+    let totalDownMinutes = 0;
+    const gameStats = {};
+    const counts = {};
+
+    safeCases.forEach((c) => {
+      if (!c) return;
+
+      // Sum Downtime
+      const minutes = c.durationMins || 0;
+      totalDownMinutes += minutes;
+
+      // Group by Game for Bar Chart
+      const game = c.game || "Unknown";
+      if (!gameStats[game]) {
+        gameStats[game] = { minutes: 0, count: 0 };
+      }
+      gameStats[game].minutes += minutes;
+      gameStats[game].count += 1;
+
+      // Group by Status for Pie Chart
+      const status = c.status || "others";
+      counts[status] = (counts[status] || 0) + 1;
+    });
+
+    // 2. จัดการ Most Impacted (Tie-Breaker Logic)
+    const sortedGames = Object.keys(gameStats)
+      .map((key) => ({ name: key, ...gameStats[key] }))
+      .sort((a, b) => {
+        const timeDiff = b.minutes - a.minutes;
+        if (timeDiff !== 0) return timeDiff;
+        return b.count - a.count;
+      });
+
+    let mostImpacted = "-";
+    if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
+      const topGame = sortedGames[0];
+      const ties = sortedGames.filter(
+        (g) => g.minutes === topGame.minutes && g.count === topGame.count
+      );
+
+      if (ties.length > 1) {
+        const names = ties.map((t) => t.name);
+        mostImpacted = names.slice(0, 2).join(", ");
+        if (ties.length > 2) mostImpacted += "...";
+      } else {
+        mostImpacted = topGame.name;
+      }
+    }
+
+    // 3. Format Total Downtime เป็น h:m
+    const downHours = Math.floor(totalDownMinutes / 60);
+    const downMins = totalDownMinutes % 60;
+    const totalDowntimeStr = `${String(downHours).padStart(2, "0")}:${String(
+      downMins
+    ).padStart(2, "0")} hrs`;
+
+    // 4. เตรียมข้อมูลกราฟ
+    const barChartData = sortedGames.filter((item) => item.minutes > 0);
+
+    const pieData = Object.keys(STATUS_CONFIG)
+      .map((key) => ({
+        name: STATUS_CONFIG[key].label,
+        value: counts[key] || 0,
+        color: STATUS_CONFIG[key].color,
+      }))
+      .filter((item) => item.value > 0);
+
+    return {
+      stats: {
+        totalCases: safeCases.length,
+        totalDowntimeStr,
+        mostImpacted,
+      },
+      barChartData,
+      pieData,
+    };
+  }, [filteredCases]);
+
 
   const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
   const paginatedCases = filteredCases.slice(
@@ -1017,7 +1038,7 @@ export default function DailyReport() {
               isExporting={isExporting}
               disabled={casesOfSelectedDate.length === 0}
             />
-
+            
             <ButtonSend
               onClick={handleOpenEmailModal}
             />
@@ -1052,6 +1073,7 @@ export default function DailyReport() {
             cases={filteredCases}
             selectedDate={selectedDate}
             viewMode={viewMode}
+            dashboardData={dashboardData}
           />
         </div>
 
@@ -1097,29 +1119,22 @@ export default function DailyReport() {
               <thead>
                 <tr
                   className="border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-semibold tracking-wider
-                  bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400   "
-                >
+                  bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 ">
                   <th className="px-6 py-4 w-16 text-center whitespace-nowrap">ID</th>
                   <th className="px-6 py-4 whitespace-nowrap ">Status</th>
                   <th className="px-6 py-4 whitespace-nowrap ">Start Date</th>
                   <th className="px-6 py-4 whitespace-nowrap ">End Date</th>
-                  <th className="px-6 py-4 whitespace-nowrap ">
-                    Time/Duration
-                  </th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Time/Duration</th>
                   <th className="px-6 py-4 whitespace-nowrap ">Game/Problem</th>
-                  <th className="px-6 py-4 whitespace-nowrap ">
-                    Details/Solution
-                  </th>
-                  <th className="px-6 py-4 whitespace-nowrap ">
-                    Requester/Operator
-                  </th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Details/Solution</th>
+                  <th className="px-6 py-4 whitespace-nowrap ">Requester/Operator</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {loadingData ? (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="9"
                       className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                     
                       <div className="flex flex-col items-center gap-2">
@@ -1348,16 +1363,21 @@ export default function DailyReport() {
                       {label}
                     </label>
                     <p className="font-medium text-sm flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+                      
+                      {i === 0 ? (
+                      <Clock size={14} className="text-blue-500" />
+                    ) : (
                       <CalendarIcon size={14} className="text-blue-500" />
-                      {i === 0
-                        ? `${selectedCaseDetail.startTime} - ${selectedCaseDetail.endTime}`
-                        : i === 1
-                        ? selectedCaseDetail.startDate ||
-                          selectedCaseDetail.date
-                        : selectedCaseDetail.endDate || selectedCaseDetail.date}
-                    </p>
-                  </div>
-                ))}
+                    )}
+                    
+                    {i === 0
+                      ? `${selectedCaseDetail.startTime} - ${selectedCaseDetail.endTime}`
+                      : i === 1
+                      ? selectedCaseDetail.startDate || selectedCaseDetail.date
+                      : selectedCaseDetail.endDate || selectedCaseDetail.date}
+                  </p>
+                </div>
+              ))}
               </div>
 
               {/* ROW 2: Game & Status */}
@@ -1366,7 +1386,7 @@ export default function DailyReport() {
                   <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
                     Game
                   </label>
-                  <div className="flex items-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900">
+                  <div className="flex items-center gap-2 px-3 h-[42px] border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900">
                     <Gamepad2 size={16} className="text-blue-500" />
                     <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                       {selectedCaseDetail.game}
@@ -1377,7 +1397,7 @@ export default function DailyReport() {
                   <label className="text-sm font-medium mb-1 block text-slate-700 dark:text-slate-300">
                     Status
                   </label>
-                  <div className="flex items-center px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900">
+                  <div className="flex items-center px-3 h-[42px] border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900">
                     <StatusBadge status={selectedCaseDetail.status} />
                   </div>
                 </div>

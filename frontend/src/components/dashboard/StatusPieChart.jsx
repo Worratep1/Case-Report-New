@@ -43,7 +43,7 @@ const StatusPieChart = ({ data }) => {
                   dataKey="value"
                   label={renderCustomizedLabel}
                   labelLine={false}
-                  isAnimationActive={false}>
+                  isAnimationActive={true}>
                 
                   {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />

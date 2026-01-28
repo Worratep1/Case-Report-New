@@ -445,7 +445,7 @@ export default function MemberSetting() {
                 <div className="relative">
                   <User
                     size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400"
                   />
                   <input
                     name="username"
@@ -534,7 +534,7 @@ export default function MemberSetting() {
                 <div className="relative">
                   <Lock
                     size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400"
                   />
                   <input
                     type={showPassword ? "text" : "password"}
@@ -569,7 +569,11 @@ export default function MemberSetting() {
                 <div className="relative">
                   <CheckCircle
                     size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${
+                      formData.password && formData.confirmPassword && formData.password === formData.confirmPassword
+                        ? "text-emerald-500" // สีเขียวเมื่อรหัสผ่านตรงกัน
+                        : "text-slate-400"   // สีเทาปกติ
+                    }`}
                   />
                   <input
                     type={showConfirmPassword ? "text" : "password"}

@@ -119,7 +119,7 @@ const DowntimeBarChart = ({ data }) => {
                 radius={[0, 4, 4, 0]}
                 barSize={24}
                 label={renderCustomBarLabel}
-                isAnimationActive={false}
+                isAnimationActive={true}
                 
               >
                 {/* ใช้สีเดียว (Indigo) ทั้งหมด */}

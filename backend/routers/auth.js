@@ -59,15 +59,14 @@ router.get("/statuses", getStatuses); // เส้นทางสำหรับ
 router.get("/problems", getproblems); // เส้นทางสำหรับดึงปัญหาทั้งหมด
 
 // router.post("/sendmail",sendDailyReport)
-// 💡 แก้ไข: เพิ่ม middleware ของ Multer (upload.array('files')) เข้าไป
+//  แก้ไข: เพิ่ม middleware ของ Multer (upload.array('files')) เข้าไป
 // router.post("/sendmail",upload.array("attachments", 5),sendDailyReport);
 
-router.post('/sendmail', upload.fields([
-    { name: 'attachments', maxCount: 5 },  // รับไฟล์แนบสูงสุด 5 ไฟล์
-    { name: 'reportImage', maxCount: 1 }   // รับรูป Screenshot 1 รูป
-]), sendDailyReport);
 
-router.get("/exportreport",exportReport.exportReport)
+router.post('/sendmail', upload.array("attachments", 5), sendDailyReport); // เส้นทางสำหรับส่งอีเมลรายงานประจำวันพร้อมไฟล์แนบ
+
+router.get("/exportreport",exportReport.exportReport) // เส้นทางสำหรับส่งออกรายงานเป็นไฟล์ Excel
+
 
 
 module.exports = router;
