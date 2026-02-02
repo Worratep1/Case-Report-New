@@ -30,6 +30,8 @@ exports.sendDailyReport = async (req, res) => {
 
     // 2. จัดการไฟล์แนบ (เฉพาะไฟล์ปกติ ไม่เอาไฟล์รูปแคปแล้ว)
   const attachmentsList = [];
+  const encodeRFC2047 = (str) => `=?UTF-8?B?${Buffer.from(str).toString("base64")}?=`;
+  
   const files = req.files; // ตอนนี้ files จะเป็น Array โดยตรง
   if (files && Array.isArray(files)) {
     files.forEach((file) => {
@@ -76,29 +78,29 @@ const summaryHtml = `
         .map(
           (c, index) => `
         <tr style="border-bottom: 1px solid #e2e8f0;">
-          <td style="padding: 10px; text-align: center; font-size: 12px; color: #64748b;">${index + 1}</td>
-          <td style="padding: 10px; text-align: center;">
+          <td style="padding: 10px; text-align: center; font-size: 12px; color: #64748b; vertical-align: top;">${index + 1}</td>
+          <td style="padding: 10px; text-align: center; vertical-align: top;">
             <span style="font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">
               ${c.status.toUpperCase()}
             </span>
           </td>
-          <td style="padding: 10px; font-size: 12px; text-align: center;">${c.startDate}</td>
-          <td style="padding: 10px; font-size: 12px; text-align: center;">${c.endDate}</td>
-          <td style="padding: 10px; font-size: 12px; white-space: nowrap;">
+          <td style="padding: 10px; font-size: 12px; text-align: center; vertical-align: top; white-space: nowrap; ">${c.startDate}</td>
+          <td style="padding: 10px; font-size: 12px; text-align: center; vertical-align: top; white-space: nowrap; ">${c.endDate}</td>
+          <td style="padding: 10px; font-size: 12px; white-space: nowrap;vertical-align: top; ">
             ${c.startTime} - ${c.endTime}<br/>
             <small style="color: #64748b;">(${c.duration})</small>
           </td>
-          <td style="padding: 10px; font-size: 12px;">
-            <div style="font-weight: bold; color: #2563eb;">
+          <td style="padding: 10px; font-size: 12px; vertical-align: top; ">
+            <div style="font-weight: bold; color: #2563eb; white-space: nowrap;">
             <b>Game:</b> ${c.game}</div>
-            <div style="font-size: 11px; color: #1e293b;">
+            <div style="font-size: 11px; color: #1e293b; word-break: break-word;">
             <b>Problem:</b> ${c.problem}</div>
           </td>
-          <td style="padding: 10px; font-size: 11px; line-height: 1.4; max-width: 200px;">
+          <td style="padding: 10px; font-size: 11px; line-height: 1.4; word-break: break-word; vertical-align: top;">
             <div style="margin-bottom: 4px;"><b>Details:</b> ${c.details || "-"}</div>
             <div style="color: #059669;"><b>Solution:</b> ${c.solution || "-"}</div>
           </td>
-          <td style="padding: 10px; font-size: 11px; line-height: 1.4;">
+          <td style="padding: 10px; font-size: 11px; line-height: 1.4; vertical-align: top;">
             <div><b>Req:</b> ${c.reporter}</div>
             <div style="color: #64748b;"><b>Op:</b> ${c.operator}</div>
           </td>
@@ -113,7 +115,7 @@ const summaryHtml = `
       <div style="font-family: sans-serif; color: #1e293b; max-width: 1000px; margin: auto;">
         
         <div style="font-size: 16px; margin-bottom: 25px; color: #334155; line-height: 1.6;">
-          ${body ? body.replace(/\n/g, "<br/>") : "No additional message."}
+          ${body ? body.replace(/\n/g, "<br/>") : " "}
         </div>
 
         <h2 style="color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">
@@ -123,19 +125,23 @@ const summaryHtml = `
         ${summaryHtml}
 
         <h3 style="font-size: 16px; color: #334155; margin-top: 30px;">Detailed Case List</h3>
-        <table width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 1px solid #e2e8f0; table-layout: auto;">
+        <table width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 1px solid #e2e8f0; table-layout: auto; ">
           <thead>
-            <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-              <th style="padding: 10px; font-size: 12px; color: #475569; width: 30px;">ID</th>
-              <th style="padding: 10px; font-size: 12px; color: #475569;">Status</th>
-              <th style="padding: 10px; font-size: 12px; color: #475569;">Start Date</th>
-              <th style="padding: 10px; font-size: 12px; color: #475569;">End Date</th>
-              <th style="padding: 10px; font-size: 12px; color: #475569; text-align: left;">Time/Duration</th>
-              <th style="padding: 10px; font-size: 12px; color: #475569; text-align: left;">Game/Problem</th>
-              <th style="padding: 10px; font-size: 12px; color: #475569; text-align: left;">Details/Solution</th>
-              <th style="padding: 10px; font-size: 12px; color: #475569; text-align: left;">Requester/Operator</th>
-            </tr>
-          </thead>
+              <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <th style="padding: 10px; font-size: 11px; color: #475569; width: 40px;">ID</th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; width: 80px;">Status</th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: center; width: 110px;">
+                  <span style="white-space: nowrap;">Start Date</span>
+                </th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: center; width: 110px;">
+                  <span style="white-space: nowrap;">End Date</span>
+                </th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 110px;">Time/Duration</th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 140px;">Game/Problem</th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 220px;">Details/Solution</th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 120px;">Requester/Operator</th>
+              </tr>
+            </thead>
           <tbody>
             ${tableRows}
           </tbody>
