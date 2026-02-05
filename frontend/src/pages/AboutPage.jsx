@@ -1,4 +1,4 @@
-// src/pages/Main.jsxfixed inset-0 flex
+
 // src/pages/Main.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
