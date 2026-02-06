@@ -1,4 +1,4 @@
-const mailSender = require("../config/mail"); // ตรวจสอบชื่อตัวแปรให้ตรงกับไฟล์ config ของคุณ
+const mailSender = require("../config/mail"); 
 
 exports.sendDailyReport = async (req, res) => {
   try {
@@ -15,6 +15,11 @@ exports.sendDailyReport = async (req, res) => {
     console.log("Report Info:", req.body.reportInfo);
     console.log("Summary Data:", req.body.summaryData);
     console.log("Cases Data Length:", JSON.parse(req.body.casesData || "[]").length);
+
+    console.log("--- Check Received Data ---");
+    console.log("Subject:", subject);
+    console.log("Body (Custom Message):", body);
+    console.log("Cases Data:", casesData); 
 
     // จัดการ Email ผู้รับ (Logic เดิมของคุณ)
     if (typeof toEmails === "string") {

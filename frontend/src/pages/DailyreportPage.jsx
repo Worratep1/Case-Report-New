@@ -857,8 +857,11 @@ export default function DailyReport() {
     formData.append("summaryData", JSON.stringify(summaryData));
     formData.append("casesData", JSON.stringify(filteredCases)); // รายการทั้งหมดในตาราง
 
-
-    
+    console.log("Data to be sent:", {
+        subject: emailSubject,
+        casesCount: filteredCases.length,
+        summary: summaryData
+    });
 
 
 
