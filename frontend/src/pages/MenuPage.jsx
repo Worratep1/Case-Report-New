@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import * as RouterDom from "react-router-dom";
 import {
-  AlertTriangle,
   Settings,
   BookOpen,
   FileChartColumn,
   LogOut,
   PlusCircle,
+  LayoutDashboard, // เพิ่มไอคอน Dashboard
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,28 +14,19 @@ import MenuButton from "../components/MenuButton";
 import MenuLogout from "../components/MenuLogout";
 import DarkModeToggle from "../components/DarkModeToggle";
 
-
 export default function MenuPage() {
   const navigate = useNavigate();
-
   const [username, setUsername] = useState("Guest");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    //  ดึงข้อมูลจาก localStorage
     const userStorage = localStorage.getItem("user");
-
     if (userStorage) {
-      // แปลงจาก Text กลับเป็น Object
       const userObj = JSON.parse(userStorage);
-
-      //  เซ็ตค่า username
-
       setUsername(userObj.username || userObj.first_name || "Guest");
     }
-
     setIsLoading(false);
-  });
+  }, []); // ใส่ [] เพื่อให้ทำงานแค่รอบเดียว
 
   return (
     <div
@@ -44,14 +34,23 @@ export default function MenuPage() {
       bg-gradient-to-br from-blue-100 via-slate-100 to-indigo-100 
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900 "
     >
-      {/* ปุ่ม Toggle Dark Mode */}
       <DarkModeToggle />
 
-      {/* Main Card  */}
       <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl dark:shadow-black/50 p-10 border dark:border-slate-700/50 transition-colors duration-500 relative z-10">
         <HeaderTitle username={username} />
 
         <div className="space-y-4">
+          {/* 1. ปุ่ม Dashboard (เพิ่มใหม่) */}
+          <MenuButton
+            icon={
+              <LayoutDashboard className="text-blue-500 dark:text-blue-400" />
+            }
+            label="Dashboard"
+            description="ดูภาพรวมสถิติและรายการเคสประจำวัน"
+            onClick={() => navigate("/dashboard")}
+          />
+
+          {/* 2. ปุ่มแจ้ง Case */}
           <MenuButton
             icon={
               <PlusCircle className="text-emerald-500 dark:text-emerald-400" />
@@ -66,7 +65,7 @@ export default function MenuPage() {
               <FileChartColumn className="text-purple-600 dark:text-purple-400" />
             }
             label="Report"
-            description="รายงาน"
+            description="ดูรายงานและส่งอีเมล"
             onClick={() => navigate("/report")}
           />
 
@@ -80,7 +79,7 @@ export default function MenuPage() {
           <MenuButton
             icon={<BookOpen className="text-orange-500 dark:text-orange-400" />}
             label="Manual"
-            description="คู่มือการใช้งาน"
+            description="คู่มือการใช้งานระบบ"
             onClick={() => navigate("/manual")}
           />
         </div>

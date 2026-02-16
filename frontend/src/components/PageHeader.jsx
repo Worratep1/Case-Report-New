@@ -24,7 +24,7 @@ export default function PageHeader({
             </div>
 
             {showDivider && (
-              <div className="h-9 w-px bg-slate-500 " />
+              <div className="h-9 w-[2px] bg-slate-400 dark:bg-slate-500 rounded-full opacity-80" />
             )}
 
             {/* ICON + TITLE */}

@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, X, Save, AlertCircle ,Loader2} from "lucide-react";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  X,
+  Save,
+  AlertCircle,
+  Loader2,
+  ChevronDown,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import ButtonBack from "../components/ButtonBack.jsx";
@@ -20,7 +29,10 @@ export default function GameSetting() {
   // เปลี่ยนชื่อ Component ให้ตรงกับไฟล์
   const navigate = useNavigate();
 
-  // รายการ game
+  // State สำหรับเปิดปิด dropdown หมวดหมู่
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
+  // รายการ services
   const [products, setProducts] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +57,7 @@ export default function GameSetting() {
   // ฟอร์มใน modal
   const [formData, setFormData] = useState({
     productName: "",
+    productCategory: "Game",
   });
 
   // -----------------------------
@@ -65,7 +78,7 @@ export default function GameSetting() {
         isOpen: true,
         type: "error",
         title: "โหลดข้อมูลไม่สำเร็จ",
-        message: "ไม่สามารถโหลดรายการ Game ได้ กรุณาลองใหม่อีกครั้ง",
+        message: "ไม่สามารถโหลดรายการ Services ได้ กรุณาลองใหม่อีกครั้ง",
       });
     } finally {
       setIsLoading(false);
@@ -79,21 +92,25 @@ export default function GameSetting() {
     if (index !== null) {
       const product = products[index];
       setEditingIndex(index);
-      setFormData({ productName: product.product_name });
+      setFormData({
+        productName: product.product_name,
+        productCategory: product.product_category || "Game",
+      });
     } else {
       setEditingIndex(null);
-      setFormData({ productName: "" });
+      setFormData({ productName: "", productCategory: "Game" });
     }
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setFormData({ productName: "" });
+    setFormData({ productName: "", productCategory: "Game" });
   };
 
   const handleChange = (e) => {
-    setFormData({ productName: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // -----------------------------
@@ -102,19 +119,20 @@ export default function GameSetting() {
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     const name = formData.productName.trim();
+    const category = formData.productCategory;
 
     if (!name) {
       setFeedbackModal({
         isOpen: true,
         type: "error",
         title: "ข้อมูลไม่ครบถ้วน",
-        message: "กรุณากรอกชื่อให้เรียบร้อย",
+        message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       });
       return;
     }
 
     const isDuplicate = products.some(
-      (p, i) => p.product_name === name && i !== editingIndex
+      (p, i) => p.product_name === name && i !== editingIndex,
     );
     if (isDuplicate) {
       setFeedbackModal({
@@ -132,8 +150,12 @@ export default function GameSetting() {
         const product = products[editingIndex];
         const id = product.product_id;
 
-        const res = await updateProduct(id, name);
-        const updated = res.product || { ...product, product_name: name };
+        const res = await updateProduct(id, name, category);
+        const updated = res.product || {
+          ...product,
+          product_name: name,
+          product_category: category,
+        };
 
         setProducts((prev) => {
           const next = [...prev];
@@ -149,7 +171,8 @@ export default function GameSetting() {
           message: "อัปเดตข้อมูลเรียบร้อยแล้ว",
         });
       } else {
-        const res = await addproducts(name);
+        const res = await addproducts(name, category);
+
         const newProduct = res.product || null;
 
         if (!newProduct) {
@@ -237,32 +260,32 @@ export default function GameSetting() {
         >
           <div>
             <h1 className="text-2xl font-medium text-left text-slate-900 dark:text-white">
-              Game Setting
+              Services Setting
             </h1>
             <p className="text-sm mt-1 text-left text-slate-500 dark:text-slate-400">
-              Manage the Games
+              Manage the Services
             </p>
           </div>
 
           <ButtonAdd onClick={() => openModal()}>
             <Plus size={18} />
-            Add Game
+            Add Service
           </ButtonAdd>
         </div>
 
         {/* List Content */}
         <div className="max-h-[480px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
-          { isLoading  ? (
+          {isLoading ? (
             <div className="p-12 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
-               <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-600" />
-                          <p className="mt-3 font-medium text-slate-600 dark:text-slate-300">
-                            กำลังโหลดข้อมูล...
-                          </p>
+              <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-600" />
+              <p className="mt-3 font-medium text-slate-600 dark:text-slate-300">
+                กำลังโหลดข้อมูล...
+              </p>
             </div>
           ) : products.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center text-slate-400 dark:text-slate-500">
               <AlertCircle size={48} className="mb-3 opacity-20" />
-              <p>No Game found.</p>
+              <p>No Services found.</p>
             </div>
           ) : (
             products.map((product, index) => (
@@ -317,72 +340,133 @@ export default function GameSetting() {
         </div>
       </div>
 
-   {isModalOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-    <div
-      className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md rounded-xl shadow-2xl overflow-hidden
       bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
       animate-in zoom-in-95 duration-200"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-        <h3 className="text-xl font-medium text-slate-800 dark:text-white">
-          {editingIndex !== null ? "Edit Game" : "Add New Game"}
-        </h3>
-        <button
-          type="button"
-          onClick={closeModal}
-          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
-        >
-          <X size={20} />
-        </button>
-      </div>
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h3 className="text-xl font-medium text-slate-800 dark:text-white">
+                {editingIndex !== null ? "Edit Service" : "Add New Service"}
+              </h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-      {/* Content */}
-      <form onSubmit={handleSaveProduct} className="px-6 py-5 space-y-4 text-left">
-        <div>
-          <label className="block text-xs font-medium text-left text-slate-600 dark:text-slate-300 mb-2">
-            Game Name
-          </label>
+            {/* Content */}
+            <form
+              onSubmit={handleSaveProduct}
+              className="px-6 py-5 space-y-4 text-left"
+            >
+              <div>
+                {/* ปรับ Label ให้ใหญ่ขึ้นเล็กน้อย (text-sm) และเพิ่มความเข้ม (font-semibold) */}
+                <label className="block text-sm font-medium text-left text-slate-700 dark:text-slate-200 mb-1.5 ml-1">
+                  Service Name
+                </label>
 
-          <input
-            type="text"
-            value={formData.productName}
-            onChange={handleChange}
-            placeholder="Enter game name"
-            maxLength={150}
-            autoFocus
-            className="
-              w-full px-4 py-3 rounded-lg text-sm
-              bg-white dark:bg-slate-900
-              border border-slate-200 dark:border-slate-700
-              text-slate-800 dark:text-white
-              focus:outline-none
-              focus:ring-2 focus:ring-blue-500/30
-              focus:border-blue-500 "/>
-           
-          <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-            This game will appear in the case form dropdown.
-          </p>
+                <input
+                  name="productName"
+                  type="text"
+                  value={formData.productName}
+                  onChange={handleChange}
+                  placeholder="Enter Service name"
+                  maxLength={150}
+                  autoFocus
+                  className="
+                    w-full px-4 py-2.5 rounded-lg text-sm
+                    bg-white dark:bg-slate-900
+                    border border-slate-200 dark:border-slate-700
+                    text-slate-800 dark:text-white
+                    focus:outline-none
+                    focus:ring-2 focus:ring-blue-500/20
+                    focus:border-blue-500 transition-all"
+                />
+              </div>
+
+              <div>
+               
+                <label className="block text-sm font-medium text-left text-slate-700 dark:text-slate-200 mb-1.5 ml-1">
+                  Category
+                </label>
+
+                <div className="relative">
+                  <div
+                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                    
+                    className={`w-full rounded-lg border px-4 py-2.5 text-sm cursor-pointer flex justify-between items-center transition-all 
+                      bg-white dark:bg-slate-900 
+                      ${
+                        isCategoryOpen
+                          ? "border-blue-500 ring-2 ring-blue-500/10"
+                          : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
+                      }`}
+                  >
+                    <span className="text-slate-700 dark:text-slate-200 font-medium">
+                      {formData.productCategory}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                        isCategoryOpen ? "rotate-180 text-blue-500" : ""
+                      }`}
+                    />
+                  </div>
+
+                  {isCategoryOpen && (
+                    /* ปรับ mt-2 เป็น mt-1.5 ให้ Dropdown ชิดขึ้นมาหน่อย */
+                    <div className="absolute z-50 w-full mt-1.5 rounded-lg shadow-xl 
+                     border-slate-100 dark:border-slate-700 overflow-hidden
+                      bg-white dark:bg-slate-800 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="p-1">
+                        {["Game", "System"].map((cat) => (
+                          <div
+                            key={cat}
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                productCategory: cat,
+                              }));
+                              setIsCategoryOpen(false);
+                            }}
+                            /* ปรับ Padding ภายในให้ดู compact ขึ้น */
+                            className={`px-3 py-2 rounded-md cursor-pointer text-sm transition-colors mb-0.5 last:mb-0
+                ${
+                  formData.productCategory === cat
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
+                }`}
+                          >
+                            {cat}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <ButtonCancel type="button" onClick={closeModal}>
+                  Cancel
+                </ButtonCancel>
+
+                <ButtonSave type="submit">
+                  <Save size={16} />
+                  Save Service
+                </ButtonSave>
+              </div>
+            </form>
+          </div>
         </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <ButtonCancel type="button" onClick={closeModal}>
-            Cancel
-          </ButtonCancel>
-
-          <ButtonSave
-            type="submit">
-          
-            <Save size={16} />
-            Save Game
-          </ButtonSave>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+      )}
 
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
@@ -390,8 +474,8 @@ export default function GameSetting() {
         title={feedbackModal.title}
         message={feedbackModal.message}
         onClose={closeFeedbackModal}
-        onConfirm={feedbackModal.onConfirm}/>
-      
+        onConfirm={feedbackModal.onConfirm}
+      />
     </div>
   );
 }

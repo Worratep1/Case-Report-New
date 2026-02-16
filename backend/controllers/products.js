@@ -2,12 +2,17 @@ const pool = require("../config/db");
 
 // Controller สำหรับเพิ่ม Game / Product ใหม่
 exports.addproducts  = async (req, res) => {
-  const { product_name } = req.body;
+  const { product_name, product_category } = req.body;
 
   // 1) เช็คว่าผู้ใช้ส่งชื่อเกมมาหรือยัง
   if (!product_name || product_name.trim() === "") {
-    return res.status(400).json({ message: "กรุณากรอกชื่อเกม" });
+    return res.status(400).json({ message: "กรุณากรอกชื่อ Service" });
   }
+
+  if (!product_category) {
+    return res.status(400).json({ message: "กรุณาเลือกประเภท (Game หรือ System)" });
+  }
+  
   if (product_name.length>150){
     return res.status(400).json({
       message:"ชื่อยาวเกินไป (ต้องไม่เกิน 150 ตัวอักษร)"
@@ -17,8 +22,8 @@ exports.addproducts  = async (req, res) => {
   try {
       // 2) เช็คว่ามีชื่อ product นี้ในระบบแล้วหรือยัง (กันข้อมูลซ้ำ)
     const checkproducts = await pool.query(
-      "SELECT * FROM products WHERE   product_name = $1",
-      [product_name.trim()]
+      "SELECT * FROM products WHERE   product_name = $1 AND product_category = $2",
+      [ product_name.trim(), product_category]
     );
 
     if (checkproducts.rows.length > 0) {
@@ -26,8 +31,8 @@ exports.addproducts  = async (req, res) => {
     }
       // 3) ถ้ายังไม่มี -> INSERT ลงตาราง products
     const newProduct = await pool.query(
-      "INSERT INTO products (product_name) VALUES ($1) RETURNING *",
-      [product_name.trim()]
+      "INSERT INTO products (product_name, product_category) VALUES ($1, $2) RETURNING *",
+      [product_name.trim(), product_category]
     );
     // 4) ตอบกลับไปให้ Front-end ทราบว่าเพิ่มสำเร็จ
     return res.status(201).json({
@@ -67,7 +72,7 @@ exports.deleteProduct = async (req, res) => {
   }
 
   try {
-    // 2) ลบออกจากตาราง products เลย
+    // 2) ลบออกจากตาราง products 
     const result = await pool.query(
       `DELETE FROM products
        WHERE product_id = $1
@@ -96,21 +101,21 @@ exports.deleteProduct = async (req, res) => {
 // แก้ไข Product ตาม id , name (แก้ไขข้อมูลจริง ๆ ในตาราง - hard update)
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { product_name } = req.body;
+  const { product_name, product_category } = req.body;
 
   // validation
   if (!product_name) {
-    return res.status(400).json({ message: "กรุณากรอกชื่อ product_name" });
+    return res.status(400).json({ message: "กรุณากรอกชื่อ Service" });
   }
 
   // ตรวจสอบว่ามี product ที่จะอัปเดตหรือไม่
   try {
     const result = await pool.query(
       `UPDATE products
-       SET product_name = $1
-       WHERE product_id = $2
-       RETURNING product_id, product_name`,
-      [product_name, id]
+       SET product_name = $1, product_category = $2
+       WHERE product_id = $3
+       RETURNING product_id, product_name, product_category`,
+      [product_name, product_category, id]
     );
       // ถ้า rowCount = 0 แปลว่าไม่เจอ id นี้
     if (result.rowCount === 0) {

@@ -6,72 +6,47 @@ import {
   AlertCircle,
   Calendar as CalendarIcon,
   User,
-  Send,
   X,
-  FileText,
-  Paperclip,
-  CheckSquare,
-  Square,
   ChevronDown,
-  ChevronUp,
   Loader2,
-  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Flame,
-  CheckCircle2,
-  Check,
-  Users
+  Home,
+  CheckCircle2
+  , Check
 } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 import { getCases } from "../api/case";
 import { getProblems } from "../api/problems.jsx";
 import { getStatuses } from "../api/status.jsx";
 import { getproducts } from "../api/products.jsx";
-import { getRecipients } from "../api/recipients.jsx";
-import { sendDailyReport } from "../api/report.jsx";
-import { exportReport } from "../api/export.jsx";
-import { getGroups } from "../api/recipientsgroup.jsx";
-
-import { useNavigate } from "react-router-dom";
 import { STATUS_CONFIG } from "../constants/status";
 
-import ExportButton from "../components/ButtonExport.jsx";
-import ButtonSend from "../components/ButtonSend.jsx";
-import ButtonHome from "../components/ButtonHome.jsx";
-import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
+
 import ActionFeedbackModal from "../components/ActionFeedbackModal";
-import ViewModeToggle from "../components/ViewModeToggle.jsx";
-import BackIconButton from "../components/BackIconButton.jsx";
 import SearchInput from "../components/SearchInput.jsx";
+import StatCard from "../components/dashboard/StatCard";
+import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
+import StatusPieChart from "../components/dashboard/StatusPieChart";
 
-import PageHeader from "../components/PageHeader.jsx";
-import StatCard from "../components/dashboard/StatCard.jsx";
-import DowntimeBarChart from "../components/dashboard/DowntimeBarChart.jsx";
-import StatusPieChart from "../components/dashboard/StatusPieChart.jsx";
+import { getFirstDayOfMonth} from "../utils/reportUtils";
 
-import {
-  getReportRange,
-  getReportFilename,
-  hasReportData,
-  getFirstDayOfMonth
-} from "../utils/reportUtils";
+// const CONFIG = {
+//   MAX_FILE_SIZE_MB: 5,
+//   MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
+//   ALLOWED_FILE_TYPES: [
+//     "application/pdf",
+//     "image/jpeg",
+//     "image/png",
+//     "application/msword",
+//     "application/vnd.ms-excel",
+//     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+//     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+//   ],
+// };
 
-const CONFIG = {
-  MAX_FILE_SIZE_MB: 5,
-  MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024,
-  ALLOWED_FILE_TYPES: [
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "application/msword",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ],
-};
-
-const ITEMS_PER_PAGE = 10;
+ const ITEMS_PER_PAGE = 10;
 
 
 // --- HELPER FUNCTIONS ---
@@ -108,251 +83,250 @@ const formatDMY = (dateStr) =>
   dateStr.split("-").reverse().join("/");
 
 // --- UI COMPONENTS (Keep Existing) ---
-const CustomDatePicker = ({
-  value,
-  onChange,
-  startDate,
-  endDate,
-  placeholder = "Select date",
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [viewDate, setViewDate] = useState(() => parseISODate(value));
-  const containerRef = useRef(null);
+// const CustomDatePicker = ({
+//   value,
+//   onChange,
+//   startDate,
+//   endDate,
+//   placeholder = "Select date",
+// }) => {
+//   const [isOpen, setIsOpen] = useState(false);
+//   const [viewDate, setViewDate] = useState(() => parseISODate(value));
+//   const containerRef = useRef(null);
 
-  useEffect(() => {
-    if (value) {
-      setViewDate(parseISODate(value));
-    }
-  }, [value]);
+//   useEffect(() => {
+//     if (value) {
+//       setViewDate(parseISODate(value));
+//     }
+//   }, [value]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+//   useEffect(() => {
+//     const handleClickOutside = (event) => {
+//       if (
+//         containerRef.current &&
+//         !containerRef.current.contains(event.target)
+//       ) {
+//         setIsOpen(false);
+//       }
+//     };
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => document.removeEventListener("mousedown", handleClickOutside);
+//   }, []);
 
-  const formatDateDisplay = (dateStr) => {
-    if (!dateStr) return "";
-    const date = parseISODate(dateStr);
-    return date.toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+//   const formatDateDisplay = (dateStr) => {
+//     if (!dateStr) return "";
+//     const date = parseISODate(dateStr);
+//     return date.toLocaleDateString("th-TH", {
+//       year: "numeric",
+//       month: "long",
+//       day: "numeric",
+//     });
+//   };
 
-  const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
+//   const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
+//   const firstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
 
-  const handleDayClick = (day) => {
-    const newDate = new Date(
-      viewDate.getFullYear(),
-      viewDate.getMonth(),
-      day,
-      12,
-      0,
-      0,
-    );
-    const isoString = formatDateToISO(newDate);
-    onChange(isoString);
-    setIsOpen(false);
-  };
+//   const handleDayClick = (day) => {
+//     const newDate = new Date(
+//       viewDate.getFullYear(),
+//       viewDate.getMonth(),
+//       day,
+//       12,
+//       0,
+//       0,
+//     );
+//     const isoString = formatDateToISO(newDate);
+//     onChange(isoString);
+//     setIsOpen(false);
+//   };
 
-  const changeMonth = (offset) => {
-    const newDate = new Date(
-      viewDate.getFullYear(),
-      viewDate.getMonth() + offset,
-      1,
-      12,
-      0,
-      0,
-    );
-    setViewDate(newDate);
-  };
+//   const changeMonth = (offset) => {
+//     const newDate = new Date(
+//       viewDate.getFullYear(),
+//       viewDate.getMonth() + offset,
+//       1,
+//       12,
+//       0,
+//       0,
+//     );
+//     setViewDate(newDate);
+//   };
 
-  const setToday = () => {
-    const todayStr = getTodayString();
-    onChange(todayStr);
-    setViewDate(parseISODate(todayStr));
-    setIsOpen(false);
-  };
+//   const setToday = () => {
+//     const todayStr = getTodayString();
+//     onChange(todayStr);
+//     setViewDate(parseISODate(todayStr));
+//     setIsOpen(false);
+//   };
 
-  const clearDate = () => {
-    onChange("");
-    setIsOpen(false);
-  };
+//   const clearDate = () => {
+//     onChange("");
+//     setIsOpen(false);
+//   };
 
-  // เเสดงวันในปฏิทิน
+//   // เเสดงวันในปฏิทิน
 
-  const renderCalendarDays = () => {
-    const days = [];
-    const totalDays = daysInMonth(viewDate.getMonth(), viewDate.getFullYear());
-    const startDay = firstDayOfMonth(
-      viewDate.getMonth(),
-      viewDate.getFullYear(),
-    );
+//   const renderCalendarDays = () => {
+//     const days = [];
+//     const totalDays = daysInMonth(viewDate.getMonth(), viewDate.getFullYear());
+//     const startDay = firstDayOfMonth(
+//       viewDate.getMonth(),
+//       viewDate.getFullYear(),
+//     );
 
-    for (let i = 0; i < startDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-8 w-8"></div>);
-    }
+//     for (let i = 0; i < startDay; i++) {
+//       days.push(<div key={`empty-${i}`} className="h-8 w-8"></div>);
+//     }
 
-    for (let i = 1; i <= totalDays; i++) {
-      const currentLoopDate = new Date(
-        viewDate.getFullYear(),
-        viewDate.getMonth(),
-        i,
-        12,
-        0,
-        0,
-      );
-      const currentLoopDateStr = formatDateToISO(currentLoopDate);
-      const isDailySelected =
-      !startDate &&
-      !endDate &&
-      value === currentLoopDateStr;
+//     for (let i = 1; i <= totalDays; i++) {
+//       const currentLoopDate = new Date(
+//         viewDate.getFullYear(),
+//         viewDate.getMonth(),
+//         i,
+//         12,
+//         0,
+//         0,
+//       );
+//       const currentLoopDateStr = formatDateToISO(currentLoopDate);
+//       const isDailySelected =
+//       !startDate &&
+//       !endDate &&
+//       value === currentLoopDateStr;
 
-      const isToday = currentLoopDateStr === getTodayString();
+//       const isToday = currentLoopDateStr === getTodayString();
 
-      const start = startDate ? parseISODate(startDate).getTime() : null;
-      const end = endDate ? parseISODate(endDate).getTime() : null;
-      const current = currentLoopDate.getTime();
+//       const start = startDate ? parseISODate(startDate).getTime() : null;
+//       const end = endDate ? parseISODate(endDate).getTime() : null;
+//       const current = currentLoopDate.getTime();
 
-      const isStart = start && current === start;
-      const isEnd = end && current === end;
-      const isInRange = start && end && current > start && current < end;
+//       const isStart = start && current === start;
+//       const isEnd = end && current === end;
+//       const isInRange = start && end && current > start && current < end;
 
-      // วงกลมวันที่เลือก 
-      days.push(
-       <button
-        key={i}
-        onClick={() => handleDayClick(i)}
-        className={`h-8 w-8 text-sm font-medium transition-colors
-          ${
-            isDailySelected || isStart || isEnd
-              ? "bg-blue-600 text-white rounded-full shadow-md shadow-blue-300 dark:shadow-blue-900"
-              : isInRange
-              ? "bg-blue-100 text-blue-700 rounded-full "
-              : "rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 "
-          }
-          ${
-            isToday && !isDailySelected && !isStart && !isEnd
-              ? "border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
-              : ""
-          }
-        `}
+//       // วงกลมวันที่เลือก 
+//       days.push(
+//        <button
+//         key={i}
+//         onClick={() => handleDayClick(i)}
+//         className={`h-8 w-8 text-sm font-medium transition-colors
+//           ${
+//             isDailySelected || isStart || isEnd
+//               ? "bg-blue-600 text-white rounded-full shadow-md shadow-blue-300 dark:shadow-blue-900"
+//               : isInRange
+//               ? "bg-blue-100 text-blue-700 rounded-full "
+//               : "rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 "
+//           }
+//           ${
+//             isToday && !isDailySelected && !isStart && !isEnd
+//               ? "border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
+//               : ""
+//           }
+//         `}
 
-      >
-        {i}
-      </button>
-      );
-    }
-    return days;
-  };
+//       >
+//         {i}
+//       </button>
+//       );
+//     }
+//     return days;
+//   };
 
-  const thaiMonths = [
-    "มกราคม",
-    "กุมภาพันธ์",
-    "มีนาคม",
-    "เมษายน",
-    "พฤษภาคม",
-    "มิถุนายน",
-    "กรกฎาคม",
-    "สิงหาคม",
-    "กันยายน",
-    "ตุลาคม",
-    "พฤศจิกายน",
-    "ธันวาคม",
-  ];
+//   const thaiMonths = [
+//     "มกราคม",
+//     "กุมภาพันธ์",
+//     "มีนาคม",
+//     "เมษายน",
+//     "พฤษภาคม",
+//     "มิถุนายน",
+//     "กรกฎาคม",
+//     "สิงหาคม",
+//     "กันยายน",
+//     "ตุลาคม",
+//     "พฤศจิกายน",
+//     "ธันวาคม",
+//   ];
 
-    
-  return (
-    <div className="relative w-full" ref={containerRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm  
-          bg-white dark:bg-slate-900
-          ${
-            isOpen
-              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
-              : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
-          }
-        `}
-      >
-        <div className="flex items-center gap-2">
-          <CalendarDays size={18} className="text-blue-500" />
-          <span
-            className={`${
-              value
-                ? "text-slate-700 dark:text-slate-200 font-medium"
-                : "text-slate-400"
-            }`}
-          >
-            {value ? formatDateDisplay(value) : placeholder}
-          </span>
-        </div>
-      </button>
+//   return (
+//     <div className="relative w-full" ref={containerRef}>
+//       <button
+//         type="button"
+//         onClick={() => setIsOpen(!isOpen)}
+//         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200
+//           bg-white dark:bg-slate-900
+//           ${
+//             isOpen
+//               ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+//               : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
+//           }
+//         `}
+//       >
+//         <div className="flex items-center gap-2">
+//           <CalendarDays size={18} className="text-blue-500" />
+//           <span
+//             className={`${
+//               value
+//                 ? "text-slate-700 dark:text-slate-200 font-medium"
+//                 : "text-slate-400"
+//             }`}
+//           >
+//             {value ? formatDateDisplay(value) : placeholder}
+//           </span>
+//         </div>
+//       </button>
 
-      {isOpen && (
-        <div
-          className="absolute z-50 mt-2 p-4 rounded-2xl shadow-xl w-[300px] animate-in fade-in zoom-in-95 duration-200 left-0 sm:left-auto right-0 sm:right-0
-          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-700 dark:text-slate-200">
-              {thaiMonths[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
-            </h3>
-            <div className="flex gap-1">
-              <button
-                onClick={() => changeMonth(-1)}
-                className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button
-                onClick={() => changeMonth(1)}
-                className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-7 mb-2 text-center">
-            {["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"].map((day) => (
-              <span key={day} className="text-xs font-bold text-slate-400">
-                {day}
-              </span>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-y-1 justify-items-center">
-            {renderCalendarDays()}
-          </div>
-          <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
-            <button
-              onClick={clearDate}
-              className="text-xs text-slate-500 hover:text-red-500 font-medium px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            >
-              ล้างค่า
-            </button>
-            <button
-              onClick={setToday}
-              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-bold px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-            >
-              วันนี้
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+//       {isOpen && (
+//         <div
+//           className="absolute z-50 mt-2 p-4 rounded-2xl shadow-xl w-[300px] animate-in fade-in zoom-in-95 duration-200 left-0 sm:left-auto right-0 sm:right-0
+//           bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
+//         >
+//           <div className="flex justify-between items-center mb-4">
+//             <h3 className="font-bold text-slate-700 dark:text-slate-200">
+//               {thaiMonths[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
+//             </h3>
+//             <div className="flex gap-1">
+//               <button
+//                 onClick={() => changeMonth(-1)}
+//                 className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+//               >
+//                 <ChevronLeft size={20} />
+//               </button>
+//               <button
+//                 onClick={() => changeMonth(1)}
+//                 className="p-1 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+//               >
+//                 <ChevronRight size={20} />
+//               </button>
+//             </div>
+//           </div>
+//           <div className="grid grid-cols-7 mb-2 text-center">
+//             {["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"].map((day) => (
+//               <span key={day} className="text-xs font-bold text-slate-400">
+//                 {day}
+//               </span>
+//             ))}
+//           </div>
+//           <div className="grid grid-cols-7 gap-y-1 justify-items-center">
+//             {renderCalendarDays()}
+//           </div>
+//           <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
+//             <button
+//               onClick={clearDate}
+//               className="text-xs text-slate-500 hover:text-red-500 font-medium px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+//             >
+//               ล้างค่า
+//             </button>
+//             <button
+//               onClick={setToday}
+//               className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-bold px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+//             >
+//               วันนี้
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
 const CustomSelect = ({
   options,
@@ -396,11 +370,11 @@ const CustomSelect = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm  duration-200
+        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200
           bg-white dark:bg-slate-900
           ${
             isOpen
-              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+              ? "border-blue-500  ring-blue-500/10 shadow-sm"
               : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }
         `}
@@ -448,9 +422,9 @@ const CustomSelect = ({
                 `}
               >
                 <span>{optLabel}</span>
-                {isSelected && (
-                  <Check size={14} className="text-blue-500 shrink-0" />
-                )}
+               {isSelected && (
+                <Check size={14} className="text-blue-500 shrink-0" />
+                   )}
               </div>
             );
           })}
@@ -497,7 +471,7 @@ const ReportDashboard = ({ dashboardData }) => {
         <StatCard
           title="Most Impacted"
           value={dashboardData.stats.mostImpacted}
-          icon={<Flame className="w-6 h-6 text-red-600 dark:text-red-600" />}
+          icon={<Flame className="w-6 h-6  text-red-600 dark:text-red-600" />}
           color="bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30"
         />
       </div>
@@ -519,7 +493,7 @@ const ReportDashboard = ({ dashboardData }) => {
 
 // --- MAIN COMPONENT ---
 export default function DailyReport() {
-  const fileInputRef = useRef(null);
+//   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
   const [feedbackModal, setFeedbackModal] = useState({
@@ -542,8 +516,7 @@ export default function DailyReport() {
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [groups, setGroups] = useState([]);
-  const [modalExpandedGroupId, setModalExpandedGroupId] = useState(null);
+
   // รีเซ็ตหน้าเป็น 1 เมื่อ searchText หรือ filterStatus เปลี่ยน
   useEffect(() => {
     setCurrentPage(1);
@@ -558,21 +531,20 @@ export default function DailyReport() {
   });
 
   // UI States
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+//   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   const [isCaseDetailModalOpen, setIsCaseDetailModalOpen] = useState(false);
   const [selectedCaseDetail, setSelectedCaseDetail] = useState(null);
 
   // Email Form Data
-  const [availableRecipients, setAvailableRecipients] = useState([]);
-  const [isRecipientDropdownOpen, setIsRecipientDropdownOpen] = useState(false);
-  const [selectedRecipientIds, setSelectedRecipientIds] = useState([]);
-  
-  //  State 5 ช่อง
-  const [attachedFiles, setAttachedFiles] = useState(Array(5).fill(null));
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailBody, setEmailBody] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+//   const [availableRecipients, setAvailableRecipients] = useState([]);
+//   const [isRecipientDropdownOpen, setIsRecipientDropdownOpen] = useState(false);
+//   const [selectedRecipientIds, setSelectedRecipientIds] = useState([]);
+//   //  State 5 ช่อง
+//   const [attachedFiles, setAttachedFiles] = useState(Array(5).fill(null));
+//   const [emailSubject, setEmailSubject] = useState("");
+//   const [emailBody, setEmailBody] = useState("");
+//   const [isLoading, setIsLoading] = useState(false);
 
   const getAutoEmailSubject = () => {
   const [y, m, d] = getTodayString().split("-");
@@ -580,7 +552,7 @@ export default function DailyReport() {
   };
 
   //Export loading
-  const [isExporting, setIsExporting] = useState(false);
+//   const [isExporting, setIsExporting] = useState(false);
 
   const effectivePickerDate = useMemo(() => {
     // DAILY
@@ -623,6 +595,31 @@ export default function DailyReport() {
       .join("/")}`;
   }, [viewMode, selectedDate, monthlyStartDate, monthlyEndDate]);
 
+//   const reportRange = useMemo(() => {
+//   // DAILY
+//   if (viewMode === "daily") {
+//     return {
+//       start: selectedDate,
+//       end: selectedDate,
+//     };
+//   }
+
+//   // MONTHLY custom
+//   if (monthlyStartDate && monthlyEndDate) {
+//     return {
+//       start: monthlyStartDate,
+//       end: monthlyEndDate,
+//     };
+//   }
+
+//   // MONTHLY auto
+//   const today = getTodayString();
+//   return {
+//     start: getFirstDayOfMonth(today),
+//     end: today,
+//   };
+// }, [viewMode, selectedDate, monthlyStartDate, monthlyEndDate]);
+
 
   // Filter Options
   const filterOtions = useMemo(() => {
@@ -643,36 +640,31 @@ export default function DailyReport() {
     return [...defaultOpion, ...dbOptions];
   }, [lookupData.statuses]);
 
-  // --- 2. ดึง Data (Services, Status, Problem) เมื่อเข้าหน้าเว็บครั้งแรก
-useEffect(() => {
-    const fetchAllData = async () => {
+  // --- 2. ดึง Data (Game, Status, Problem) เมื่อเข้าหน้าเว็บครั้งแรก
+  useEffect(() => {
+    const fetchLookup = async () => {
       try {
-        setLoadingData(true);
-        const [resProducts, resStatuses, resProblems, resRecipients, resGroups] =
+        const [resProducts, resStatuses, resProblems, resRecipients] =
           await Promise.all([
             getproducts(),
             getStatuses(),
             getProblems(),
-            getRecipients(),
-            getGroups(),
+            // getRecipients(),
           ]);
 
         setLookupData({
           products: resProducts.products || [],
           statuses: resStatuses.statuses || resStatuses.data || [],
           problems: resProblems.problems || [],
-          recipients: resRecipients.recipients || [],
+        //   recipients: resRecipients.recipients || [],
         });
 
-        setAvailableRecipients(resRecipients || []); // ใช้ชื่อ Setter ที่ถูกต้อง
-        setGroups(resGroups || []);
+        // setAvailableRecipients(resRecipients || []);
       } catch (err) {
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoadingData(false);
+        console.error("Error fetching lookup data:", err);
       }
     };
-    fetchAllData();
+    fetchLookup();
   }, []);
 
   // ดึงข้อมูล Cases เมื่อเปลี่ยนวันที่ (selectedDate) หรือ viewMode
@@ -720,8 +712,7 @@ useEffect(() => {
         const statusObj = lookupData.statuses.find((s) => s.status_id === c.status_id);
         const problemObj = lookupData.problems.find((p) => p.problem_id === c.problem_id);
 
-        
-        const gameNames = c.game_name || c.product_names || "Unknown Services";
+        const gameNames = c.product_names || "Unknown Game";
 
           // 2. จัดการเรื่องเวลา (DB เป็น timestamp ต้องแปลงเป็น HH:mm)
           const start = new Date(c.start_datetime);
@@ -803,24 +794,6 @@ useEffect(() => {
       fetchCases();
     }
   }, [selectedDate, viewMode, lookupData, monthlyStartDate, monthlyEndDate]); // เพิ่ม viewMode ใน dependency
-    
-    useEffect(() => {
-  const fetchInitialData = async () => {
-    try {
-      // ดึงทั้งผู้รับรายคน และ กลุ่ม
-      const [recipientsData, groupsData] = await Promise.all([
-        getRecipients(),
-        getGroups()
-      ]);
-      setAvailableRecipients(recipientsData);
-      setGroups(groupsData);
-    } catch (error) {
-      console.error("Error fetching recipients/groups:", error);
-    }
-  };
-  fetchInitialData();
-}, []);
-
 
   // --- 3. LOGIC HANDLERS ---
   const handleCaseClick = (item) => {
@@ -828,29 +801,21 @@ useEffect(() => {
     setIsCaseDetailModalOpen(true);
   };
 
-  const handleOpenEmailModal = () => {
-  const defaultGroup = groups.find(g => g.is_default === true);
+//   const handleOpenEmailModal = () => {
+//     setSelectedRecipientIds([]);
+//     setAttachedFiles(Array(5).fill(null)); // Reset attachedFiles เป็น 5 ช่องว่าง
+//     setIsRecipientDropdownOpen(false);
+//     setIsEmailModalOpen(true);
 
-  if (defaultGroup && defaultGroup.members) {
-    const memberIds = defaultGroup.members.map(m => m.recipient_id);
-    setSelectedRecipientIds(memberIds); // ติ๊กถูกกลุ่ม Default ให้อัตโนมัติ
-  } else {
-    setSelectedRecipientIds([]);
-  }
-  
-  // --- ลบบรรทัด setSelectedRecipientIds([]); ตรงนี้ทิ้ง ---
-  setAttachedFiles(Array(5).fill(null)); 
-  setIsRecipientDropdownOpen(false);
-  setEmailSubject(getAutoEmailSubject()); 
-  setEmailBody("");
-  setIsEmailModalOpen(true);
-};
+//     setEmailSubject(getAutoEmailSubject()); // reset ข้อความค้างอยู่
+//     setEmailBody("");
+//   };
 
-  const toggleRecipient = (id) => {
-    setSelectedRecipientIds((prev) =>
-      prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id],
-    );
-  };
+//   const toggleRecipient = (id) => {
+//     setSelectedRecipientIds((prev) =>
+//       prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id],
+//     );
+//   };
 
   const handleDateChange = (date) => {
     // --- DAILY MODE ---
@@ -890,181 +855,183 @@ useEffect(() => {
 
   // ---  LOGIC Export file ---
 
-  const handleExport = async () => {
-  try {
-    setIsExporting(true);
+//   const handleExport = async () => {
+//   try {
+//     setIsExporting(true);
 
-    const {start, end} = getReportRange({
-      viewMode,
-      selectedDate,
-      monthlyStartDate,
-      monthlyEndDate,
-    });
+//     const {start, end} = getReportRange({
+//       viewMode,
+//       selectedDate,
+//       monthlyStartDate,
+//       monthlyEndDate,
+//     });
 
-    const blob = await exportReport({
-      startDate: start,
-      endDate: end,
-      mode: viewMode,
-      status: filterStatus,
-      search: searchText,
-    });
+//     const blob = await exportReport({
+//       startDate: start,
+//       endDate: end,
+//       mode: viewMode,
+//       status: filterStatus,
+//       search: searchText,
+//     });
 
-    const filename = getReportFilename({ start, end, viewMode });
+//     const filename = getReportFilename({ start, end, viewMode });
 
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setIsExporting(false);
-  }
-};
+//     const url = window.URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = url;
+//     a.download = filename;
+//     a.click();
+//     window.URL.revokeObjectURL(url);
+//   } catch (err) {
+//     console.error(err);
+//   } finally {
+//     setIsExporting(false);
+//   }
+// };
 
 
   // ฟังก์ชัน handleFileChange ที่ถูกต้อง
-  const handleFileChange = (e, index) => {
-    // 1. ดึงไฟล์เดียวที่ถูกเลือก
-    const file = e.target.files[0];
-    if (!file) return;
+//   const handleFileChange = (e, index) => {
+//     // 1. ดึงไฟล์เดียวที่ถูกเลือก
+//     const file = e.target.files[0];
+//     if (!file) return;
 
-    const errors = [];
+//     const errors = [];
 
-    // 2. ตรวจสอบขนาดไฟล์ (Size Validation)
-    if (file.size > CONFIG.MAX_FILE_SIZE_BYTES) {
-      errors.push(`ขนาดไฟล์ "${file.name}" เกิน ${CONFIG.MAX_FILE_SIZE_MB}MB`);
-    }
+//     // 2. ตรวจสอบขนาดไฟล์ (Size Validation)
+//     if (file.size > CONFIG.MAX_FILE_SIZE_BYTES) {
+//       errors.push(`ขนาดไฟล์ "${file.name}" เกิน ${CONFIG.MAX_FILE_SIZE_MB}MB`);
+//     }
 
-    // 3. ตรวจสอบประเภทไฟล์ (Type Validation)
-    if (file.type && !CONFIG.ALLOWED_FILE_TYPES.includes(file.type)) {
-      errors.push(`ประเภทไฟล์ "${file.name}" (Type: ${file.type}) ไม่รองรับ`);
-    }
+//     // 3. ตรวจสอบประเภทไฟล์ (Type Validation)
+//     if (file.type && !CONFIG.ALLOWED_FILE_TYPES.includes(file.type)) {
+//       errors.push(`ประเภทไฟล์ "${file.name}" (Type: ${file.type}) ไม่รองรับ`);
+//     }
 
-    // 4. จัดการ Error
-    if (errors.length > 0) {
-      setFeedbackModal({
-        isOpen: true,
-        type: "error",
-        title: "ไม่สามารถอัปโหลดไฟล์นี้ได้",
-        message: errors.join("\n"),
-      });
+//     // 4. จัดการ Error
+//     if (errors.length > 0) {
+//       setFeedbackModal({
+//         isOpen: true,
+//         type: "error",
+//         title: "ไม่สามารถอัปโหลดไฟล์นี้ได้",
+//         message: errors.join("\n"),
+//       });
 
-      e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
-      return;
-    }
+//       e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
+//       return;
+//     }
 
-    setAttachedFiles((prev) => {
-      const newFiles = [...prev];
-      newFiles[index] = file; // เก็บไฟล์จริง
-      return newFiles;
-    });
-  };
+//     setAttachedFiles((prev) => {
+//       const newFiles = [...prev];
+//       newFiles[index] = file; // เก็บไฟล์จริง
+//       return newFiles;
+//     });
+//   };
 
-  const removeFile = (indexToRemove) => {
-    // เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
-    setAttachedFiles((prev) =>
-      prev.map((file, index) => (index === indexToRemove ? null : file)),
-    );
-  };
-  const handleSendEmail = async () => {
-    if (selectedRecipientIds.length === 0) {
-      setFeedbackModal({
-        isOpen: true,
-        type: "error",
-        title: "เลือกผู้รับ",
-        message: "กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน",
-      });
-      return;
-    }
+//   const removeFile = (indexToRemove) => {
+//     // เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
+//     setAttachedFiles((prev) =>
+//       prev.map((file, index) => (index === indexToRemove ? null : file)),
+//     );
+//   };
 
-    setIsLoading(true);
+//   const handleSendEmail = async () => {
+//     if (selectedRecipientIds.length === 0) {
+//       setFeedbackModal({
+//         isOpen: true,
+//         type: "error",
+//         title: "เลือกผู้รับ",
+//         message: "กรุณาเลือกผู้รับอีเมลอย่างน้อย 1 คน",
+//       });
+//       return;
+//     }
 
-    const { start, end } = getReportRange({
-    viewMode,
-    selectedDate,
-    monthlyStartDate,
-    monthlyEndDate,
-  });
+//     setIsLoading(true);
 
-  // 1. กำหนดช่วงวันที่ของรายงาน (Report)
-  const period =
-    start === end
-      ? formatDMY(start)
-      : `${formatDMY(start)} - ${formatDMY(end)}`;
+//     const { start, end } = getReportRange({
+//     viewMode,
+//     selectedDate,
+//     monthlyStartDate,
+//     monthlyEndDate,
+//   });
 
-    try {
+//   // 1. กำหนดช่วงวันที่ของรายงาน (Report)
+//   const period =
+//     start === end
+//       ? formatDMY(start)
+//       : `${formatDMY(start)} - ${formatDMY(end)}`;
+
+//     try {
       
 
-      // 2. ดึง Email ผู้รับ
-      const toEmails = availableRecipients
-        .filter((r) => selectedRecipientIds.includes(r.recipient_id))
-        .map((r) => r.email);
+//       // 2. ดึง Email ผู้รับ
+//       const toEmails = availableRecipients
+//         .filter((r) => selectedRecipientIds.includes(r.recipient_id))
+//         .map((r) => r.email);
 
-      // 3. สร้างก้อนข้อมูล JSON
-      const reportInfo = {
-        viewMode: viewMode,
-        reportPeriod: period,
-      };
+//       // 3. สร้างก้อนข้อมูล JSON
+//       const reportInfo = {
+//         viewMode: viewMode,
+//         reportPeriod: period,
+//       };
 
-      const summaryData = {
-        totalCases: dashboardData.stats.totalCases,
-        totalDowntime: dashboardData.stats.totalDowntimeStr,
-        mostImpacted: dashboardData.stats.mostImpacted,
-      };
+//       const summaryData = {
+//         totalCases: dashboardData.stats.totalCases,
+//         totalDowntime: dashboardData.stats.totalDowntimeStr,
+//         mostImpacted: dashboardData.stats.mostImpacted,
+//       };
 
-      // 4. จัดเตรียม FormData
-      const formData = new FormData();
-      formData.append("toEmails", JSON.stringify(toEmails));
-      formData.append("subject", emailSubject);
-      formData.append("body", emailBody);
+//       // 4. จัดเตรียม FormData
+//       const formData = new FormData();
+//       formData.append("toEmails", JSON.stringify(toEmails));
+//       formData.append("subject", emailSubject);
+//       formData.append("body", emailBody);
 
-      // --- ส่งก้อนข้อมูล JSON ---
-      formData.append("reportInfo", JSON.stringify(reportInfo));
-      formData.append("summaryData", JSON.stringify(summaryData));
-      formData.append("casesData", JSON.stringify(filteredCases)); // รายการทั้งหมดในตาราง
+//       // --- ส่งก้อนข้อมูล JSON ---
+//       formData.append("reportInfo", JSON.stringify(reportInfo));
+//       formData.append("summaryData", JSON.stringify(summaryData));
+//       formData.append("casesData", JSON.stringify(filteredCases)); // รายการทั้งหมดในตาราง
 
-      console.log("Data to be sent:", {
-        subject: emailSubject,
-        casesCount: filteredCases.length,
-        summary: summaryData,
-      });
+//       console.log("Data to be sent:", {
+//         subject: emailSubject,
+//         casesCount: filteredCases.length,
+//         summary: summaryData,
+//       });
 
-      // 5. แนบไฟล์ปกติ (ถ้ามี)
-      attachedFiles
-        .filter((file) => !!file)
-        .forEach((file) => {
-          formData.append("attachments", file);
-        });
+//       // 5. แนบไฟล์ปกติ (ถ้ามี)
+//       attachedFiles
+//         .filter((file) => !!file)
+//         .forEach((file) => {
+//           formData.append("attachments", file);
+//         });
 
-      // 6. ส่งข้อมูลไปที่ API
-      await sendDailyReport(formData);
+//       // 6. ส่งข้อมูลไปที่ API
+//       await sendDailyReport(formData);
 
-      setIsEmailModalOpen(false);
-      setFeedbackModal({
-        isOpen: true,
-        type: "success",
-        title: "ส่งรายงานเรียบร้อย",
-        message: "ระบบได้ทำการส่งอีเมลรายงานเรียบร้อยแล้ว",
-      });
+//       setIsEmailModalOpen(false);
+//       setFeedbackModal({
+//         isOpen: true,
+//         type: "success",
+//         title: "ส่งรายงานเรียบร้อย",
+//         message: "ระบบได้ทำการส่งอีเมลรายงานเรียบร้อยแล้ว",
+//       });
 
-      setSelectedRecipientIds([]);
-    } catch (error) {
-      console.error("Error sending email:", error);
-      setFeedbackModal({
-        isOpen: true,
-        type: "error",
-        title: "ส่งเมลไม่สำเร็จ",
-        message: error.message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+//       setSelectedRecipientIds([]);
+//     } catch (error) {
+//       console.error("Error sending email:", error);
+//       setFeedbackModal({
+//         isOpen: true,
+//         type: "error",
+//         title: "ส่งเมลไม่สำเร็จ",
+//         message: error.message,
+//       });
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
 
   //
+  
   const rangeMs = useMemo(() => {
     // DAILY
     if (viewMode === "daily") {
@@ -1107,77 +1074,78 @@ useEffect(() => {
   });
 
   const dashboardData = useMemo(() => {
-    const safeCases = filteredCases;
-
-    let totalDownMinutes = 0;
-    const gameStats = {};
-    const counts = {};
-    const processedCaseIds = new Set(); // ไว้เช็ก ID ไม่ให้บวกเวลา/จำนวนเคสซ้ำ
-
-    safeCases.forEach((c) => {
-      if (!c) return;
-
-      const minutes = c.durationMins || 0;
-      
-      // 1. บวก Downtime และ Case Count เฉพาะ ID ที่ยังไม่เคยนับ (กันตัวเลขเบิ้ล)
-      if (!processedCaseIds.has(c.id)) {
-        totalDownMinutes += minutes;
+      const safeCases = filteredCases;
+  
+      let totalDownMinutes = 0;
+      const gameStats = {};
+      const counts = {};
+      const processedCaseIds = new Set(); // ไว้เช็ก ID ไม่ให้บวกเวลา/จำนวนเคสซ้ำ
+  
+      safeCases.forEach((c) => {
+        if (!c) return;
+  
+        const minutes = c.durationMins || 0;
         
-        const status = c.status || "others";
-        counts[status] = (counts[status] || 0) + 1;
-        
-        processedCaseIds.add(c.id);
-      }
-
-      // 2. เก็บสถิติรายเกมสำหรับกราฟและ Most Impacted (นับแยกทุกเกม)
-      const gameString = c.game || "Unknown services";
-      const gameList = gameString.split(',').map(g => g.trim()).filter(Boolean);
-
-      gameList.forEach((gameName) => {
-        if (!gameStats[gameName]) {
-          gameStats[gameName] = { minutes: 0, count: 0 };
+        // 1. บวก Downtime และ Case Count เฉพาะ ID ที่ยังไม่เคยนับ (กันตัวเลขเบิ้ล)
+        if (!processedCaseIds.has(c.id)) {
+          totalDownMinutes += minutes;
+          
+          const status = c.status || "others";
+          counts[status] = (counts[status] || 0) + 1;
+          
+          processedCaseIds.add(c.id);
         }
-        gameStats[gameName].minutes += minutes;
-        gameStats[gameName].count += 1;
+  
+        // 2. เก็บสถิติรายเกมสำหรับกราฟและ Most Impacted (นับแยกทุกเกม)
+        const gameString = c.game || "Unknown services";
+        const gameList = gameString.split(',').map(g => g.trim()).filter(Boolean);
+  
+        gameList.forEach((gameName) => {
+          if (!gameStats[gameName]) {
+            gameStats[gameName] = { minutes: 0, count: 0 };
+          }
+          gameStats[gameName].minutes += minutes;
+          gameStats[gameName].count += 1;
+        });
       });
-    });
+  
+      // 3. จัดลำดับ Most Impacted
+      const sortedGames = Object.keys(gameStats)
+        .map((key) => ({ name: key, ...gameStats[key] }))
+        .sort((a, b) => b.minutes - a.minutes || b.count - a.count);
+  
+      let mostImpacted = "-";
+      if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
+        const topGame = sortedGames[0];
+        const ties = sortedGames.filter(
+          (g) => g.minutes === topGame.minutes && g.count === topGame.count,
+        );
+  
+        // แสดงชื่อผู้ชนะ (ถ้าเท่ากันหลายเกมก็จอยด้วย comma)
+        mostImpacted = ties.map((t) => t.name).join(", ");
+        if (mostImpacted.length > 30) mostImpacted = mostImpacted.substring(0, 30) + "...";
+      }
+  
+      const downHours = Math.floor(totalDownMinutes / 60);
+      const downMins = totalDownMinutes % 60;
+      
+      return {
+        stats: {
+          totalCases: processedCaseIds.size, // ใช้ขนาดของ Set เพื่อจำนวนเคสที่แท้จริง
+          totalDowntimeStr: `${String(downHours).padStart(2, "0")}:${String(downMins).padStart(2, "0")} hrs`,
+          mostImpacted,
+        },
+        barChartData: sortedGames.filter((item) => item.minutes > 0),
+        pieData: Object.keys(STATUS_CONFIG)
+          .map((key) => ({
+            name: STATUS_CONFIG[key].label,
+            value: counts[key] || 0,
+            color: STATUS_CONFIG[key].color,
+          }))
+          .filter((item) => item.value > 0),
+      };
+    }, [filteredCases]);
 
-    // 3. จัดลำดับ Most Impacted
-    const sortedGames = Object.keys(gameStats)
-      .map((key) => ({ name: key, ...gameStats[key] }))
-      .sort((a, b) => b.minutes - a.minutes || b.count - a.count);
-
-    let mostImpacted = "-";
-    if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
-      const topGame = sortedGames[0];
-      const ties = sortedGames.filter(
-        (g) => g.minutes === topGame.minutes && g.count === topGame.count,
-      );
-
-      // แสดงชื่อผู้ชนะ (ถ้าเท่ากันหลายเกมก็จอยด้วย comma)
-      mostImpacted = ties.map((t) => t.name).join(", ");
-      if (mostImpacted.length > 30) mostImpacted = mostImpacted.substring(0, 30) + "...";
-    }
-
-    const downHours = Math.floor(totalDownMinutes / 60);
-    const downMins = totalDownMinutes % 60;
-    
-    return {
-      stats: {
-        totalCases: processedCaseIds.size, 
-        totalDowntimeStr: `${String(downHours).padStart(2, "0")}:${String(downMins).padStart(2, "0")} hrs`,
-        mostImpacted,
-      },
-      barChartData: sortedGames.filter((item) => item.minutes > 0),
-      pieData: Object.keys(STATUS_CONFIG)
-        .map((key) => ({
-          name: STATUS_CONFIG[key].label,
-          value: counts[key] || 0,
-          color: STATUS_CONFIG[key].color,
-        }))
-        .filter((item) => item.value > 0),
-    };
-  }, [filteredCases]);
   const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
   const paginatedCases = filteredCases.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -1192,24 +1160,26 @@ useEffect(() => {
       bg-gradient-to-br from-blue-100 via-slate-100 to-blue-100 
       dark:from-slate-900 dark:via-slate-950 dark:to-zinc-900"
     >
-      {" "}
+       {/* --- ส่วน Header ที่ปรับปรุงใหม่ --- */}
+
+
       {/* contanier */}
       {/* Header Bar */}
-      <PageHeader
-        title="Daily Report"
-        subtitle="รายงานประจำวัน"
-        icon={<FileText size={24} />}
-        left={
-          <>
-            <BackIconButton />
+      {/* <PageHeader
+        // title="Daily Report"
+        // subtitle="รายงานประจำวัน"
+        // icon={<FileText size={24} />}
+        // left={
+        //   <>
+        //     <BackIconButton />
 
-            <ButtonHome onClick={() => navigate("/menu")} />
-          </>
-        }
+        //     <ButtonHome onClick={() => navigate("/menu")} />
+        //   </>
+        // }
         right={
-          <>
-            {/* ปุ่มสลับ รายวัน-> รายเดือน */}
-            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+          <> */}
+            
+            {/* <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
 
             <div className="w-48">
               <CustomDatePicker
@@ -1219,39 +1189,51 @@ useEffect(() => {
                 endDate={viewMode === "monthly" ? monthlyEndDate : null}
                 placeholder="เลือกวันที่"
               />
-            </div>
-
+            </div> */}
+{/* 
             <ExportButton
               onClick={handleExport}
               isExporting={isExporting}
               disabled={!hasReportData(filteredCases)}
-            />
+            /> */}
 
-            <ButtonSend onClick={handleOpenEmailModal} />
-          </>
+            {/* <ButtonSend onClick={handleOpenEmailModal} /> */}
+          {/* </>
         }
-      />
+      /> */}
+
+
       <main
         id="report-content"
         className="max-w-[70%] mx-auto px-4 sm:px-6 lg:px-1 py-8"
       >
+       
         {/* Date Header Display */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            {/* เช็ค viewMode เพื่อเปลี่ยนคำพูด */}
-            {viewMode === "daily"
-              ? "ภาพรวมประจำวันที่"
-              : "ภาพรวมประจำเดือน"}{" "}
-            <span className="text-blue-600 dark:text-blue-400 border-b-2 border-blue-600/20 dark:border-blue-400/30 px-1">
-              {/* เป็น วันเดือนปี  */}
-              {headerDateText}
-            </span>
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 text-left">
-            สรุปข้อมูลการดำเนินงาน
-            {viewMode === "daily" ? "ประจำวัน" : "ตลอดทั้งเดือน"}
-          </p>
-        </div>
+       {/* --- Header Section (หัวข้อ + ปุ่ม) --- */}
+      <div className="flex justify-between items-start mb-10">
+  
+      {/* กลุ่มข้อความฝั่งซ้าย: h2 และ p จะเริ่มที่จุดเดียวกันตรงเป๊ะ */}
+      <div className="space-y-2">
+        <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight leading-tight">
+          {viewMode === "daily" ? "ภาพรวมประจำวันที่" : "ภาพรวมประจำเดือน"}{" "}
+          <span className="text-blue-600 dark:text-blue-400 border-b-4 border-blue-600/20 px-1">
+            {headerDateText}
+          </span>
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400 font-medium text-base text-left">
+          สรุปข้อมูลการดำเนินงาน {viewMode === "daily" ? "ประจำวัน" : "ตลอดทั้งเดือน"}
+        </p>
+      </div>
+
+      {/* กลุ่มปุ่มฝั่งขวา: แยกออกมาต่างหากไม่ไปเบียดกับข้อความ */}
+        <button 
+          onClick={() => navigate("/menu")} 
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700  text-white px-6 py-3 rounded-2xl font-bold shadow-md  shadow-blue-600  transition-y shrink-0 mt-1 duration-300 hover:-translate-y-1"
+        >
+          <Home size={20} />
+          เข้าสู่เมนูหลัก
+        </button>
+      </div>
 
         {/* Dashboard */}
         <div className="mb-8">
@@ -1390,20 +1372,20 @@ useEffect(() => {
 
 
                       {/* Service / Problem */}
-                          <td className="px-6 py-4 align-top max-w-[250px]">
-                      <div className="flex flex-col gap-1">
-                    
+                     <td className="px-6 py-4 align-top max-w-[250px]">
+                       <div className="flex flex-col gap-1">
+
+                     
                         <div className="text-sm font-bold text-blue-600 dark:text-blue-400 break-words leading-tight">
-                          {item.game || "ไม่ได้ระบุบริการ"}
+                        {item.game || "ไม่ได้ระบุService"}
                         </div>
                         
                         {/* แสดงชื่อปัญหาด้านล่างชื่อบริการ */}
                         <div className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                          {item.problem}
+                        {item.problem}
                         </div>
-                      </div>
+                    </div>
                     </td>
-
                       {/* Details / Solution */}
                       <td className="px-6 py-4 align-top max-w-xs">
                         <div className="space-y-2">
@@ -1426,15 +1408,13 @@ useEffect(() => {
                           )}
                         </div>
                       </td>
-                      
                       {/* Requester / Operator */}
                       <td className="px-6 py-4 align-top max-w-[250px]">
                         <div className="flex flex-col gap-2">
                           <div className="flex items-start gap-2">
                             <div
-                              className="w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-medium
-                              bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
-                              style={{ minWidth: '24px', minHeight: '24px' }}
+                              className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs font-medium
+                              bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 "
                             >
                               R
                             </div>
@@ -1442,11 +1422,10 @@ useEffect(() => {
                               {item.reporter}
                             </span>
                           </div>
-                          <div className="flex items-start gap-2 ">
+                          <div className="flex items-start gap-2">
                             <div
-                              className="w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-medium
+                              className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs font-medium
                               bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                              style={{ minWidth: '24px', minHeight: '24px' }}
                             >
                               O
                             </div>
@@ -1459,7 +1438,7 @@ useEffect(() => {
                     </tr>
                   ))
                 ) : (
-                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูลในวันที่เลือก
+                  // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูล -> แสดง ไม่พบข้อมูล
                   <tr>
                     <td
                       colSpan="8"
@@ -1503,7 +1482,7 @@ useEffect(() => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold  ${
+                      className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
                         currentPage === page
                           ? "bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/50"
                           : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
@@ -1690,267 +1669,8 @@ useEffect(() => {
           </div>
         </div>
       )}
-
-      {/* Email Modal */}
-      {isEmailModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div
-            className="rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]
-            bg-white dark:bg-slate-800"
-          >
-            {" "}
-            {/* Modal Container Dark Mode */}
-            <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-              <h3 className="font-medium text-xl text-slate-800 dark:text-white flex items-center gap-2">
-                <Send
-                  size={25}
-                  className="text-indigo-600 dark:text-indigo-400"
-                />
-                Send Email
-              </h3>
-              <button
-                onClick={() => setIsEmailModalOpen(false)}
-                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
-           
-         {/* --- ส่วนเลือกผู้รับ  --- */}
-      <div className="space-y-3 text-left">
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 ml-1">
-          <User size={16} className="text-slate-400" /> Select Recipients
-        </label>
-
-  <div className="relative">
-    {/* ปุ่มกดเปิด Dropdown */}
-    <button
-      type="button"
-      onClick={() => setIsRecipientDropdownOpen(!isRecipientDropdownOpen)}
-      className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl transition-all duration-200 bg-white dark:bg-slate-900 ${
-        isRecipientDropdownOpen ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm" : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-      }`}
-    >
-      <div className="flex flex-wrap gap-2 items-center w-full overflow-hidden">
-        {selectedRecipientIds.length === 0 ? (
-          <span className="text-slate-400 text-sm font-normal">Select email addresses...</span>
-        ) : (
-          <div className="flex items-center gap-2 overflow-hidden w-full">
-            {/* Badge แสดงจำนวน (font-normal ตาม Custom Report) */}
-            <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap shrink-0">
-              {selectedRecipientIds.length} Selected
-            </span>
-            <span className="text-sm text-slate-600 dark:text-slate-400 truncate font-normal">
-              {availableRecipients
-                .filter(u => selectedRecipientIds.includes(u.recipient_id))
-                .map(u => u.name || u.email).join(", ")}
-            </span>
-          </div>
-        )}
-      </div>
-      {isRecipientDropdownOpen ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
-    </button>
-
-    {/* เนื้อหาภายใน Dropdown */}
-    {isRecipientDropdownOpen && (
-      <div className="absolute z-50 left-0 right-0 mt-2 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-100">
-        
-        {/* --- SECTION 1: Email Groups --- */}
-        {groups.length > 0 && (
-          <div className="mb-2">
-            <div className="px-2 py-1 mb-1 border-b border-slate-50 dark:border-slate-700/50">
-              <span className=" font-semibold text-xs text-slate-400 uppercase tracking-widest">Email Groups</span>
-            </div>
-            {groups.map((group) => {
-              const isAllSelected = group.members.every(m => selectedRecipientIds.includes(m.recipient_id));
-              const isExpanded = modalExpandedGroupId === group.group_id;
-
-              return (
-                <div key={`group-${group.group_id}`} className="mb-1">
-                  <div className={`flex items-center p-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50 ${isAllSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
-                    <div onClick={() => {
-                        const ids = group.members.map(m => m.recipient_id);
-                        setSelectedRecipientIds(prev => isAllSelected ? prev.filter(id => !ids.includes(id)) : [...new Set([...prev, ...ids])]);
-                      }} 
-                      className={`shrink-0 cursor-pointer ${isAllSelected ? "text-blue-600" : "text-slate-300"}`}
-                    >
-                      {isAllSelected ? <CheckSquare size={20} /> : <Square size={20} />}
-                    </div>
-                    <div onClick={() => setModalExpandedGroupId(isExpanded ? null : group.group_id)} className="flex-1 flex justify-between items-center ml-3 cursor-pointer">
-                      <div className="flex flex-col text-left">
-                        <span className="font-normal text-[15px] truncate text-slate-800 dark:text-slate-200">
-                          {group.group_name} {group.is_default }
-                        </span>
-                        <span className="text-[12px] text-slate-500">{group.members.length} recipients</span>
-                      </div>
-                      {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-                    </div>
-                  </div>
-                  {/* สมาชิกในกลุ่ม */}
-                  {isExpanded && (
-                    <div className="ml-8 mt-1 space-y-1 border-l-2 border-slate-100 dark:border-slate-700 pl-2">
-                      {group.members.map(m => (
-                        <div key={`gm-${m.recipient_id}`} onClick={() => toggleRecipient(m.recipient_id)} className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                          <div className={selectedRecipientIds.includes(m.recipient_id) ? "text-blue-600" : "text-slate-300"}>
-                            {selectedRecipientIds.includes(m.recipient_id) ? <CheckSquare size={18} /> : <Square size={18} />}
-                          </div>
-                          <div className="text-left min-w-0">
-                            <p className="font-normal text-sm truncate text-slate-500 dark:text-slate-400">{m.name}</p>
-                            <p className="font-normal text-sm truncate text-slate-800 dark:text-slate-200">{m.email}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* --- SECTION 2: All Recipients --- */}
-        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-          <div className="px-2 py-1 mb-1">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">All Recipients</span>
-          </div>
-          <div className="space-y-1">
-            {availableRecipients.map((user) => {
-              const isSelected = selectedRecipientIds.includes(user.recipient_id);
-              return (
-                <div key={`indiv-${user.recipient_id}`} onClick={() => toggleRecipient(user.recipient_id)} 
-                  className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-slate-50 dark:hover:bg-slate-900/50"}`}
-                >
-                  <div className={isSelected ? "text-blue-600" : "text-slate-300"}>
-                    {isSelected ? <CheckSquare size={20} /> : <Square size={20} />}
-                  </div>
-                  <div className="flex flex-col text-left min-w-0">
-                    <span className="font-normal text-sm truncate text-slate-500 dark:text-slate-400">{user.name || "Unnamed"}</span>
-                      <span className="font-normal text-sm truncate text-slate-800 dark:text-slate-200 text-left ">{user.email}</span>
-                    </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-              )}
-            </div>
-          </div>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
-                    Subject
-                  </label>
-                  <input
-                    value={emailSubject}
-                    maxLength={200}
-                    onChange={(e) => setEmailSubject(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
-                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium uppercase mb-1 text-left ml-1 text-slate-500 dark:text-slate-400">
-                    Message
-                  </label>
-                  <textarea
-                    value={emailBody}
-                    maxLength={2000}
-                    onChange={(e) => setEmailBody(e.target.value)}
-                    rows={4}
-                    className="w-full font-normal px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none
-                      bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
-                  />
-                </div>
-              </div>
-              {/* ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
-              <div>
-                <label className=" text-sm font-bold mb-3 flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                  <Paperclip size={16} /> Attachments (ไม่บังคับ, สูงสุด 5 ไฟล์)
-                </label>
-
-                <div className="space-y-3">
-                  {/* วนลูป 5 ช่อง */}
-                  {attachedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      {file ? (
-                        // --- Display Area when File Exists ---
-                        <div className="flex-1 flex items-center justify-between p-3 rounded-lg text-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
-                          <div className="flex items-center gap-3 overflow-hidden">
-                            <FileText
-                              size={16}
-                              className="text-indigo-500 shrink-0"
-                            />
-                            <span className="truncate font-medium text-slate-700 dark:text-slate-200">
-                              {file.name}
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeFile(index)}
-                            className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ) : (
-                        // --- Upload Area when Slot is Empty ---
-                        <div className="flex-1">
-                          <label
-                            htmlFor={`file-input-${index}`}
-                            className="block border-2 border-dashed rounded-xl p-3 text-center cursor-pointer hover:border-indigo-400 transition-colors group
-                              border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
-                          >
-                            <span className="text-sm font-medium flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
-                              <Paperclip
-                                size={16}
-                                className="text-slate-400 group-hover:text-indigo-500"
-                              />
-                              Click to attach File {index + 1}
-                            </span>
-                          </label>
-                          <input
-                            id={`file-input-${index}`}
-                            type="file"
-                            className="hidden"
-                            onChange={(e) => handleFileChange(e, index)}
-                            accept={CONFIG.ALLOWED_FILE_TYPES.join(",")}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <p className="text-xs mt-1 text-left text-slate-400">
-                    * ไฟล์แนบแต่ละไฟล์สูงสุด {CONFIG.MAX_FILE_SIZE_MB}MB (PDF,
-                    JPG, PNG, DOCX, XLSX)
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-end gap-3">
-              <button
-                onClick={() => setIsEmailModalOpen(false)}
-                className="px-6 py-2.5 rounded-lg font-bold text-sm transition-colors
-                  bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-              >
-                Cancel
-              </button>
-
-              <ButtonConfirmsend
-                onClick={handleSendEmail}
-                isLoading={isLoading}
-              >
-                {" "}
-                Confirm Send
-              </ButtonConfirmsend>
-            </div>
-          </div>
-        </div>
-      )}
+     
+      
       <ActionFeedbackModal
         isOpen={feedbackModal.isOpen}
         type={feedbackModal.type}

@@ -7,14 +7,20 @@ export async function getproducts() {
 }
 
 // POST
-export async function addproducts(productName) {
-  const res = await client.post("/products", { product_name: productName });
+export async function addproducts(name, category) {
+  const res = await client.post("/products", {
+    product_name: name,
+    product_category: category,
+  });
   return res.data;
 }
 
 // PUT
-export async function updateProduct(id, newName) {
-  const res = await client.put(`/products/${id}`, { product_name: newName });
+export async function updateProduct(id, name, category) {
+  const res = await client.put(`/products/${id}`, {
+    product_name: name,
+    product_category: category,
+  });
   return res.data;
 }
 

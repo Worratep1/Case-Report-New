@@ -30,7 +30,7 @@ export default function LoginPage() {
       const data = await login(username, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/menu");
+      navigate("/dashboard");
     } catch (err) {
   console.error("Login Error", err);
   let msg = "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
@@ -39,8 +39,7 @@ export default function LoginPage() {
     // กรณี Server ตอบกลับมา (เช่น 401)
     msg = err.response.data?.message || "Username หรือ Password ไม่ถูกต้อง";
   } else {
-    // กรณีไม่มี response (เช่น Server Down) 
-    // พอมันไม่มี err.response มันจะวิ่งมาที่นี่ และใช้ภาษาไทยที่เราตั้งไว้
+    // พอมันไม่มี err.response มันจะวิ่งมาที่นี่ 
     msg = "ไม่สามารถเชื่อมต่อกับ Server ได้ กรุณาตรวจสอบการเชื่อมต่อของคุณ";
   }
 

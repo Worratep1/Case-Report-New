@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   LogIn,
-  LayoutDashboard,
+  Menu,
   PlusCircle,
   FileText,
   UserCog,
@@ -222,7 +222,7 @@ export default function ManualPage() {
         {
           id: "main-menu",
           title: "หน้าเมนูหลัก (Main Menu)",
-          icon: <LayoutDashboard className="w-6 h-6 text-indigo-500" />,
+          icon: <Menu className="w-6 h-6 text-indigo-500" />,
           description: "ศูนย์รวมเมนูและฟังก์ชันทั้งหมดของระบบ",
           content: {
             stepTitle: "รายละเอียดเมนูหลัก",

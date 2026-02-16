@@ -26,8 +26,8 @@ export default function SettingPage() {
         <div className="space-y-3 ">
           <MenuButton
             icon={<Gamepad2 className="text-blue-500" />}
-            label="Game Setting"
-            description="จัดการข้อมูลเกม"
+            label="Service Setting"
+            description="จัดการข้อมูลเกมและระบบ"
             onClick={() => navigate("/game")} // ไปหน้า CasePage
           />
 

@@ -1,17 +1,28 @@
 // src/api/export.js
 import client from "./client";
 
-export async function exportReport(selectedDate ,mode  , status , search) {
-  const res = await client.get("/exportreport", {
-    params: {
-      date: selectedDate,
-      mode: mode,
-      status: status, 
-      search: search   
-    }, 
-    responseType: "blob", // ต้องมีเพื่อให้โหลดไฟล์ได้
-  });
+export async function exportReport({ startDate, endDate, mode, status, search }) {
+  try {
+    const res = await client.get("/exportreport", {
+      params: {
+        startDate,
+        endDate,
+        mode,
+        status,
+        search,
+      },
+      responseType: "blob",
+    });
 
-  return res.data; // คืน blob ให้ handleExport
+    return res.data; // ส่งกลับข้อมูลไฟล์แบบ blob
+  } catch (error) {
+    console.error("Error exporting report:", error);
+    throw error;
+  }
 }
+    
+    
+
+ 
+
 

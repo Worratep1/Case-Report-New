@@ -1,5 +1,3 @@
-
-// src/pages/Main.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import ButtonBack from "../components/ButtonBack";
@@ -17,7 +15,7 @@ export default function MainPage() {
           About System
         </h1>
         <p className="text-lg text-slate-500 dark:text-slate-400 font-medium">
-          Version 1.0 (Build 25/012026)
+          Version 1.0 (Build 25/01/2026)
         </p>
       </div>
 
@@ -60,8 +58,8 @@ export default function MainPage() {
             <Mail size={24} />
             <h2 className="text-xl font-bold">Email</h2>
           </div>
-          <p className="text-slate-700 dark:text-slate-300 font-semibold text-lg">Gmail API</p>
-          <p className="text-sm text-slate-500 mt-1"> ใช้ Gmail API สำหรับส่งรายงานผ่านอีเมลไปยังผู้รับ</p>
+          <p className="text-slate-700 dark:text-slate-300 font-semibold text-lg">SMTP</p>
+          <p className="text-sm text-slate-500 mt-1"> ใช้ SMTP Relay ของบริษัทสำหรับการส่งรายงานผ่านอีเมลไปยังผู้รับ</p>
         </div>
 
         {/* Developer Credit  */}

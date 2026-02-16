@@ -14,7 +14,17 @@ import { BarChart2, Activity } from "lucide-react";
 const DowntimeBarChart = ({ data }) => {
 
   const maxMinutes = data && data.length > 0 ? Math.max(...data.map(d => d.minutes)) : 0;
-  const tickInterval = 180; // ล็อกไว้ที่ 3 ชม.
+
+ const totalHours = maxMinutes / 60;
+  let tickInterval = 180; // Default 3 ชม.
+
+  if (totalHours > 500) {
+    tickInterval = 6000; // ถ้าข้อมูลเยอะมาก (เช่น 720 ชม.) ให้ห่างกันทุก 100 ชม. (6000 นาที)
+  } else if (totalHours > 100) {
+    tickInterval = 1440; // ถ้าเกิน 100 ชม. ให้ห่างกันทุก 24 ชม. (1 วัน)
+  } else if (totalHours > 24) {
+    tickInterval = 360;  // ถ้าเกิน 1 วัน ให้ห่างกันทุก 6 ชม.
+  }
   const generatedTicks = [];
   
   for (let i = 0; i <= maxMinutes + tickInterval; i += tickInterval) {
@@ -50,6 +60,9 @@ const DowntimeBarChart = ({ data }) => {
       </text>
     );
   };
+
+  const chartHeight = Math.max(256, (data?.length || 0) * 45);
+
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm h-full">
       <div className="flex items-center gap-2 mb-6">
@@ -62,7 +75,7 @@ const DowntimeBarChart = ({ data }) => {
         </div>
       </div>
 
-      <div className="h-64 w-full">
+      <div className="w-full" style={{ height: chartHeight }}>
         {data && data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
@@ -78,18 +91,27 @@ const DowntimeBarChart = ({ data }) => {
                 tick={{ fill: "#64748b", fontSize: 12.5 }}
                 tickFormatter={(val) => `${Math.floor(val / 60)}h`}
                 ticks={generatedTicks}
-                domain={[0, generatedTicks[generatedTicks.length - 1]]} 
+                domain={[0, generatedTicks[generatedTicks.length - 1]]}
+                interval="preserveStartEnd" 
                 
-                interval={0} // บังคับให้แสดงทุกตัวเลขถ้าพื้นที่พอ
+                
+                
               />
-              <YAxis 
-                dataKey="name" 
-                type="category" 
-                width={100}
-                tick={{ fill: "#64748b", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
+             <YAxis 
+              dataKey="name" 
+              type="category" 
+              width={150}
+              interval={0} 
+              tick={{ fill: "#64748b", fontSize: 12.5 }}
+              axisLine={false}
+              tickLine={false}
+              
+              tickFormatter={(value) => {
+                  if (!value) return "";
+                  // ถ้าชื่อยาวเกิน 20 ตัวอักษร ค่อยตัด (ไม่ใช่ตัดตามจำนวน comma)
+                  return value.length > 20 ? value.substring(0, 20) + "..." : value;
+                }}
+            />
               <Tooltip 
                 cursor={{ fill: 'transparent' }}
                 content={({ active, payload }) => {

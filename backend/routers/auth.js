@@ -21,7 +21,8 @@ const {getproblems} = require("../controllers/problems");
 const {sendDailyReport } = require("../controllers/email");
 const upload = multer({ storage: multer.memoryStorage() });
 const authMiddleware = require("../middleware/authMiddleware");
-const exportReport = require("..//controllers/exportreport");
+const exportReport = require("../controllers/exportreport");
+const recipientsgroup = require("../controllers/recipientsgroup");
 // const upload = multer({ storage: multer.memoryStorage() }); // 💡 ตั้งค่าให้เก็บไฟล์ไว้ในหน่วยความจำชั่วคราว
 
 
@@ -31,6 +32,11 @@ const exportReport = require("..//controllers/exportreport");
 router.post("/login", login); // เส้นทางสำหรับล็อกอินผู้ใช้
 
 router.use(authMiddleware);
+
+router.post("/groups", recipientsgroup.createGroup); // สร้างกลุ่มใหม่พร้อมสมาชิก
+router.get("/groups", recipientsgroup.getGroups); // ดึงกลุ่มทั้งหมดพร้อมรายชื่อสมาชิก
+router.put("/groups/:id", recipientsgroup.updateGroup); // แก้ไขกลุ่มและสมาชิกตาม id
+router.delete("/groups/:id", recipientsgroup.deleteGroup); // ลบกลุ่มตาม id
 
 router.post("/products",addproducts); // เส้นทางสำหรับการเพิ่มสินค้า
 router.get("/products",getproducts); // เส้นทางสำหรับการดึงสินค้าทั้งหมด

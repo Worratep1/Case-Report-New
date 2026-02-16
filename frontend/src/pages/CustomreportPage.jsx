@@ -6,7 +6,6 @@ import {
   AlertCircle,
   Calendar as CalendarIcon,
   User,
-  Gamepad2,
   Send,
   X,
   FileText,
@@ -22,45 +21,54 @@ import {
   Pencil,
   Trash2,
   Save,
-  AlertTriangle,
   Plus,
-  HelpCircle,
   PieChart as PieChartIcon,
   FileCog,
   Flame,
+  
+  Check,
+  
 } from "lucide-react";
 
 import { getCases } from "../api/case";
-import { getProblems } from "../api/problems";
-import { getStatuses } from "../api/status";
-import { getproducts } from "../api/products";
-import { createCase } from "../api/case";
-import { deleteCase } from "../api/case";
-import { updateCase } from "../api/case";
+import { getProblems } from "../api/problems.jsx";
+import { getStatuses } from "../api/status.jsx";
+import { getproducts } from "../api/products.jsx";
+import { createCase } from "../api/case.jsx";
+import { deleteCase } from "../api/case.jsx";
+import { updateCase } from "../api/case.jsx";
+import { getGroups } from "../api/recipientsgroup.jsx";
 import { getMembers } from "../api/member";
-import { getRecipients } from "../api/recipients";
-import { sendDailyReport } from "../api/report";
-import { exportReport } from "../api/export";
+import { getRecipients } from "../api/recipients.jsx";
+import { sendDailyReport } from "../api/report.jsx";
+import { exportReport } from "../api/export.jsx";
 import { useNavigate } from "react-router-dom";
 
 import BackIconButton from "../components/BackIconButton.jsx";
-import ExportButton from "../components/ButtonExport";
-import ButtonHome from "../components/ButtonHome";
-import ButtonSend from "../components/ButtonSend";
-import ButtonCancel from "../components/ButtonCancel";
-import ButtonSave from "../components/ButtonSave";
-import ActionFeedbackModal from "../components/ActionFeedbackModal";
+import ExportButton from "../components/ButtonExport.jsx";
+import ButtonHome from "../components/ButtonHome.jsx";
+import ButtonSend from "../components/ButtonSend.jsx";
+import ButtonCancel from "../components/ButtonCancel.jsx";
+import ButtonSave from "../components/ButtonSave.jsx";
+import ActionFeedbackModal from "../components/ActionFeedbackModal.jsx";
 import ButtonConfirmsend from "../components/ButtonConfirmsend.jsx";
-import ViewModeToggle from "../components/ViewModeToggle";
+import ViewModeToggle from "../components/ViewModeToggle.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import SearchInput from "../components/SearchInput.jsx";
 
 // --- IMPORT DASHBOARD COMPONENTS ---
-import StatCard from "../components/dashboard/StatCard";
-import DowntimeBarChart from "../components/dashboard/DowntimeBarChart";
-import StatusPieChart from "../components/dashboard/StatusPieChart";
+import StatCard from "../components/dashboard/StatCard.jsx";
+import DowntimeBarChart from "../components/dashboard/DowntimeBarChart.jsx";
+import StatusPieChart from "../components/dashboard/StatusPieChart.jsx";
 
-import { STATUS_CONFIG } from "../constants/status";
+import {
+  getReportRange,
+  getReportFilename,
+  hasReportData,
+  getFirstDayOfMonth,
+} from "../utils/reportUtils.jsx";
+
+import { STATUS_CONFIG } from "../constants/status.jsx";
 
 const CONFIG = {
   MAX_FILE_SIZE_MB: 5,
@@ -81,11 +89,20 @@ const ITEMS_PER_PAGE = 10;
 // Helper: Get Today's Date String YYYY-MM-DD
 const getTodayString = () => new Date().toISOString().split("T")[0];
 
+// Helper: Format Date from YYYY-MM-DD to DD/MM/YYYY
+const formatDMY = (dateStr) => dateStr.split("-").reverse().join("/");
+
 // --- CUSTOM DATE PICKER COMPONENT ---
-const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
+const CustomDatePicker = ({
+  value,
+  onChange,
+  startDate,
+  endDate,
+  placeholder = "Select date",
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(
-    value ? new Date(value) : new Date()
+    value ? new Date(value) : new Date(),
   );
   const containerRef = useRef(null);
 
@@ -116,6 +133,14 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
     });
   };
 
+  const formatDateToISO = (date) => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
 
@@ -131,7 +156,7 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
     const newDate = new Date(
       viewDate.getFullYear(),
       viewDate.getMonth() + offset,
-      1
+      1,
     );
     setViewDate(newDate);
   };
@@ -156,9 +181,10 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
     const totalDays = daysInMonth(viewDate.getMonth(), viewDate.getFullYear());
     const startDay = firstDayOfMonth(
       viewDate.getMonth(),
-      viewDate.getFullYear()
+      viewDate.getFullYear(),
     );
 
+    // เติมช่องว่างก่อนวันแรกของเดือน
     for (let i = 0; i < startDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-8 w-8"></div>);
     }
@@ -167,44 +193,62 @@ const CustomDatePicker = ({ value, onChange, placeholder = "Select date" }) => {
       const currentDayStr = new Date(
         viewDate.getFullYear(),
         viewDate.getMonth(),
-        i
+        i,
       )
         .toISOString()
         .split("T")[0];
       const checkDate = new Date(
         viewDate.getFullYear(),
         viewDate.getMonth(),
-        i
+        i,
       );
       const checkDateStr = new Date(
-        checkDate.getTime() - checkDate.getTimezoneOffset() * 60000
+        checkDate.getTime() - checkDate.getTimezoneOffset() * 60000,
       )
         .toISOString()
         .split("T")[0];
 
-      const isSelected = value === checkDateStr;
-      const isToday = checkDateStr === getTodayString();
+      const currentLoopDateStr = formatDateToISO(checkDate);
+
+      const isDailySelected =
+        !startDate && !endDate && value === currentLoopDateStr;
+
+      const isToday = currentLoopDateStr === getTodayString();
+
+      const isStart = startDate === checkDateStr;
+      const isEnd = endDate === checkDateStr;
+
+      const isInRange =
+        startDate &&
+        endDate &&
+        checkDateStr > startDate &&
+        checkDateStr < endDate;
+
+      const isSelected =
+        isStart || isEnd || (!startDate && value === checkDateStr);
 
       days.push(
         <button
           type="button"
           key={i}
           onClick={() => handleDayClick(i)}
-          className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors
-            ${
-              isSelected
-                ? "bg-blue-600 text-white"
-                : "hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300"
-            }
-            ${
-              isToday && !isSelected
-                ? "border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
-                : ""
-            }
-          `}
+          className={`h-8 w-8 text-sm font-medium transition-colors
+          ${
+            isDailySelected || isStart || isEnd
+              ? "bg-blue-600 text-white rounded-full shadow-md shadow-blue-300 dark:shadow-blue-900"
+              : isInRange
+                ? "bg-blue-100 text-blue-700 rounded-full "
+                : "rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 "
+          }
+          ${
+            isToday && !isDailySelected && !isStart && !isEnd
+              ? "border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
+              : ""
+          }
+        `}
         >
           {i}
-        </button>
+        </button>,
       );
     }
     return days;
@@ -332,10 +376,10 @@ const CustomTimePicker = ({ value, onChange, placeholder = "--:--" }) => {
   }, []);
 
   const hours = Array.from({ length: 24 }, (_, i) =>
-    i.toString().padStart(2, "0")
+    i.toString().padStart(2, "0"),
   );
   const minutes = Array.from({ length: 60 }, (_, i) =>
-    i.toString().padStart(2, "0")
+    i.toString().padStart(2, "0"),
   );
 
   const handleSelect = (type, val) => {
@@ -444,6 +488,7 @@ const CustomSelect = ({
   onChange,
   placeholder,
   icon: Icon,
+  isMulti = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -459,20 +504,66 @@ const CustomSelect = ({
   }, []);
 
   const handleSelect = (optionValue) => {
-    onChange(optionValue);
-    setIsOpen(false);
+    if (isMulti) {
+      // Logic สำหรับเลือกหลายอัน: ถ้ามีอยู่แล้วให้เอาออก ถ้าไม่มีให้เพิ่มเข้า
+      const newValue = Array.isArray(value) ? [...value] : [];
+      if (newValue.includes(optionValue)) {
+        onChange(newValue.filter((v) => v !== optionValue));
+      } else {
+        onChange([...newValue, optionValue]);
+      }
+      // ไม่สั่ง setIsOpen(false) เพื่อให้ User เลือกต่อได้เรื่อยๆ
+    } else {
+      // เลือกอันเดียวเหมือนเดิม
+      onChange(optionValue);
+      setIsOpen(false);
+    }
   };
 
+  // --- Logic แสดงผลชื่อ (1-2 รายการ) หรือ จำนวน (3 รายการขึ้นไป) ---
   const getDisplayLabel = () => {
-    if (!value) return placeholder || "Select...";
-    const selectedOption = options.find((opt) =>
-      typeof opt === "object" ? opt.value === value : opt === value
+    if (isMulti && Array.isArray(value)) {
+      if (value.length === 0) return placeholder || "เลือก...";
+
+      // ถ้าเลือกมากกว่า 2 รายการ ให้โชว์เป็นจำนวน
+      if (value.length > 2) {
+        return `เลือกแล้ว ${value.length} รายการ`;
+      }
+
+      // ถ้าเลือก 1-2 รายการ ให้โชว์ชื่อจริงคั่นด้วยคอมม่า
+      const selectedLabels = options
+        .filter((opt) => value.includes(opt.value))
+        .map((opt) => opt.label);
+      return selectedLabels.join(", ");
+    }
+
+    if (!isMulti && value) {
+      const selectedOption = options.find((opt) => opt.value === value);
+      return selectedOption ? selectedOption.label : value;
+    }
+    return placeholder || "เลือก...";
+  };
+
+  // --- ฟังก์ชันช่วย Render รายการปกติ ---
+  const renderOptionItem = (option) => {
+    const isSelected = isMulti
+      ? Array.isArray(value) && value.includes(option.value)
+      : value === option.value;
+
+    return (
+      <div
+        key={option.value}
+        onClick={() => handleSelect(option.value)}
+        className={`px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors mb-0.5 last:mb-0 flex items-center justify-between ${
+          isSelected
+            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
+            : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+        }`}
+      >
+        <span>{option.label}</span>
+        {isSelected && <Check size={14} className="text-blue-500" />}
+      </div>
     );
-    return selectedOption
-      ? typeof selectedOption === "object"
-        ? selectedOption.label
-        : selectedOption
-      : value;
   };
 
   return (
@@ -480,61 +571,66 @@ const CustomSelect = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200
-          bg-white dark:bg-slate-900
-          ${
-            isOpen
-              ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
-              : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
-          }
-        `}
+        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200 bg-white dark:bg-slate-900 ${
+          isOpen
+            ? "border-blue-500 ring-4 ring-blue-500/10 shadow-sm"
+            : "border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
+        }`}
       >
-        <div className="flex items-center gap-2 overflow-hidden">
+        <div className="flex items-center gap-2 overflow-hidden text-left">
           {Icon && <Icon size={16} className="text-slate-400 shrink-0" />}
           <span
-            className={`truncate ${
-              !value
-                ? "text-slate-400"
-                : "text-slate-700 dark:text-slate-200 font-medium"
-            }`}
+            className={`truncate ${!value || (isMulti && value.length === 0) ? "text-slate-400" : "text-slate-700 dark:text-slate-200 font-medium"}`}
           >
             {getDisplayLabel()}
           </span>
         </div>
         <ChevronDown
           size={18}
-          className={`text-slate-400 transition-transform duration-200 shrink-0 ml-2 ${
-            isOpen ? "rotate-180 text-blue-500" : ""
-          }`}
+          className={`text-slate-400 transition-transform duration-200 shrink-0 ml-2 ${isOpen ? "rotate-180 text-blue-500" : ""}`}
         />
       </button>
 
       {isOpen && (
-        <div
-          className="absolute z-50 w-full mt-1.5 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1.5 animate-in fade-in zoom-in-95 duration-100 text-left
-          bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
-        >
-          {options.map((option, index) => {
-            const optValue = typeof option === "object" ? option.value : option;
-            const optLabel = typeof option === "object" ? option.label : option;
-            const isSelected = value === optValue;
-
-            return (
-              <div
-                key={index}
-                onClick={() => handleSelect(optValue)}
-                className={`px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors mb-0.5 last:mb-0
-                  ${
-                    isSelected
-                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
-                  }
-                `}
+        <div className="absolute z-50 w-full mt-1.5 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1.5 animate-in fade-in zoom-in-95 duration-100 text-left bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+          {/* --- ส่วนปุ่มล้างทั้งหมด (โชว์เฉพาะเมื่อมีการเลือกแล้ว) --- */}
+          {isMulti && Array.isArray(value) && value.length > 0 && (
+            <div className="px-2 py-1.5 mb-1 flex justify-end border-b border-slate-50 dark:border-slate-700/50">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange([]);
+                }}
+                className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1 transition-colors"
               >
-                {optLabel}
+                <X size={12} /> ล้างทั้งหมด
+              </button>
+            </div>
+          )}
+
+          {/* --- เช็คถ้าเป็นช่อง Services ให้แบ่งกลุ่ม --- */}
+          {placeholder === "เลือก..." ? (
+            <>
+              {/* กลุ่ม Games */}
+              <div className="px-3 py-2 text-[12px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
+                --- Games ---
               </div>
-            );
-          })}
+              {options
+                .filter((opt) => opt.category === "Game")
+                .map(renderOptionItem)}
+
+              {/* กลุ่ม Systems */}
+              <div className="px-3 py-2 text-[12px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
+                --- Systems ---
+              </div>
+              {options
+                .filter((opt) => opt.category === "System")
+                .map(renderOptionItem)}
+            </>
+          ) : (
+            options.map(renderOptionItem)
+          )}
         </div>
       )}
     </div>
@@ -562,11 +658,16 @@ export default function CustomReport() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState("daily");
 
+  const [monthlyStartDate, setMonthlyStartDate] = useState(null);
+  const [monthlyEndDate, setMonthlyEndDate] = useState(null);
+
   // --- 1. STATE ---
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [groups, setGroups] = useState([]);
+  const [modalExpandedGroupId, setModalExpandedGroupId] = useState(null);
 
   // รีเซ็ตหน้าเป็น 1 เมื่อ searchText หรือ filterStatus เปลี่ยน
   useEffect(() => {
@@ -606,6 +707,11 @@ export default function CustomReport() {
     users: [],
   });
 
+  const getAutoEmailSubject = () => {
+    const [y, m, d] = getTodayString().split("-");
+    return `[IT Infra Report] รายงานฝ่าย Infrastructure on ${d}/${m}/${y}`;
+  };
+
   const [loadingData, setLoadingData] = useState(false);
 
   //export file
@@ -621,32 +727,36 @@ export default function CustomReport() {
   const [emailBody, setEmailBody] = useState("");
 
   // --- 2. EFFECTS (API CALLS) ---
-  useEffect(() => {
-    const fetchLookup = async () => {
-      try {
-        const [resProds, resStats, resProbs, resUsers, resRecipients] =
-          await Promise.all([
-            getproducts(),
-            getStatuses(),
-            getProblems(),
-            getMembers(),
-            getRecipients(),
-          ]);
-        setLookupData({
-          products: resProds.products || [],
-          statuses: resStats.statuses || resStats.data || [],
-          problems: resProbs.problems || [],
-          users: resUsers.users || resUsers.data || [],
-          recipients: resRecipients.recipients || [],
-        });
+useEffect(() => {
+  const fetchLookup = async () => {
+    try {
+      
+      const [resProds, resStats, resProbs, resUsers, resRecipients, resGroups] =
+        await Promise.all([
+          getproducts(),
+          getStatuses(),
+          getProblems(),
+          getMembers(),
+          getRecipients(),
+          getGroups(), 
+        ]);
+        
+      setLookupData({
+        products: resProds.products || [],
+        statuses: resStats.statuses || resStats.data || [],
+        problems: resProbs.problems || [],
+        users: resUsers.users || resUsers.data || [],
+        recipients: resRecipients.recipients || [],
+      });
 
-        setAvailableRecipients(resRecipients || []);
-      } catch (err) {
-        console.error("Error fetching master data:", err);
-      }
-    };
-    fetchLookup();
-  }, []);
+      setAvailableRecipients(resRecipients || []);
+      setGroups(resGroups || []); 
+    } catch (err) {
+      console.error("Error fetching master data:", err);
+    }
+  };
+  fetchLookup();
+}, []);
 
   // 2.2 โหลด Cases ตามวันที่
   const fetchCases = async () => {
@@ -655,16 +765,32 @@ export default function CustomReport() {
       setCases([]);
       return;
     }
+
+    let startDate, endDate;
+
+    if (viewMode === "daily") {
+      startDate = selectedDate;
+      endDate = selectedDate;
+    } else {
+      if (monthlyStartDate && monthlyEndDate) {
+        startDate = monthlyStartDate;
+        endDate = monthlyEndDate;
+      } else {
+        const today = getTodayString();
+        startDate = getFirstDayOfMonth(today);
+        endDate = today;
+      }
+    }
+
     setLoadingData(true);
     try {
       const res = await getCases({
-        date: selectedDate,
+        startDate,
+        endDate,
         mode: viewMode,
       });
-        // เรียงข้อมูลเก่าไปใหม่
-      const rawCases = (res.cases || [])
-          .slice();
-
+      // เรียงข้อมูลเก่าไปใหม่
+      const rawCases = (res.cases || []).slice();
 
       const formatDate = (date) => {
         if (!date || isNaN(date)) return "-";
@@ -676,14 +802,12 @@ export default function CustomReport() {
 
       // แปลงข้อมูลให้ตรงกับ UI
       const mappedCases = rawCases.map((c) => {
-        const productObj = lookupData.products.find(
-          (p) => p.product_id === c.product_id
-        );
+        // ค้นหาข้อมูลที่เกี่ยวข้อง
         const statusObj = lookupData.statuses.find(
-          (s) => s.status_id === c.status_id
+          (s) => s.status_id === c.status_id,
         );
         const problemObj = lookupData.problems.find(
-          (p) => p.problem_id === c.problem_id
+          (p) => p.problem_id === c.problem_id,
         );
 
         const start = new Date(c.start_datetime);
@@ -712,7 +836,6 @@ export default function CustomReport() {
             .toISOString()
             .split("T")[0];
         };
-        
 
         return {
           ...c,
@@ -720,15 +843,15 @@ export default function CustomReport() {
           startTime: formatTime(start),
           endTime: formatTime(end),
           startDate: startDateStr,
-          startMs: start.getTime(), 
-          endMs: end.getTime(),    
+          startMs: start.getTime(),
+          endMs: end.getTime(),
           raw_start_date: getLocalDateString(start), // เก็บ "2025-12-22"
           raw_end_date: getLocalDateString(end), //  เก็บ "2025-12-22"
           endDate: endDateStr,
           duration: durationStr,
           durationMins: durationMins,
-          problem: problemObj ? problemObj.problem_name : "Unknown",
-          game: productObj ? productObj.product_name : "Unknown",
+          game: c.product_names || "Unknown Services",
+          raw_product_id: c.product_ids || [], // ใช้ Array ของ IDs ที่ได้จาก ARRAY_AGG ใน Backend
           details: c.description,
           solution: c.solution,
           reporter: c.requester_name,
@@ -736,7 +859,7 @@ export default function CustomReport() {
           status: finalStatus,
           date: selectedDate,
 
-          raw_product_id: c.product_id,
+          problem: problemObj ? problemObj.problem_name : "Unknown Problem",
           raw_status_id: c.status_id,
           raw_problem_id: c.problem_id,
         };
@@ -769,14 +892,77 @@ export default function CustomReport() {
     if (lookupData.statuses.length > 0 || lookupData.products.length > 0) {
       fetchCases();
     }
-  }, [selectedDate, lookupData, viewMode]);
+  }, [selectedDate, viewMode, monthlyStartDate, monthlyEndDate, lookupData]);
+
+  const rangeMs = useMemo(() => {
+    if (viewMode === "daily") {
+      const d = new Date(selectedDate);
+      const ms = d.setHours(0, 0, 0, 0);
+      return { start: ms, end: ms + 86400000 };
+    }
+
+    let start, end;
+    if (monthlyStartDate && monthlyEndDate) {
+      start = new Date(monthlyStartDate);
+      end = new Date(monthlyEndDate);
+    } else {
+      const today = getTodayString();
+      start = new Date(getFirstDayOfMonth(today));
+      end = new Date(today);
+    }
+
+    return {
+      start: start.setHours(0, 0, 0, 0),
+      end: end.setHours(23, 59, 59, 999),
+    };
+  }, [viewMode, selectedDate, monthlyStartDate, monthlyEndDate]);
 
   // --- DASHBOARD DATA CALCULATION (UPDATED LOGIC) ---
-  const casesOfSelectedDate = cases.filter((c) => c.date === selectedDate);
+  const casesOfSelectedDate = cases.filter(
+    (c) => c.raw_start_date === selectedDate,
+  );
+
+  const effectivePickerDate = useMemo(() => {
+    if (viewMode === "daily") {
+      return selectedDate;
+    }
+
+    // monthly mode
+    if (monthlyEndDate) return monthlyEndDate;
+    if (monthlyStartDate) return monthlyStartDate;
+
+    return getTodayString();
+  }, [viewMode, selectedDate, monthlyStartDate, monthlyEndDate]);
+
+  const headerDateText = useMemo(() => {
+    // DAILY
+    if (viewMode === "daily") {
+      return selectedDate ? selectedDate.split("-").reverse().join("/") : "";
+    }
+
+    // MONTHLY
+    // custom range
+    if (monthlyStartDate && monthlyEndDate) {
+      return `${monthlyStartDate
+        .split("-")
+        .reverse()
+        .join("/")} - ${monthlyEndDate.split("-").reverse().join("/")}`;
+    }
+
+    // auto range (default)
+    const today = getTodayString();
+    const start = getFirstDayOfMonth(today);
+
+    return `${start.split("-").reverse().join("/")} - ${today
+      .split("-")
+      .reverse()
+      .join("/")}`;
+  }, [viewMode, selectedDate, monthlyStartDate, monthlyEndDate]);
 
   const filteredCases = cases.filter((c) => {
     const isSameStatus =
       filterStatus === "all" ? true : c.status === filterStatus;
+    const isInRange = c.startMs >= rangeMs.start && c.startMs <= rangeMs.end;
 
     const searchLower = searchText.toLowerCase();
     const isMatchSearch =
@@ -784,91 +970,81 @@ export default function CustomReport() {
       (c.problem || "").toLowerCase().includes(searchLower) ||
       (c.details || "").toLowerCase().includes(searchLower);
 
-    return isSameStatus && isMatchSearch;
+    return isSameStatus && isMatchSearch && isInRange;
   });
 
   const dashboardData = useMemo(() => {
-    const safeCases = filteredCases; //ข้อมูลเปลี่ยนตามตัวกรอง
-
-    // 1. คำนวณตัวเลขสรุป
-    let totalDownMinutes = 0;
-    const gameStats = {};
-    const counts = {};
-
-    safeCases.forEach((c) => {
-      if (!c) return;
-
-      // Sum Downtime
-      const minutes = c.durationMins || 0;
-      totalDownMinutes += minutes;
-
-      // Group by Game for Bar Chart
-      const game = c.game || "Unknown";
-      if (!gameStats[game]) {
-        gameStats[game] = { minutes: 0, count: 0 };
-      }
-      gameStats[game].minutes += minutes;
-      gameStats[game].count += 1;
-
-      // Group by Status for Pie Chart
-      const status = c.status || "others";
-      counts[status] = (counts[status] || 0) + 1;
-    });
-
-    // 2. จัดการ Most Impacted (Tie-Breaker Logic)
-    const sortedGames = Object.keys(gameStats)
-      .map((key) => ({ name: key, ...gameStats[key] }))
-      .sort((a, b) => {
-        const timeDiff = b.minutes - a.minutes;
-        if (timeDiff !== 0) return timeDiff;
-        return b.count - a.count;
+      const safeCases = filteredCases;
+  
+      let totalDownMinutes = 0;
+      const gameStats = {};
+      const counts = {};
+      const processedCaseIds = new Set(); // ไว้เช็ก ID ไม่ให้บวกเวลา/จำนวนเคสซ้ำ
+  
+      safeCases.forEach((c) => {
+        if (!c) return;
+  
+        const minutes = c.durationMins || 0;
+        
+        // 1. บวก Downtime และ Case Count เฉพาะ ID ที่ยังไม่เคยนับ (กันตัวเลขเบิ้ล)
+        if (!processedCaseIds.has(c.id)) {
+          totalDownMinutes += minutes;
+          
+          const status = c.status || "others";
+          counts[status] = (counts[status] || 0) + 1;
+          
+          processedCaseIds.add(c.id);
+        }
+  
+        // 2. เก็บสถิติรายเกมสำหรับกราฟและ Most Impacted 
+        const gameString = c.game || "Unknown services";
+        const gameList = gameString.split(',').map(g => g.trim()).filter(Boolean);
+  
+        gameList.forEach((gameName) => {
+          if (!gameStats[gameName]) {
+            gameStats[gameName] = { minutes: 0, count: 0 };
+          }
+          gameStats[gameName].minutes += minutes;
+          gameStats[gameName].count += 1;
+        });
       });
-
-    let mostImpacted = "-";
-    if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
-      const topGame = sortedGames[0];
-      const ties = sortedGames.filter(
-        (g) => g.minutes === topGame.minutes && g.count === topGame.count
-      );
-
-      if (ties.length > 1) {
-        const names = ties.map((t) => t.name);
-        mostImpacted = names.slice(0, 2).join(", ");
-        if (ties.length > 2) mostImpacted += "...";
-      } else {
-        mostImpacted = topGame.name;
+  
+      // 3. จัดลำดับ Most Impacted
+      const sortedGames = Object.keys(gameStats)
+        .map((key) => ({ name: key, ...gameStats[key] }))
+        .sort((a, b) => b.minutes - a.minutes || b.count - a.count);
+  
+      let mostImpacted = "-";
+      if (sortedGames.length > 0 && sortedGames[0].minutes > 0) {
+        const topGame = sortedGames[0];
+        const ties = sortedGames.filter(
+          (g) => g.minutes === topGame.minutes && g.count === topGame.count,
+        );
+  
+        // แสดงservice (ถ้าเท่ากันหลายเกมก็จอยด้วย comma)
+        mostImpacted = ties.map((t) => t.name).join(", ");
+        if (mostImpacted.length > 30) mostImpacted = mostImpacted.substring(0, 30) + "...";
       }
-    }
-
-    // 3. Format Total Downtime เป็น h:m
-    const downHours = Math.floor(totalDownMinutes / 60);
-    const downMins = totalDownMinutes % 60;
-    const totalDowntimeStr = `${String(downHours).padStart(2, "0")}:${String(
-      downMins
-    ).padStart(2, "0")} hrs`;
-
-    // 4. เตรียมข้อมูลกราฟ
-    const barChartData = sortedGames.filter((item) => item.minutes > 0);
-
-    const pieData = Object.keys(STATUS_CONFIG)
-      .map((key) => ({
-        name: STATUS_CONFIG[key].label,
-        value: counts[key] || 0,
-        color: STATUS_CONFIG[key].color,
-      }))
-      .filter((item) => item.value > 0);
-
-    return {
-      stats: {
-        totalCases: safeCases.length,
-        totalDowntimeStr,
-        mostImpacted,
-      },
-      barChartData,
-      pieData,
-    };
-  }, [filteredCases]); //casesOfSelectedDate
-
+  
+      const downHours = Math.floor(totalDownMinutes / 60);
+      const downMins = totalDownMinutes % 60;
+      
+      return {
+        stats: {
+          totalCases: processedCaseIds.size, // นับจำนวนเคสที่ไม่ซ้ำ ID
+          totalDowntimeStr: `${String(downHours).padStart(2, "0")}:${String(downMins).padStart(2, "0")} hrs`,
+          mostImpacted,
+        },
+        barChartData: sortedGames.filter((item) => item.minutes > 0),
+        pieData: Object.keys(STATUS_CONFIG)
+          .map((key) => ({
+            name: STATUS_CONFIG[key].label,
+            value: counts[key] || 0,
+            color: STATUS_CONFIG[key].color,
+          }))
+          .filter((item) => item.value > 0),
+      };
+    }, [filteredCases]);
   const getFriendlyErrorMessage = (error) => {
     //  ตรวจสอบ Error จากฝั่ง Backend (API Response)
     if (error.response?.data?.message) {
@@ -921,7 +1097,7 @@ export default function CustomReport() {
   };
 
   useEffect(() => {
-    // ถ้า Modal ปิดอยู่ หรือยังไม่มีข้อมูล case ไม่ต้องทำอะไร
+    // ถ้า Modal ปิดอยู่ หรือยังไม่มีข้อมูล case ก็ไม่ต้องคำนวณ
     if (!isEditModalOpen || !currentCase) return;
 
     const { date, endDate, startTime, endTime } = currentCase;
@@ -969,8 +1145,37 @@ export default function CustomReport() {
   // --- 3. ACTIONS (ADD / EDIT / DELETE) ---
 
   const handleTimeChange = (field, value) => {
-    // อัปเดตแค่ค่า field นั้นๆ พอ (ไม่ต้องคำนวณ duration ที่นี่แล้ว)
+    // อัปเดตแค่ค่า field นั้นๆ 
     setCurrentCase((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleDateChange = (date) => {
+    if (viewMode === "daily") {
+      setSelectedDate(date);
+      setMonthlyStartDate(null);
+      setMonthlyEndDate(null);
+      return;
+    }
+
+    // monthly mode
+    if (!monthlyStartDate) {
+      setMonthlyStartDate(date);
+      setMonthlyEndDate(null);
+      return;
+    }
+
+    if (monthlyStartDate && !monthlyEndDate) {
+      if (date < monthlyStartDate) {
+        setMonthlyEndDate(monthlyStartDate);
+        setMonthlyStartDate(date);
+      } else {
+        setMonthlyEndDate(date);
+      }
+      return;
+    }
+
+    setMonthlyStartDate(date);
+    setMonthlyEndDate(null);
   };
 
   const openNewCaseModal = () => {
@@ -987,10 +1192,9 @@ export default function CustomReport() {
       duration: "",
 
       // ใช้ ID สำหรับ Dropdown
-      product_id: null,
+      product_id: [],
       status_id: null,
       problem_id: null,
-
       details: "",
       solution: "",
       reporter: "",
@@ -1005,7 +1209,7 @@ export default function CustomReport() {
       date: item.raw_start_date, // ใช้ค่า YYYY-MM-DD
       endDate: item.raw_end_date, // ใช้ค่า YYYY-MM-DD
       // เอาค่า raw ID มาใส่ในตัวแปรที่จะใช้กับ Form
-      product_id: item.raw_product_id,
+      product_id: Array.isArray(item.raw_product_id) ? item.raw_product_id : [],
       status_id: item.raw_status_id,
       problem_id: item.raw_problem_id,
 
@@ -1032,6 +1236,7 @@ export default function CustomReport() {
     e.preventDefault();
     if (
       !currentCase.product_id ||
+      currentCase.product_id.length === 0 ||
       !currentCase.status_id ||
       !currentCase.problem_id ||
       !currentCase.reporter ||
@@ -1085,7 +1290,7 @@ export default function CustomReport() {
       const cleanDate = currentCase.date.replaceAll("/", "-");
       const cleanEndDate = (currentCase.endDate || currentCase.date).replaceAll(
         "/",
-        "-"
+        "-",
       );
 
       const startDateTime = `${cleanDate}T${currentCase.startTime}:00.000`;
@@ -1176,19 +1381,29 @@ export default function CustomReport() {
   };
 
   // --- 4. OTHER HANDLERS ---
-  const handleOpenEmailModal = () => {
-    setAttachedFiles(Array(5).fill(null)); // Reset attachedFiles เป็น 5 ช่องว่าง
-    setSelectedRecipientIds([]);
-    setIsRecipientDropdownOpen(false);
-    setIsEmailModalOpen(true);
+ const handleOpenEmailModal = () => {
 
-    setEmailSubject("");
-    setEmailBody("");
-  };
+  const defaultGroup = groups.find(g => g.is_default === true);
+  if (defaultGroup && defaultGroup.members) {
+    const memberIds = defaultGroup.members.map(m => m.recipient_id);
+    setSelectedRecipientIds(memberIds);
+  } else {
+    setSelectedRecipientIds([]);
+  }
+
+  // 2. Reset ค่าต่างๆ
+  setAttachedFiles(Array(5).fill(null));
+  setIsRecipientDropdownOpen(false);
+  setModalExpandedGroupId(null); 
+  setIsEmailModalOpen(true);
+
+  setEmailSubject(getAutoEmailSubject());
+  setEmailBody("");
+};
 
   const toggleRecipient = (id) => {
     setSelectedRecipientIds((prev) =>
-      prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id],
     );
   };
 
@@ -1196,23 +1411,27 @@ export default function CustomReport() {
     try {
       setIsExporting(true);
 
-      // เรียก API exportReport (ได้ blob กลับมา)
-      const blob = await exportReport(
-        selectedDate,
+      const { start, end } = getReportRange({
         viewMode,
-        filterStatus,
-        searchText
-      );
+        selectedDate,
+        monthlyStartDate,
+        monthlyEndDate,
+      });
+
+      // เรียก API exportReport (ได้ blob กลับมา)
+      const blob = await exportReport({
+        startDate: start,
+        endDate: end,
+        mode: viewMode,
+        status: filterStatus,
+        search: searchText,
+      });
 
       // สร้าง URL ชั่วคราวจาก blob
       const url = window.URL.createObjectURL(blob);
 
       // สร้างแท็ก <a> ชั่วคราวสำหรับดาวน์โหลดไฟล์
-
-      const filename =
-        viewMode === "monthly"
-          ? `monthly-report-${selectedDate}.xlsx`
-          : `daily-report-${selectedDate}.xlsx`;
+      const filename = getReportFilename({ start, end, viewMode });
 
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
@@ -1264,7 +1483,6 @@ export default function CustomReport() {
         title: "ไม่สามารถอัปโหลดไฟล์นี้ได้",
         message: errors.join("\n"), // แสดงรายการ error
       });
-      // alert(`ไม่สามารถอัปโหลดไฟล์นี้ได้:\n- ${errors.join('\n- ')}`);
       e.target.value = null; // เคลียร์ input field เพื่อให้เลือกใหม่ได้
       return;
     }
@@ -1280,11 +1498,11 @@ export default function CustomReport() {
   const removeFile = (indexToRemove) => {
     // ถูกต้อง: เปลี่ยนจากการ filter เป็นการ set ช่องนั้นให้เป็น null
     setAttachedFiles((prev) =>
-      prev.map((file, index) => (index === indexToRemove ? null : file))
+      prev.map((file, index) => (index === indexToRemove ? null : file)),
     );
   };
 
- const handleSendEmail = async () => {
+  const handleSendEmail = async () => {
     if (selectedRecipientIds.length === 0) {
       setFeedbackModal({
         isOpen: true,
@@ -1297,11 +1515,24 @@ export default function CustomReport() {
 
     setIsLoading(true);
 
+    const { start, end } = getReportRange({
+      viewMode,
+      selectedDate,
+      monthlyStartDate,
+      monthlyEndDate,
+    });
+
+    // 1. กำหนดช่วงวันที่ของรายงาน (Report Period)
+    const period =
+      start === end
+        ? formatDMY(start)
+        : `${formatDMY(start)} - ${formatDMY(end)}`;
+
     try {
-      // 1. กำหนดช่วงวันที่ของรายงาน (Report Period)
-      const period = viewMode === "daily" 
-        ? selectedDate.split("-").reverse().join("/") 
-        : `01/${selectedDate.split("-")[1]}/${selectedDate.split("-")[0]} - ${selectedDate.split("-").reverse().join("/")}`;
+
+      // const period = viewMode === "daily"
+      //   ? selectedDate.split("-").reverse().join("/")
+      //   : `01/${selectedDate.split("-")[1]}/${selectedDate.split("-")[0]} - ${selectedDate.split("-").reverse().join("/")}`;
 
       // 2. ดึง Email ผู้รับ
       const toEmails = availableRecipients
@@ -1311,13 +1542,13 @@ export default function CustomReport() {
       // 3. สร้างก้อนข้อมูล JSON สำหรับหัวรายงานและสรุป
       const reportInfo = {
         viewMode: viewMode,
-        reportPeriod: period
+        reportPeriod: period,
       };
 
       const summaryData = {
         totalCases: dashboardData.stats.totalCases,
         totalDowntime: dashboardData.stats.totalDowntimeStr,
-        mostImpacted: dashboardData.stats.mostImpacted
+        mostImpacted: dashboardData.stats.mostImpacted,
       };
 
       // 4. จัดเตรียม FormData
@@ -1325,7 +1556,7 @@ export default function CustomReport() {
       formData.append("toEmails", JSON.stringify(toEmails));
       formData.append("subject", emailSubject);
       formData.append("body", emailBody);
-      
+
       // --- ส่งก้อนข้อมูล JSON (สำคัญมากเพื่อให้ตารางขึ้นในเมล) ---
       formData.append("reportInfo", JSON.stringify(reportInfo));
       formData.append("summaryData", JSON.stringify(summaryData));
@@ -1382,8 +1613,9 @@ export default function CustomReport() {
       lookupData.products.map((p) => ({
         value: p.product_id,
         label: p.product_name,
+        category: p.product_category,
       })),
-    [lookupData.products]
+    [lookupData.products],
   );
 
   const modalStatusOptions = useMemo(
@@ -1392,7 +1624,7 @@ export default function CustomReport() {
         value: s.status_id,
         label: s.status_name,
       })),
-    [lookupData.statuses]
+    [lookupData.statuses],
   );
 
   const modalProblemOptions = useMemo(
@@ -1401,15 +1633,15 @@ export default function CustomReport() {
         value: pr.problem_id,
         label: pr.problem_name,
       })),
-    [lookupData.problems]
+    [lookupData.problems],
   );
 
   const totalPages = Math.ceil(filteredCases.length / ITEMS_PER_PAGE);
   const paginatedCases = filteredCases.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
-  //ระบบจัดการและแก้ไขเคส Custom Report
+
   return (
     <div
       className="fixed inset-0 w-full h-full overflow-y-auto font-sans text-slate-900 pb-20 
@@ -1425,7 +1657,6 @@ export default function CustomReport() {
         left={
           <>
             <BackIconButton />
-
             <ButtonHome onClick={() => navigate("/menu")} />
           </>
         }
@@ -1436,9 +1667,10 @@ export default function CustomReport() {
 
             <div className="w-48">
               <CustomDatePicker
-                type="button"
-                value={selectedDate}
-                onChange={setSelectedDate}
+                value={effectivePickerDate}
+                onChange={handleDateChange}
+                startDate={viewMode === "monthly" ? monthlyStartDate : null}
+                endDate={viewMode === "monthly" ? monthlyEndDate : null}
                 placeholder="เลือกวันที่"
               />
             </div>
@@ -1446,7 +1678,7 @@ export default function CustomReport() {
             <ExportButton
               onClick={handleExport}
               isExporting={isExporting}
-              disabled={casesOfSelectedDate.length === 0}
+              disabled={!hasReportData(filteredCases)}
             />
 
             <ButtonSend
@@ -1470,9 +1702,7 @@ export default function CustomReport() {
                 ? "ภาพรวมประจำวันที่"
                 : "ภาพรวมประจำเดือน"}{" "}
               <span className="text-blue-600 dark:text-blue-400 border-b-2 border-indigo-600/20 dark:border-indigo-400/30 px-1">
-                {selectedDate
-                  ? selectedDate.split("-").reverse().join("-")
-                  : ""}
+                {headerDateText}
               </span>
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 text-left">
@@ -1487,7 +1717,7 @@ export default function CustomReport() {
             onClick={openNewCaseModal}
             className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium shadow-md hover:bg-emerald-700 transition-all active:scale-95 duration-500 hover:-translate-y-1 hover:shadow-md"
           >
-            <Plus size={18} /> New Case
+            <Plus size={18} /> Add Case
           </button>
         </div>
 
@@ -1580,9 +1810,9 @@ export default function CustomReport() {
                   <th className="px-6 py-4 whitespace-nowrap ">Start Date</th>
                   <th className="px-6 py-4 whitespace-nowrap ">End Date</th>
                   <th className="px-6 py-4 ">TIME / DURATION</th>
-                  <th className="px-6 py-4 ">GAME / PROBLEM</th>
+                  <th className="px-6 py-4 ">SERVICE / PROBLEM</th>
                   <th className="px-6 py-4 ">DETAILS / SOLUTION</th>
-                  <th className="px-6 py-4  ">REPORTER / OPERATOR</th>
+                  <th className="px-6 py-4  ">REQUESTER / OPERATOR</th>
                   <th className="px-6 py-4 text-right ">ACTIONS</th>
                 </tr>
               </thead>
@@ -1649,17 +1879,12 @@ export default function CustomReport() {
                         </div>
                       </td>
 
-                      {/* GAME / PROBLEM */}
-                      <td className="px-6 py-4 align-top">
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <Gamepad2
-                              size={14}
-                              className="text-blue-500 dark:text-blue-400"
-                            />
-                            <span className="text-sm font-bold text-blue-600 dark:text-blue-500  tracking-wide">
-                              {item.game}
-                            </span>
+                      {/* Service / PROBLEM */}
+                      <td className="px-6 py-4 align-top max-w-[250px]">
+                        <div className="flex flex-col gap-1">
+                          {/* แสดงชื่อบริการแบบข้อความน้ำเงินเข้ม */}
+                          <div className="text-sm font-bold text-blue-600 dark:text-blue-400 break-words leading-tight">
+                            {item.game}
                           </div>
                           <span className="text-sm font-medium text-slate-800 dark:text-slate-200 line-clamp-2">
                             {item.problem}
@@ -1690,28 +1915,28 @@ export default function CustomReport() {
                         </div>
                       </td>
 
-                      {/* REPORTER / OPERATOR */}
-                      <td className="px-6 py-4 align-top">
+                      {/* Requester / Operator */}
+                      <td className="px-6 py-4 align-top max-w-[200px]">
                         <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex gap-2 items-start">
                             <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                            bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                              className="w-6 h-6 shrink-0  rounded-full flex items-center justify-center text-xs font-bold
+                            bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 "
                             >
                               R
                             </div>
-                            <span className="text-sm font-normal text-slate-700 dark:text-slate-300">
+                            <span className="text-sm font-normal text-slate-700 dark:text-slate-300 break-all leading-tight">
                               {item.reporter}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-start gap-2">
                             <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                              className="w-6 h-6 shrink-0  rounded-full flex items-center justify-center text-xs font-bold
                               bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                             >
                               O
                             </div>
-                            <span className="text-sm font-normal text-slate-700 dark:text-slate-300">
+                            <span className="text-sm font-normal text-slate-700 dark:text-slate-300 break-all leading-tight">
                               {item.operator}
                             </span>
                           </div>
@@ -1794,7 +2019,7 @@ export default function CustomReport() {
                     >
                       {page}
                     </button>
-                  )
+                  ),
                 )}
               </div>
 
@@ -1832,7 +2057,7 @@ export default function CustomReport() {
                     className="text-yellow-600 dark:text-yellow-400"
                   />
                 )}
-                {currentCase.id === null ? "เพิ่มเคสใหม่" : `แก้ไขข้อมูลเคส`}
+                {currentCase.id === null ? "Add Case" : `Edit Case `}
               </h3>
               <button
                 onClick={() => setIsEditModalOpen(false)}
@@ -1916,7 +2141,7 @@ export default function CustomReport() {
                   {currentCase.duration === "0 นาที" ||
                   !currentCase.duration ? (
                     <span className="text-slate-400 dark:text-slate-500 opacity-70 ">
-                      ระบบคำนวณเวลาอัตโนมัติ
+                      ระบบคำนวณระยะเวลาอัตโนมัติ
                     </span>
                   ) : (
                     currentCase.duration
@@ -1926,15 +2151,16 @@ export default function CustomReport() {
               <div className="grid grid-cols-2 gap-4 text-left">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 ml-1">
-                    Game
+                    Service
                   </label>
                   <CustomSelect
+                    isMulti={true}
                     options={modalGameOptions}
                     value={currentCase.product_id}
                     onChange={(val) =>
                       setCurrentCase({ ...currentCase, product_id: val })
                     }
-                    placeholder="เลือกเกม"
+                    placeholder="เลือก..."
                   />
                 </div>
                 <div>
@@ -1969,7 +2195,7 @@ export default function CustomReport() {
                   รายละเอียด (Details)
                 </label>
                 <textarea
-                  placeholder="พิมพ์รายละเอียด..."
+                  placeholder="พิมพ์รายละเอียดเคส..."
                   rows={3}
                   maxLength={1000}
                   value={currentCase.details}
@@ -2071,72 +2297,6 @@ export default function CustomReport() {
         </div>
       )}
 
-      {/* --- SAVE CONFIRMATION MODAL (UPDATED for Dark Mode) ---
-      {isSaveConfirmModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
-            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HelpCircle size={32} />
-            </div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">
-              ยืนยันการบันทึก?
-            </h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-              คุณแน่ใจหรือไม่ที่จะบันทึกข้อมูลนี้? <br />
-              กรุณาตรวจสอบความถูกต้องก่อนยืนยัน
-            </p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={() => setIsSaveConfirmModalOpen(false)}
-                className="px-4 py-2 border rounded-xl font-bold text-sm transition-colors
-                        bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={confirmSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 shadow-md shadow-blue-200 dark:shadow-blue-900/50"
-              >
-                ยืนยัน
-              </button>
-            </div>
-          </div>
-        </div>
-      )} */}
-
-      {/* --- DELETE CONFIRM MODAL (UPDATED for Dark Mode) ---
-      {isDeleteModalOpen && currentCase && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
-            <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle size={32} />
-            </div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">
-              ยืนยันการลบ?
-            </h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-              คุณแน่ใจหรือไม่ที่จะลบรายการเคสนี้? <br />
-              การกระทำนี้ไม่สามารถย้อนกลับได้
-            </p>
-            <div className="flex gap-6 justify-center">
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="px-4 py-2 border rounded-xl font-bold text-sm transition-colors
-                        bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 shadow-md shadow-red-200 dark:shadow-red-900/50"
-              >
-                ยืนยันลบ
-              </button>
-            </div>
-          </div>
-        </div>
-      )} */}
-
       {/* --- SEND MAIL MODAL (UPDATED for Dark Mode) --- */}
       {isEmailModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -2163,110 +2323,128 @@ export default function CustomReport() {
               </button>
             </div>
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
-              <div>
-                <label className=" text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-                  <User size={16} /> Select Recipients
-                </label>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setIsRecipientDropdownOpen(!isRecipientDropdownOpen)
-                    }
-                    className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-left transition-all 
-                      bg-white dark:bg-slate-900
-                      ${
-                        isRecipientDropdownOpen
-                          ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm"
-                          : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      }`}
-                  >
-                    <div className="flex flex-wrap gap-2 items-center w-full overflow-hidden">
-                      {selectedRecipientIds.length === 0 ? (
-                        <span className="text-slate-400">
-                          Select email addresses...
-                        </span>
-                      ) : (
-                        <>
-                          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap">
-                            {selectedRecipientIds.length} Selected
-                          </span>
-                          <span className="text-sm text-slate-600 dark:text-slate-400 truncate flex-1">
-                            {availableRecipients
-                              .filter((u) =>
-                                selectedRecipientIds.includes(u.recipient_id)
-                              )
-                              .map((u) => u.email)
-                              .join(", ")}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    {isRecipientDropdownOpen ? (
-                      <ChevronUp
-                        size={20}
-                        className="text-slate-400 shrink-0 ml-2"
-                      />
-                    ) : (
-                      <ChevronDown
-                        size={20}
-                        className="text-slate-400 shrink-0 ml-2"
-                      />
-                    )}
-                  </button>
-                  {isRecipientDropdownOpen && (
-                    <div
-                      className="absolute z-20 left-0 right-0 mt-2 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 animate-in fade-in zoom-in-95 duration-100
-                      bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            <div className="space-y-3 text-left">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 ml-1">
+          <User size={16} className="text-slate-400" /> Select Recipients
+        </label>
+
+      <div className="relative">
+        {/* ปุ่มกดเปิด Dropdown */}
+        <button
+          type="button"
+          onClick={() => setIsRecipientDropdownOpen(!isRecipientDropdownOpen)}
+          className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl transition-all duration-200 bg-white dark:bg-slate-900 ${
+            isRecipientDropdownOpen ? "border-indigo-500 ring-4 ring-indigo-500/10 shadow-sm" : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+          }`}
+        >
+          <div className="flex flex-wrap gap-2 items-center w-full overflow-hidden">
+            {selectedRecipientIds.length === 0 ? (
+              <span className="text-slate-400 text-sm font-normal">Select email addresses...</span>
+            ) : (
+              <div className="flex items-center gap-2 overflow-hidden w-full">
+                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap shrink-0">
+                  {selectedRecipientIds.length} Selected
+                </span>
+                <span className="text-sm text-slate-600 dark:text-slate-400 truncate font-normal">
+                  {availableRecipients
+                    .filter(u => selectedRecipientIds.includes(u.recipient_id))
+                    .map(u => u.name || u.email).join(", ")}
+                </span>
+              </div>
+            )}
+          </div>
+          {isRecipientDropdownOpen ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+        </button>
+
+    {/* --- เนื้อหาภายใน Dropdown  --- */}
+    {isRecipientDropdownOpen && (
+      <div className="absolute z-50 left-0 right-0 mt-2 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-100">
+        
+        {/* ส่วนที่ 1: Email Groups */}
+        {groups.length > 0 && (
+          <div className="mb-2">
+            <div className="px-2 py-1 mb-1 border-b border-slate-50 dark:border-slate-700/50">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Groups</span>
+            </div>
+            {groups.map((group) => {
+              const isAllSelected = group.members.every(m => selectedRecipientIds.includes(m.recipient_id));
+              const isExpanded = modalExpandedGroupId === group.group_id;
+
+              return (
+                <div key={`group-${group.group_id}`} className="mb-1">
+                  <div className={`flex items-center p-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50 ${isAllSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                    {/* Checkbox กลุ่ม */}
+                    <div onClick={() => {
+                        const ids = group.members.map(m => m.recipient_id);
+                        setSelectedRecipientIds(prev => isAllSelected ? prev.filter(id => !ids.includes(id)) : [...new Set([...prev, ...ids])]);
+                      }} 
+                      className={`shrink-0 cursor-pointer ${isAllSelected ? "text-blue-600" : "text-slate-300"}`}
                     >
-                      {availableRecipients.length > 0 ? (
-                        availableRecipients.map((user) => {
-                          const isSelected = selectedRecipientIds.includes(
-                            user.recipient_id
-                          );
-                          return (
-                            <div
-                              key={user.recipient_id}
-                              onClick={() => toggleRecipient(user.recipient_id)}
-                              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                                isSelected
-                                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                                  : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
-                              }`}
-                            >
-                              <div
-                                className={`shrink-0 ${
-                                  isSelected
-                                    ? "text-blue-600 dark:text-blue-400"
-                                    : "text-slate-300"
-                                }`}
-                              >
-                                {isSelected ? (
-                                  <CheckSquare size={20} />
-                                ) : (
-                                  <Square size={20} />
-                                )}
-                              </div>
-                              <div className="flex flex-col min-w-0">
-                                <span className="text-sm truncate text-slate-500 dark:text-slate-400 font-normal text-left">
-                                  {user.name}
-                                </span>
-                                <span className="font-normal text-sm truncate text-slate-800 dark:text-slate-200 text-left ">
-                                  {user.email}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div className="p-4 text-center text-slate-400 text-sm">
-                          No recipients found
+                      {isAllSelected ? <CheckSquare size={20} /> : <Square size={20} />}
+                    </div>
+                    {/* ชื่อกลุ่ม */}
+                    <div onClick={() => setModalExpandedGroupId(isExpanded ? null : group.group_id)} className="flex-1 flex justify-between items-center ml-3 cursor-pointer select-none">
+                      <div className="flex flex-col text-left">
+                        <span className="font-normal text-sm truncate text-slate-800 dark:text-slate-200">
+                          {group.group_name} {group.is_default}
+                        </span>
+                        <span className="text-[12px] text-slate-500">{group.members.length} recipients</span>
+                      </div>
+                      {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                    </div>
+                  </div>
+                  {/* สมาชิกในกลุ่ม */}
+                  {isExpanded && (
+                    <div className="ml-8 mt-1 space-y-1 border-l-2 border-slate-100 dark:border-slate-700 pl-2">
+                      {group.members.map(m => (
+                        <div key={`gm-${m.recipient_id}`} onClick={() => toggleRecipient(m.recipient_id)} className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                          <div className={selectedRecipientIds.includes(m.recipient_id) ? "text-blue-600" : "text-slate-300"}>
+                            {selectedRecipientIds.includes(m.recipient_id) ? <CheckSquare size={18} /> : <Square size={18} />}
+                          </div>
+                          <div className="text-left min-w-0"> 
+                              <p className="font-normal text-sm truncate text-slate-500 dark:text-slate-400">{m.name}</p>
+                            <p className="font-normal text-xs truncate text-slate-800 dark:text-slate-200">{m.email}</p> 
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   )}
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* --- SECTION 2: All Recipients --- */}
+        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+          <div className="px-2 py-1 mb-1">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">All Recipients</span>
+          </div>
+          <div className="space-y-1">
+            {availableRecipients.map((user) => {
+              const isSelected = selectedRecipientIds.includes(user.recipient_id);
+              return (
+                <div key={`indiv-${user.recipient_id}`} onClick={() => toggleRecipient(user.recipient_id)} 
+                  className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-slate-50 dark:hover:bg-slate-900/50"}`}
+                >
+                  <div className={isSelected ? "text-blue-600" : "text-slate-300"}>
+                    {isSelected ? <CheckSquare size={20} /> : <Square size={20} />}
+                  </div>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="font-normal text-sm truncate text-slate-500 dark:text-slate-400">{user.name || "Unnamed"}</span>
+                    <span className="font-normal text-sm truncate text-slate-800 dark:text-slate-200 text-left">{user.email}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                    </div>
+                  </div>
+                  
+                </div>
+              )}
+            </div>
+          </div>
+              {/* --- หัวเมล --- */}
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1 text-left ml-1">
@@ -2286,13 +2464,14 @@ export default function CustomReport() {
                   <textarea
                     value={emailBody}
                     onChange={(e) => setEmailBody(e.target.value)}
+                    maxLength={2000}
                     rows={4}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none
                       bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white"
                   />
                 </div>
               </div>
-              {/* ส่วน Attachments ที่ถูกต้อง (เริ่ม) */}
+              {/* ส่วน Attachments ที่ถูกต้อง  */}
               <div>
                 <label className=" text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <Paperclip size={16} /> Attachments (ไม่บังคับ, สูงสุด 5 ไฟล์)
@@ -2355,7 +2534,7 @@ export default function CustomReport() {
                   ))}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 text-left">
                     * ไฟล์แนบแต่ละไฟล์สูงสุด {CONFIG.MAX_FILE_SIZE_MB}MB (PDF,
-                    JPG, PNG, DOCX, XLSX, XLS)
+                    JPG, PNG, DOCX, XLSX)
                   </p>
                 </div>
               </div>
@@ -2385,6 +2564,7 @@ export default function CustomReport() {
         message={feedbackModal.message}
         onClose={closeFeedbackModal}
         onConfirm={feedbackModal.onConfirm}
+        isLoading={isLoading}
       />
     </div>
   );

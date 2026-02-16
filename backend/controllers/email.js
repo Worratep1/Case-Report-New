@@ -1,4 +1,4 @@
-const mailSender = require("../config/mail"); 
+const mailSender = require("../config/mail");
 
 exports.sendDailyReport = async (req, res) => {
   try {
@@ -14,12 +14,15 @@ exports.sendDailyReport = async (req, res) => {
     console.log("--- New Email Request ---");
     console.log("Report Info:", req.body.reportInfo);
     console.log("Summary Data:", req.body.summaryData);
-    console.log("Cases Data Length:", JSON.parse(req.body.casesData || "[]").length);
+    console.log(
+      "Cases Data Length:",
+      JSON.parse(req.body.casesData || "[]").length,
+    );
 
     console.log("--- Check Received Data ---");
     console.log("Subject:", subject);
     console.log("Body (Custom Message):", body);
-    console.log("Cases Data:", casesData); 
+    console.log("Cases Data:", casesData);
 
     // จัดการ Email ผู้รับ (Logic เดิมของคุณ)
     if (typeof toEmails === "string") {
@@ -34,28 +37,29 @@ exports.sendDailyReport = async (req, res) => {
     }
 
     // 2. จัดการไฟล์แนบ (เฉพาะไฟล์ปกติ ไม่เอาไฟล์รูปแคปแล้ว)
-  const attachmentsList = [];
-  const encodeRFC2047 = (str) => `=?UTF-8?B?${Buffer.from(str).toString("base64")}?=`;
-  
-  const files = req.files; // ตอนนี้ files จะเป็น Array โดยตรง
-  if (files && Array.isArray(files)) {
-    files.forEach((file) => {
-      attachmentsList.push({
-        filename: file.originalname,
-        content: file.buffer,
-        contentType: file.mimetype,
+    const attachmentsList = [];
+    const encodeRFC2047 = (str) =>
+      `=?UTF-8?B?${Buffer.from(str).toString("base64")}?=`;
+
+    const files = req.files; // ตอนนี้ files จะเป็น Array โดยตรง
+    if (files && Array.isArray(files)) {
+      files.forEach((file) => {
+        attachmentsList.push({
+          filename: file.originalname,
+          content: file.buffer,
+          contentType: file.mimetype,
+        });
       });
-    });
-  }
-    
-   // 3. สร้าง HTML สำหรับ Summary Cards
-const summaryHtml = `
+    }
+
+    // 3. สร้าง HTML สำหรับ Summary Cards
+    const summaryHtml = `
   <table role="presentation" width="60%" align="center" cellspacing="0" cellpadding="0" style="margin-bottom: 25px; font-family: sans-serif;">
     <tr>
       <td align="center" style="padding: 6px; width: 50%;">
         <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 25px 10px;">
           <div style="color: #991b1b; font-size: 12px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase;">TOTAL DOWNTIME</div>
-          <div style="font-size: 18px; font-weight: bold; color: #b91c1c;">${summary.totalDowntime || '00:00 hrs'}</div>
+          <div style="font-size: 18px; font-weight: bold; color: #b91c1c;">${summary.totalDowntime || "00:00 hrs"}</div>
         </div>
       </td>
       <td align="center" style="padding: 6px; width: 50%;">
@@ -95,11 +99,13 @@ const summaryHtml = `
             ${c.startTime} - ${c.endTime}<br/>
             <small style="color: #64748b;">(${c.duration})</small>
           </td>
-          <td style="padding: 10px; font-size: 12px; vertical-align: top; ">
-            <div style="font-weight: bold; color: #2563eb; white-space: nowrap;">
-            <b>Game:</b> ${c.game}</div>
-            <div style="font-size: 11px; color: #1e293b; word-break: break-word;">
-            <b>Problem:</b> ${c.problem}</div>
+              <td style="padding: 10px; font-size: 12px; vertical-align: top; word-break: break-word; width: 160px;">
+            <div style="font-weight: bold; color: #2563eb; margin-bottom: 5px;">
+              <b>Service:</b> ${c.game}
+            </div>
+            <div style="font-size: 11px; color: #1e293b;">
+              <b>Problem:</b> ${c.problem}
+            </div>
           </td>
           <td style="padding: 10px; font-size: 11px; line-height: 1.4; word-break: break-word; vertical-align: top;">
             <div style="margin-bottom: 4px;"><b>Details:</b> ${c.details || "-"}</div>
@@ -142,7 +148,7 @@ const summaryHtml = `
                   <span style="white-space: nowrap;">End Date</span>
                 </th>
                 <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 110px;">Time/Duration</th>
-                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 140px;">Game/Problem</th>
+                <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 140px;">Service/Problem</th>
                 <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 220px;">Details/Solution</th>
                 <th style="padding: 10px; font-size: 11px; color: #475569; text-align: left; width: 120px;">Requester/Operator</th>
               </tr>

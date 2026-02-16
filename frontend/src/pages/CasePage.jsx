@@ -12,6 +12,8 @@ import {
   User,
   Wrench,
   AlertTriangle,
+  X,
+  Check
 } from "lucide-react";
 
 import ButtonCancel from "../components/ButtonCancel";
@@ -116,7 +118,7 @@ const CustomTimePicker = ({ label, value, onChange }) => {
       </label>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3 transition-all 
+        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3  
           bg-white dark:bg-slate-900 
           ${
             isOpen
@@ -190,7 +192,8 @@ const CustomTimePicker = ({ label, value, onChange }) => {
   );
 };
 
-// --- Custom Select ---
+
+// --- Custom Select (แบบแบ่งกลุ่ม Games / Systems) ---
 const CustomSelect = ({
   label,
   value,
@@ -199,15 +202,35 @@ const CustomSelect = ({
   placeholder,
   displayKey,
   valueKey,
+  isMulti = false, 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const safeOptions = Array.isArray(options) ? options : [];
-  const selectedOption = safeOptions.find((opt) => opt[valueKey] === value);
-  const displayValue = selectedOption
-    ? selectedOption[displayKey]
-    : placeholder;
+  // ปรับการแสดงผลชื่อ: ถ้าเลือกหลายอันให้คั่นด้วยจุลภาค (,)
+  const selectedOptions = isMulti
+    ? safeOptions.filter(opt => Array.isArray(value) && value.includes(opt[valueKey]))
+    : safeOptions.filter(opt => opt[valueKey] === value);
+
+  // กรณีเลือกมากกว่า 2 รายการ ให้แสดงข้อความว่า "เลือกแล้ว X รายการ" แทนการแสดงชื่อทั้งหมด
+  // --- Logic แสดงผลชื่อที่เลือก ---
+  let displayValue = placeholder;
+  if (isMulti) {
+    if (selectedOptions.length > 2) {
+      displayValue = `เลือกแล้ว ${selectedOptions.length} รายการ`;
+    } else if (selectedOptions.length > 0) {
+      displayValue = selectedOptions.map(opt => opt[displayKey]).join(", ");
+    }
+  } else {
+    displayValue = selectedOptions[0]?.[displayKey] || placeholder;
+  }
+
+  // กรณีเลือกหลายอัน (isMulti) และเลือกเยอะเกิน 2 รายการ ให้โชว์เป็นจำนวนแทน
+  // const finalDisplay = (isMulti && Array.isArray(value) && value.length > 2)
+  //   ? `เลือกแล้ว ${value.length} รายการ`
+  //   : displayValue;
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -219,6 +242,52 @@ const CustomSelect = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // --- ฟังก์ชันจัดการการคลิกรายการ (เปลี่ยนชื่อเป็น handleItemClick เพื่อไม่ให้ซ้ำ) ---
+  const handleItemClick = (id) => {
+    if (isMulti) {
+      const currentValues = Array.isArray(value) ? value : [];
+      const newValues = currentValues.includes(id)
+        ? currentValues.filter(v => v !== id)
+        : [...currentValues, id];
+      onChange(newValues);
+    } else {
+      onChange(id);
+      setIsOpen(false);
+    }
+  };
+
+  // ฟังก์ชันสำหรับจัดการการเลือกหลายค่า (ถ้า value เป็น array)
+  const handleToggle = (id) => {
+    const currentValues = Array.isArray(value) ? value : [];
+    const newValues = currentValues.includes(id)
+      ? currentValues.filter(v => v !== id) // เอาออกถ้าติ๊กซ้ำ
+      : [...currentValues, id]; // เพิ่มเข้าไปถ้ายังไม่มี
+    onChange(newValues);
+  };
+
+  // ฟังก์ชันช่วย Render รายการ (เพื่อลดความซ้ำซ้อนของ Code)
+ const renderOption = (option) => {
+    // เช็คไฮไลท์ให้ตรงตามโหมด
+    const isSelected = isMulti 
+      ? Array.isArray(value) && value.includes(option[valueKey])
+      : value === option[valueKey];
+    return (
+      <div
+        key={option[valueKey]}
+        onClick={() => handleItemClick(option[valueKey])} // ไม่ปิด Dropdown ทันทีเพื่อให้เลือกต่อได้
+        className={`px-3 py-2 rounded-lg cursor-pointer text-sm  mb-0.5 flex justify-between items-center
+          ${isSelected
+            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
+            : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+          }
+        `}
+      >
+        <span>{option[displayKey]}</span>
+        {isSelected && <Check size={14} className="text-blue-500" />}
+      </div>
+    );
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <label className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block ml-1">
@@ -227,66 +296,62 @@ const CustomSelect = ({
 
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex justify-between items-center transition-all 
+        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex justify-between items-center  
           bg-white dark:bg-slate-900 
-          ${
-            isOpen
+          ${isOpen
               ? "border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/50"
               : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500"
           }`}
       >
-        <span
-          className={
-            value
-              ? "text-slate-700 dark:text-slate-200 font-medium"
-              : "text-slate-400"
-          }
-        >
-          {displayValue}
-        </span>
-        <ChevronDown
-          className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-blue-500" : ""
-          }`}
-        />
+        <span className={(isMulti ? value?.length > 0 : value) ? "text-slate-700 dark:text-slate-200 font-medium" : "text-slate-400"}>
+    {displayValue}
+  </span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-blue-500" : ""}`} />
       </div>
 
       {isOpen && (
-        <div
-          className="absolute z-50 w-full mt-2 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-fade-in-down
-          bg-white dark:bg-slate-800"
-        >
+        <div className="absolute z-50 w-full mt-2 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 animate-fade-in-down">
           <div className="max-h-60 overflow-y-auto py-1">
-            <div
-              className="px-3 py-2 text-xs font-medium border-b border-slate-100 dark:border-slate-700
-              bg-slate-50 dark:bg-slate-900 text-slate-400"
-            >
-              เลือก{label}...
-            </div>
-            {safeOptions.map((option) => (
-              <div
-                key={option[valueKey]}
-                onClick={() => {
-                  onChange(option[valueKey]);
-                  setIsOpen(false);
-                }}
-                
-                className={`px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors mb-0.5 last:mb-0
-              ${
-                value === option[valueKey]
-                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
-              }
-            `}
-              >
-                {/* แสดงแค่ชื่อรายการ (เอา CheckCircle ออกตามสไตล์ CustomReport) */}
-                {option[displayKey]}
+           
+          {/* ปุ่มล้างทั้งหมด: จะโชว์เฉพาะโหมด Multi และมีการเลือกแล้วเท่านั้น */}
+          {isMulti && Array.isArray(value) && value.length > 0 && (
+              <div className="px-3 py-1.5 flex justify-end items-center bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onChange([]); }}
+                  className="text-[11px] font-bold text-red-500 hover:text-red-600 flex items-center gap-1"
+                >
+                  <X size={12} /> ล้างทั้งหมด
+                </button>
               </div>
-            ))}
-            {options.length === 0 && (
-              <div className="px-4 py-2.5 text-sm text-slate-500">
-                ไม่พบข้อมูล
-              </div>
+            )}
+
+            {/* --- ส่วนแบ่งกลุ่มสำหรับ Game Select เท่านั้น --- */}
+            {label === "Services " ? (
+              <>
+                {/* กลุ่ม Games */}
+                {safeOptions.some(opt => opt.product_category === 'Game') && (
+                  <div className="px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
+                    --- Games ---
+                  </div>
+                )}
+                {safeOptions.filter(opt => opt.product_category === 'Game').map(renderOption)}
+
+                {/* กลุ่ม Systems */}
+                {safeOptions.some(opt => opt.product_category === 'System') && (
+                  <div className="px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-900/50 mt-1">
+                    --- Systems ---
+                  </div>
+                )}
+                {safeOptions.filter(opt => opt.product_category === 'System').map(renderOption)}
+              </>
+            ) : (
+              /* สำหรับ Dropdown อื่นๆ (Status, Problem) แสดงผลแบบปกติ */
+              safeOptions.map(renderOption)
+            )}
+
+            {safeOptions.length === 0 && (
+              <div className="px-4 py-2.5 text-sm text-slate-500">ไม่พบข้อมูล</div>
             )}
           </div>
         </div>
@@ -340,7 +405,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           key={d}
           type="button"
           onClick={() => handleSelectDate(d)}
-          className={`h-9 w-9 rounded-full text-sm flex items-center justify-center transition-all ${
+          className={`h-9 w-9 rounded-full text-sm flex items-center justify-center  ${
             isSelected
               ? "bg-blue-600 text-white shadow-md shadow-blue-300 dark:shadow-blue-900"
               : "text-slate-700 dark:text-slate-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
@@ -360,7 +425,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
       </label>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3 transition-all 
+        className={`w-full rounded-xl border px-4 py-3 text-sm cursor-pointer flex items-center gap-3  
           bg-white dark:bg-slate-900 
           ${
             isOpen
@@ -490,7 +555,7 @@ export default function CasePage() {
       end_datetime: now.toISOString().split("T")[0],
       timeStart: currentTime,
       timeEnd: currentTime,
-      product_id: null,
+      product_id: [],
       status_id: null,
       problem_id: null,
       description: "",
@@ -548,7 +613,7 @@ export default function CasePage() {
     e.preventDefault();
 
     if (
-      !formData.product_id ||
+      formData.product_id.length === 0 || // เช็คว่าใน Array มีข้อมูลไหม
       !formData.problem_id ||
       !formData.status_id ||
       !formData.solver
@@ -746,7 +811,7 @@ export default function CasePage() {
                 >
                   {currentDuration === "0 นาที" ? (
                     <span className="text-slate-400 dark:text-slate-500 opacity-70">
-                      ระบบคำนวณอัตโนมัติ
+                      ระบบคำนวณระยะเวลาอัตโนมัติ
                     </span>
                   ) : (
                     currentDuration
@@ -764,8 +829,9 @@ export default function CasePage() {
 
             <div className="grid grid-cols-2 gap-4 text-sm ">
               <CustomSelect
-                label="Game "
-                placeholder="เลือกเกม..."
+                label="Services "
+                placeholder="เลือก..."
+                isMulti={true}
                 options={lookupData.products}
                 value={formData.product_id}
                 onChange={(val) => handleCustomChange("product_id", val)}
@@ -804,7 +870,7 @@ export default function CasePage() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="พิมพ์รายละเอียดเคส..."
-                className="w-full rounded-xl border  px-4 py-3 text-sm transition-all resize-none
+                className="w-full rounded-xl border  px-4 py-3 text-sm resize-none
                    dark:bg-slate-900 border-slate-200 dark:border-slate-700
                   text-slate-700 dark:text-slate-200 
                   placeholder-slate-400 dark:placeholder-slate-500
@@ -827,7 +893,7 @@ export default function CasePage() {
                   value={formData.solution}
                   onChange={handleChange}
                   placeholder="อธิบายวิธีแก้ไข..."
-                  className="w-full rounded-xl border pr-4 py-3 text-sm transition-all resize-none
+                  className="w-full rounded-xl border pr-4 py-3 text-sm  resize-none
                    border-slate-200 dark:border-slate-700 pl-10 
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200
                      placeholder-slate-400 dark:placeholder-slate-500 hover:bg-white  hover:border-slate-200 dark:hover:border-slate-600
@@ -855,7 +921,7 @@ export default function CasePage() {
                   maxLength={150}
                   onChange={handleChange}
                   placeholder="ระบุชื่อผู้ร้องขอ"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm 
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />{" "}
@@ -875,7 +941,7 @@ export default function CasePage() {
                   onChange={handleChange}
                   maxLength={150}
                   placeholder="ระบุชื่อผู้ดำเนินการเเก้ไข"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm transition-all
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 pl-10 pr-4 py-2.5 text-sm 
                     bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />{" "}
@@ -918,7 +984,7 @@ export default function CasePage() {
         confirmText={feedbackModal.confirmText}
         cancelText={feedbackModal.cancelText}
         showSecondaryButton={feedbackModal.showSecondaryButton}
-        isLoading={isSubmitting} // ส่ง loading state ไปด้วยตอนกด confirm
+        isLoading={isSubmitting} 
       />
     </div>
   );

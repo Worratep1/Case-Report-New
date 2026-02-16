@@ -12,6 +12,7 @@ import RecipientSetting from "../pages/RecipientSetting";
 import DailyReportPage from "../pages/DailyreportPage";
 import CustomreportPage from "../pages/CustomreportPage";
 import ManualPage from "../pages/ManualPage";
+import DashboardPage from '../pages/DashboardPage';
 
 import RequierAuth from "../components/RequireAuth";
 
@@ -21,6 +22,13 @@ export default function AppRoutes() {
       
       
       <Route path="/login" element={ <LoginPage/> } />
+
+     
+    {/* Redirect หน้าแรกไป dashboard */}
+      <Route path="/" element={<Navigate to="/dashboard" replace /> } />
+     
+      {/* หน้า Dashboard ต้องล็อกอินก่อนถึงจะดูได้ */}
+      <Route path="/dashboard" element={<RequierAuth> <DashboardPage /> </RequierAuth>} />
 
       <Route path="/main" element={<RequierAuth> <MainPage /> </RequierAuth>} />
 
